@@ -22,6 +22,7 @@ dev_::
 	@echo "  linux -- x86 running Linux 1.2.13 DYNAMIC"
 	@echo "  linux-static -- x86 running Linux 1.2.13 ALL STATIC"
 	@echo "  linux-static-motif -- x86 running Linux 1.2.13 STATIC MOTIF"
+	@echo "  osx -- Mac OS X 10.4+ PPC OR x86 (earlier possible but unsupported)"
 	@echo "  sco -- x86 running SCO System V 3.2"
 	@echo "  sgi -- SGI Iris running IRIS 4.0.2"
 	@echo "  solaris-23 -- SPARCstation 20 running Solaris 2.3"
@@ -118,6 +119,14 @@ p_linux_static_motif: rm_and_touch
 	$(MAKE) -f makefiles/Makefile.linux p_static_motifd DEV_ARCH=linux
 q_linux_static_motif: rm_and_touch
 	$(MAKE) -f makefiles/Makefile.linux q_static_motifd DEV_ARCH=linux
+
+dev_osx: rm_and_touch osx
+osx: rm_and_touch
+	$(MAKE) -f makefiles/Makefile.osx DEV_ARCH=osx
+p_osx: rm_and_touch
+	$(MAKE) -f makefiles/Makefile.osx purifyd DEV_ARCH=osx
+q_osx: rm_and_touch
+	$(MAKE) -f makefiles/Makefile.osx quantifyd DEV_ARCH=osx
 
 dev_sco: rm_and_touch sco
 sco: rm_and_touch

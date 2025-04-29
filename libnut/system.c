@@ -101,12 +101,11 @@
 extern char *strdup(char *str);
 #endif
 
-#ifndef VMS
+#if !(defined(VMS) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__linux__))
 extern int sys_nerr;
 extern char *sys_errlist[];
 extern int errno;
 #endif
-
 
 #ifndef DISABLE_TRACE
 int nutTrace=0;

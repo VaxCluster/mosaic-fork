@@ -87,9 +87,11 @@ extern int is_uncompressed;
 
 /*swp -- for ~ expansion*/
 #include <pwd.h>
+#if !(defined(VMS) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__linux__))
 extern int sys_nerr;
 extern char *sys_errlist[];
 extern int errno;
+#endif
 #define __MAX_HOME_LEN__ 256
 int pathEval(char *dest, char *src);
 char *getFileName(char *file_src);
@@ -3002,5 +3004,3 @@ struct passwd *pwdent;
 	}
 	return(1);
 }
-
-

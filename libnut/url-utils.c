@@ -164,7 +164,7 @@ int rind(char *s, char c) {
 }
 
 
-int getline(char *s, int n, FILE *f) {
+int getlineLegacy(char *s, int n, FILE *f) {
     register int i=0;
 
     while(1) {
@@ -220,4 +220,3 @@ void escape_shell_cmd(char *cmd) {
         }
     }
 }
-

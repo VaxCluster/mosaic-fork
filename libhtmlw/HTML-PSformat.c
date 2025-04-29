@@ -59,7 +59,13 @@
  *
  */
 #include "../config.h"
+
+#if defined(__STDC__) || defined(__cplusplus)
+#include <stdarg.h>
+#define USE_STDARG
+#else
 #include <varargs.h>
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -229,35 +235,40 @@ GetDpi(HTMLWidget hw)
  *
  */
 static int 
+#ifdef USE_STDARG
+PSprintf(const char *format, ...)
+#else
 PSprintf(format, va_alist)
-    char* format;
+    char *format;
     va_dcl
-{
-    int 	len;
-    char 	*s;
-    va_list	args;
-
-    if (PS_size - PS_len < 1024) 
-    {
-	PS_size += 1024;
-	if ((s = (char *) realloc(PS_string, PS_size)) == NULL) 
-	{
-#ifndef DISABLE_TRACE
-		if (htmlwTrace) {
-			fprintf(stderr, "PSprintf malloc failed\n");
-		}
 #endif
-		return(EOF);
-	}
-	PS_string = s;
+{
+    int     len;
+    char    *s;
+    va_list args;
+
+    if (PS_size - PS_len < 1024)
+    {
+        PS_size += 1024;
+        if ((s = (char *) realloc(PS_string, PS_size)) == NULL)
+        {
+#ifndef DISABLE_TRACE
+            if (htmlwTrace) {
+                fprintf(stderr, "PSprintf malloc failed\n");
+            }
+#endif
+            return(EOF);
+        }
+        PS_string = s;
     }
+#ifdef USE_STDARG
+    va_start(args, format);
+#else
     va_start(args);
+#endif
     len = vsprintf(PS_string+PS_len, format, args);
-    /* this is a hack to make it work on systems were vsprintf(s,...)
-     * returns s, instead of the len.
-     */
-    if (len != EOF && len != 0) 
-	PS_len += strlen(PS_string+PS_len);
+    if (len != EOF && len != 0)
+        PS_len += strlen(PS_string+PS_len);
     va_end(args);
     return(len);
 }
@@ -1921,4 +1932,3 @@ String ParseTextToPSString(HTMLWidget	 	hw,
 
     return (PS_string);
 }
-
