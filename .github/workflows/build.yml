@@ -4,8 +4,11 @@ on:
       - master
   workflow_dispatch:
 
+name: Build Mosaic
+
 jobs:
   build_macos:
+    name: Build - macOS
     runs-on: macos-latest
     concurrency:
       group: ${{ github.ref }}
@@ -19,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install libpng openmotif
+          brew install libpng openmotif xquartz
 
       - name: Build Mosaic - macOS
         run: |
