@@ -61,203 +61,183 @@
 
 #include "net.h"
 #include "netdata.h"
-#include "libhtmlw/HTML.h" /* for ImageInfo */
+#include "libhtmlw/HTML.h"      /* for ImageInfo */
 
 /* Creation of an input port implies done_init and done_register
    as well as done_inport.  Creation of an output port implies 
    all of these (since an input port is always created prior to
    creating an output port). */
-static int done_init     = 0;   /* called NetInit?? */
+static int done_init = 0;       /* called NetInit?? */
 static int done_register = 0;   /* called NetRegisterModule?? */
-static int done_outport  = 0;   /* called NetCreateOutPort?? */
-static int done_inport   = 0;   /* called NetCreateInPort?? */
+static int done_outport = 0;    /* called NetCreateOutPort?? */
+static int done_inport = 0;     /* called NetCreateInPort?? */
 
 /* ------------------------------ mo_dtm_in ------------------------------- */
 
-mo_status mo_dtm_in (char *path)
+mo_status mo_dtm_in(char *path)
 {
-  NetPort *inport;
-  
-  if (!done_init)
-    {
-      NetInit ("Mosaic");
-      done_init = 1;
-    }
-  
-  if (!done_register)
-    {
-#if 0
-      NetRegisterModule
-        ("Mosaic", NETCOM,
-         mo_receive_com, (caddr_t) state,
-         NULL, (caddr_t) 0,
-         NULL, (caddr_t) 0);
-#endif
-      done_register = 1;
-    }
-  
-  if (!done_inport)
-    {
-      inport = NetCreateInPort (path);
-      done_inport = 1;
+    NetPort *inport;
+
+    if (!done_init) {
+        NetInit("Mosaic");
+        done_init = 1;
     }
 
-  mo_register_dtm_blip ();
-  
-  return mo_succeed;
+    if (!done_register) {
+#if 0
+        NetRegisterModule("Mosaic", NETCOM, mo_receive_com, (caddr_t) state, NULL, (caddr_t) 0, NULL, (caddr_t) 0);
+#endif
+        done_register = 1;
+    }
+
+    if (!done_inport) {
+        inport = NetCreateInPort(path);
+        done_inport = 1;
+    }
+
+    mo_register_dtm_blip();
+
+    return mo_succeed;
 }
 
 /* -------------------------- mo_dtm_disconnect --------------------------- */
 
-mo_status mo_dtm_disconnect (void)
+mo_status mo_dtm_disconnect(void)
 {
-  if (done_init)
-    if (!NetSendDisconnect (NULL, NULL, NULL)) {
-      sleep(1);
-      NetTryResend();
-    }
+    if (done_init)
+        if (!NetSendDisconnect(NULL, NULL, NULL)) {
+            sleep(1);
+            NetTryResend();
+        }
 
-  return;
+    return;
 }
 
 /* ------------------------------ mo_dtm_out ------------------------------ */
 
-mo_status mo_dtm_out (char *port)
+mo_status mo_dtm_out(char *port)
 {
-  if (!done_outport)
-    {
-      mo_dtm_in (":0");
-      
-      /* Make the output port. */
-      NetCreateOutPort (port);
+    if (!done_outport) {
+        mo_dtm_in(":0");
 
-      done_outport = 1;
+        /* Make the output port. */
+        NetCreateOutPort(port);
+
+        done_outport = 1;
     }
-  
-  return mo_succeed;
+
+    return mo_succeed;
 }
 
 /* ------------------------- mo_dtm_out_active_p -------------------------- */
 
-mo_status mo_dtm_out_active_p ()
+mo_status mo_dtm_out_active_p()
 {
-  if (done_outport)
-    return mo_succeed;
-  else
-    return mo_fail;
+    if (done_outport)
+        return mo_succeed;
+    else
+        return mo_fail;
 }
 
 /* ------------------------- mo_dtm_poll_and_read ------------------------- */
 
-mo_status mo_dtm_poll_and_read ()
+mo_status mo_dtm_poll_and_read()
 {
-  if (done_inport)
-    NetClientPollAndRead ();
-  
-  return mo_succeed;
+    if (done_inport)
+        NetClientPollAndRead();
+
+    return mo_succeed;
 }
 
 /* --------------------------- mo_dtm_send_text --------------------------- */
 
-mo_status mo_dtm_send_text (mo_window *win, char *url, char *text)
+mo_status mo_dtm_send_text(mo_window *win, char *url, char *text)
 {
-  Text *t;
-  char *title;
-  int rv;
+    Text *t;
+    char *title;
+    int rv;
 
-  if (!mo_dtm_out_active_p ())
-    return mo_fail;
+    if (!mo_dtm_out_active_p())
+        return mo_fail;
 
-  title = (char *)malloc (strlen (url) + 16);
-  sprintf (title, "Mosaic: %s\0", url);
+    title = (char *)malloc(strlen(url) + 16);
+    sprintf(title, "Mosaic: %s\0", url);
 
-  t = (Text *)malloc (sizeof (Text));
-  t->title = title;
-  t->id = strdup ("Mosaic");
-  t->selLeft = t->selRight = t->insertPt = 0;
-  t->numReplace = t->dim = strlen (text);
-  t->replaceAll = TRUE;
-  t->textString = strdup (text);
+    t = (Text *) malloc(sizeof(Text));
+    t->title = title;
+    t->id = strdup("Mosaic");
+    t->selLeft = t->selRight = t->insertPt = 0;
+    t->numReplace = t->dim = strlen(text);
+    t->replaceAll = TRUE;
+    t->textString = strdup(text);
 
-  rv = NetSendText (NULL, t, FALSE, "NewText");
+    rv = NetSendText(NULL, t, FALSE, "NewText");
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
-mo_status mo_dtm_send_image (void *data)
+mo_status mo_dtm_send_image(void *data)
 {
-  ImageInfo *img = (ImageInfo *)data;
-  int rv, i;
-  char palette[768];
+    ImageInfo *img = (ImageInfo *) data;
+    int rv, i;
+    char palette[768];
 
-  if (!mo_dtm_out_active_p ())
-    return mo_fail;
+    if (!mo_dtm_out_active_p())
+        return mo_fail;
 
-  for (i = 0; i < 256; i++)
-    {
-      if (i < img->num_colors)
-        {
-          palette[i*3+0] = img->reds[i]   >> 8;
-          palette[i*3+1] = img->greens[i] >> 8;
-          palette[i*3+2] = img->blues[i]  >> 8;
-        }
-      else
-        {
-          palette[i*3+0] = i;
-          palette[i*3+1] = i;
-          palette[i*3+2] = i;
+    for (i = 0; i < 256; i++) {
+        if (i < img->num_colors) {
+            palette[i * 3 + 0] = img->reds[i] >> 8;
+            palette[i * 3 + 1] = img->greens[i] >> 8;
+            palette[i * 3 + 2] = img->blues[i] >> 8;
+        } else {
+            palette[i * 3 + 0] = i;
+            palette[i * 3 + 1] = i;
+            palette[i * 3 + 2] = i;
         }
     }
 
-  rv = NetSendRaster8Group 
-    (NULL, "Mosaic Image", img->image_data,
-     img->width, img->height, palette, TRUE, FALSE, NULL);
+    rv = NetSendRaster8Group
+        (NULL, "Mosaic Image", img->image_data, img->width, img->height, palette, TRUE, FALSE, NULL);
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
-
-mo_status mo_dtm_send_palette (void *data)
+mo_status mo_dtm_send_palette(void *data)
 {
-  ImageInfo *img = (ImageInfo *)data;
-  int rv, i;
-  char palette[768];
+    ImageInfo *img = (ImageInfo *) data;
+    int rv, i;
+    char palette[768];
 
-  if (!mo_dtm_out_active_p ())
-    return mo_fail;
+    if (!mo_dtm_out_active_p())
+        return mo_fail;
 
-  for (i = 0; i < 256; i++)
-    {
-      if (i < img->num_colors)
-        {
-          palette[i*3+0] = img->reds[i]   >> 8;
-          palette[i*3+1] = img->greens[i] >> 8;
-          palette[i*3+2] = img->blues[i]  >> 8;
-        }
-      else
-        {
-          palette[i*3+0] = i;
-          palette[i*3+1] = i;
-          palette[i*3+2] = i;
+    for (i = 0; i < 256; i++) {
+        if (i < img->num_colors) {
+            palette[i * 3 + 0] = img->reds[i] >> 8;
+            palette[i * 3 + 1] = img->greens[i] >> 8;
+            palette[i * 3 + 2] = img->blues[i] >> 8;
+        } else {
+            palette[i * 3 + 0] = i;
+            palette[i * 3 + 1] = i;
+            palette[i * 3 + 2] = i;
         }
     }
 
-  rv = NetSendPalette8
-    (NULL, "Mosaic Palette", palette, NULL, FALSE, NULL);
+    rv = NetSendPalette8(NULL, "Mosaic Palette", palette, NULL, FALSE, NULL);
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
-
-mo_status mo_dtm_send_dataset (void *spanker)
+mo_status mo_dtm_send_dataset(void *spanker)
 {
     Data *d = (Data *) spanker;
     int rv, i;
     char palette[768];
-    
-    if (!mo_dtm_out_active_p ())
+
+    if (!mo_dtm_out_active_p())
         return mo_fail;
-    
+
 /*
 
     for (i = 0; i < 256; i++)
@@ -276,17 +256,15 @@ mo_status mo_dtm_send_dataset (void *spanker)
                 }
         }
 */
-   
-#define COLLAGE_SUCKS 
+
+#define COLLAGE_SUCKS
 #ifdef COLLAGE_SUCKS
-    rv = NetSendArray
-        (NULL, d, TRUE, FALSE, NULL, (d->rank == 3 ? TRUE : FALSE));
+    rv = NetSendArray(NULL, d, TRUE, FALSE, NULL, (d->rank == 3 ? TRUE : FALSE));
 #else
-    rv = NetSendArray
-        (NULL, d, TRUE, FALSE, NULL, TRUE);
+    rv = NetSendArray(NULL, d, TRUE, FALSE, NULL, TRUE);
 #endif
-    
+
     return mo_succeed;
 
 }
-#endif /* HAVE_DTM */
+#endif                          /* HAVE_DTM */

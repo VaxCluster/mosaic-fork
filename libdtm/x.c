@@ -62,42 +62,39 @@
 #include "debug.h"
 
 #if XtInputReadMask != (1L<<0)
-	Balk -	you must change the definition in dtm.c near
-			the function dtm_set_Xcallback
+Balk - you must change the definition in dtm.c near the function dtm_set_Xcallback
 #endif
-
 #ifdef DTM_PROTOTYPES
-void dtm_handle_new_in( caddr_t client_data, int * fd, XtInputId * id)
+void dtm_handle_new_in(caddr_t client_data, int *fd, XtInputId *id)
 #else
-void dtm_handle_new_in( client_data, fd, id )
-	caddr_t		client_data;
-	int *		fd;
-	XtInputId *	id;
+void dtm_handle_new_in(client_data, fd, id)
+caddr_t client_data;
+int *fd;
+XtInputId *id;
 #endif
 {
-	int				p = (int) client_data;
-	DTMPORT *		pp = DTMpt[p];
+    int p = (int)client_data;
+    DTMPORT *pp = DTMpt[p];
 
-	dtm_accept_read_connections( pp, FALSE );
+    dtm_accept_read_connections(pp, FALSE);
 }
 
 #ifdef DTM_PROTOTYPES
-void dtm_handle_new_out( caddr_t client_data, int * fd, XtInputId * id)
+void dtm_handle_new_out(caddr_t client_data, int *fd, XtInputId *id)
 #else
-void dtm_handle_new_out( client_data, fd, id )
-	caddr_t		client_data;
-	int *		fd;
-	XtInputId *	id;
+void dtm_handle_new_out(client_data, fd, id)
+caddr_t client_data;
+int *fd;
+XtInputId *id;
 #endif
 {
-	int				p = (int) client_data;
-	DTMPORT *		pp = DTMpt[p];
-	int				p_ext = p;
+    int p = (int)client_data;
+    DTMPORT *pp = DTMpt[p];
+    int p_ext = p;
 
-	dtm_map_port_external( &p_ext );
-	pp->Xcallback( pp->Xcallback_data, &p_ext, id );
+    dtm_map_port_external(&p_ext);
+    pp->Xcallback(pp->Xcallback_data, &p_ext, id);
 }
-
 
 #ifdef DTM_PROTOTYPES
 /*
@@ -121,42 +118,38 @@ void dtm_handle_new_out( client_data, fd, id )
 		automatically handled.
 */
 #ifdef DTM_PROTOTYPES
-int DTMaddInput( int p_ext, caddr_t condition, 
-					XtInputCallbackProc proc, caddr_t client_data )
+int DTMaddInput(int p_ext, caddr_t condition, XtInputCallbackProc proc, caddr_t client_data)
 #else
-int	DTMaddInput( p_ext, condition, proc, client_data )
-	int					p_ext;
-	caddr_t 			condition; 
-	XtInputCallbackProc	proc;
-	caddr_t				client_data;
+int DTMaddInput(p_ext, condition, proc, client_data)
+int p_ext;
+caddr_t condition;
+XtInputCallbackProc proc;
+caddr_t client_data;
 #endif
 {
-	reg DTMPORT *pp;
-	reg Inport  *inp;
-	reg	int		p;
+    reg DTMPORT *pp;
+    reg Inport *inp;
+    reg int p;
 
-	DTMerrno = DTMNOERR;
+    DTMerrno = DTMNOERR;
 
-	CHECK_ERR( p = dtm_map_port_internal( p_ext ));
-	pp = DTMpt[p];
+    CHECK_ERR(p = dtm_map_port_internal(p_ext));
+    pp = DTMpt[p];
 
-	pp->Xcallback_data = client_data;
-	pp->Xcallback = proc;
-	pp->XaddInput = (XtInputCallbackProc) XtAddInput;
-	pp->XremoveInput = (XtInputCallbackProc) XtRemoveInput;
-	if ( pp->porttype == INPORTTYPE ) {
-		/*
-			Set up callback for new connections
-		*/
-		XtAddInput( pp->sockfd, XtInputReadMask, dtm_handle_new_in, 
-				(caddr_t) p );
-		FOR_EACH_IN_PORT( inp, pp ) {
-			inp->XinputId = XtAddInput( inp->fd, XtInputReadMask, 
-					dtm_handle_in, (caddr_t) p );
-		}
-	} else {
-		XtAddInput( pp->sockfd, XtInputReadMask, dtm_handle_new_out, 
-				(caddr_t) p );
-	}
-	return DTM_OK;
+    pp->Xcallback_data = client_data;
+    pp->Xcallback = proc;
+    pp->XaddInput = (XtInputCallbackProc) XtAddInput;
+    pp->XremoveInput = (XtInputCallbackProc) XtRemoveInput;
+    if (pp->porttype == INPORTTYPE) {
+        /*
+           Set up callback for new connections
+         */
+        XtAddInput(pp->sockfd, XtInputReadMask, dtm_handle_new_in, (caddr_t) p);
+        FOR_EACH_IN_PORT(inp, pp) {
+            inp->XinputId = XtAddInput(inp->fd, XtInputReadMask, dtm_handle_in, (caddr_t) p);
+        }
+    } else {
+        XtAddInput(pp->sockfd, XtInputReadMask, dtm_handle_new_out, (caddr_t) p);
+    }
+    return DTM_OK;
 }

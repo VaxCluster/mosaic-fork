@@ -64,7 +64,7 @@
 extern int srcTrace;
 #endif
 
-int ReadBuffer(s,data,numBytesToRead)
+int ReadBuffer(s, data, numBytesToRead)
 /* this routine reads from the specified port, but also considers contents
    read and in buffer from the GetLine() routine.
 /* return the number of chars read */
@@ -72,28 +72,26 @@ MCCIPort s;
 char *data;
 int numBytesToRead;
 {
-int numRead = 0;
+    int numRead = 0;
 
-	if (numBytesToRead <= s->numInBuffer) {
-		memcpy(data,s->buffer,numBytesToRead);
-		s->numInBuffer -= numBytesToRead;
-		return(numBytesToRead);
-		}
-	if (s->numInBuffer > 0) {
-		memcpy(data,s->buffer,s->numInBuffer);
-		data += s->numInBuffer;
-		numBytesToRead -= s->numInBuffer;
-		numRead = s->numInBuffer;
-		s->numInBuffer = 0;
-		}
+    if (numBytesToRead <= s->numInBuffer) {
+        memcpy(data, s->buffer, numBytesToRead);
+        s->numInBuffer -= numBytesToRead;
+        return (numBytesToRead);
+    }
+    if (s->numInBuffer > 0) {
+        memcpy(data, s->buffer, s->numInBuffer);
+        data += s->numInBuffer;
+        numBytesToRead -= s->numInBuffer;
+        numRead = s->numInBuffer;
+        s->numInBuffer = 0;
+    }
 
-	numRead += NetRead(s, data, numBytesToRead);
-	return(numRead);
+    numRead += NetRead(s, data, numBytesToRead);
+    return (numRead);
 }
 
-
-
-char *GetLine(s) /****** this routine needs an overhaul.... */
+char *GetLine(s)     /****** this routine needs an overhaul.... */
 MCCIPort s;
 /* This routine returns a line read in from the socket file descriptor. 
  * The location of the string returned is good until the next call.
@@ -103,41 +101,40 @@ MCCIPort s;
  */
 
 {
-int numBytes;
-char buf2[PORTBUFFERSIZE +1];
-char *endptr;
-static char returnLine[PORTBUFFERSIZE * 2 +2];
-register char *rptr,*ptr;
-register int count;
+    int numBytes;
+    char buf2[PORTBUFFERSIZE + 1];
+    char *endptr;
+    static char returnLine[PORTBUFFERSIZE * 2 + 2];
+    register char *rptr, *ptr;
+    register int count;
 
-
-	if (s->numInBuffer < 1) {
-		/* no character in s->buffer, so fill it up */
+    if (s->numInBuffer < 1) {
+        /* no character in s->buffer, so fill it up */
 /*
 		if (!connectedToServer) {
 			return(0);
 			}
 */
-		if (1 > (numBytes = NetRead(s, s->buffer, PORTBUFFERSIZE))) {
-			/*  End Of Connection */
+        if (1 > (numBytes = NetRead(s, s->buffer, PORTBUFFERSIZE))) {
+            /*  End Of Connection */
 /*
 			DisconnectFromServer(s);
 */
 
 #ifndef DISABLE_TRACE
-			if (srcTrace) {
-				fprintf(stderr,"GetLine: End of Connection\n");
-			}
+            if (srcTrace) {
+                fprintf(stderr, "GetLine: End of Connection\n");
+            }
 #endif
 
-			return(0);
-			}
-		s->numInBuffer = numBytes;
-		}
+            return (0);
+        }
+        s->numInBuffer = numBytes;
+    }
 
-	s->buffer[s->numInBuffer]='\0';
-	if (!(endptr = strstr(s->buffer, "\r\n"))) {
-		/* There is no <CRLF> in s->buffer */
+    s->buffer[s->numInBuffer] = '\0';
+    if (!(endptr = strstr(s->buffer, "\r\n"))) {
+        /* There is no <CRLF> in s->buffer */
 /*
 		if (!connectedToServer) {
 #ifndef DISABLE_TRACE
@@ -161,85 +158,83 @@ register int count;
 			}
 */
 
-		/* read in <CRLF> */
-		if (1 > (numBytes = NetRead(s, buf2, PORTBUFFERSIZE))) {
-			/*  End Of Connection */
+        /* read in <CRLF> */
+        if (1 > (numBytes = NetRead(s, buf2, PORTBUFFERSIZE))) {
+            /*  End Of Connection */
 /*
 			NNTPDisconnectFromServer(s);
 */
 #ifndef DISABLE_TRACE
-			if (srcTrace) {
-				fprintf(stderr,"GetLine: return 0 at point 5\n");
-			}
+            if (srcTrace) {
+                fprintf(stderr, "GetLine: return 0 at point 5\n");
+            }
 #endif
 
-			return(0);
-			}
-		memcpy(&(s->buffer[s->numInBuffer]),buf2,numBytes);
-		s->numInBuffer += numBytes;
-		s->buffer[s->numInBuffer]='\0';
-		if (!(endptr = strstr(s->buffer, "\r\n"))) {
-			/* protocol error on server end 
-			   Everything sent should be terminated with
-			   a <CRLF>... just return for now */
+            return (0);
+        }
+        memcpy(&(s->buffer[s->numInBuffer]), buf2, numBytes);
+        s->numInBuffer += numBytes;
+        s->buffer[s->numInBuffer] = '\0';
+        if (!(endptr = strstr(s->buffer, "\r\n"))) {
+            /* protocol error on server end 
+               Everything sent should be terminated with
+               a <CRLF>... just return for now */
 #ifndef DISABLE_TRACE
-			if (srcTrace) {
-				fprintf(stderr,"GetLine: return NULL at point 6\n");
-			}
+            if (srcTrace) {
+                fprintf(stderr, "GetLine: return NULL at point 6\n");
+            }
 #endif
 
-			return(NULL);
-			}
-		}
-	endptr++;endptr++; /* <CRLF> should be included in line*/
+            return (NULL);
+        }
+    }
+    endptr++;
+    endptr++;                   /* <CRLF> should be included in line */
 
-	/* copy the line to the returnLine s->buffer */
-	count = 0;
-	rptr = returnLine;
-	ptr = s->buffer;
-	while (ptr != endptr) {
-		*rptr++ =  *ptr++;
-		count++;
-		}
-	*rptr = '\0'; /* null terminate the return line */
+    /* copy the line to the returnLine s->buffer */
+    count = 0;
+    rptr = returnLine;
+    ptr = s->buffer;
+    while (ptr != endptr) {
+        *rptr++ = *ptr++;
+        count++;
+    }
+    *rptr = '\0';               /* null terminate the return line */
 
-	/* shift the s->buffer contents to the front */
-	s->numInBuffer -= count;
+    /* shift the s->buffer contents to the front */
+    s->numInBuffer -= count;
 /*	bcopy(ptr,s->buffer,s->numInBuffer);*/
-	memcpy(s->buffer,ptr,s->numInBuffer);
+    memcpy(s->buffer, ptr, s->numInBuffer);
 
-	return(returnLine);
-	
-} /* NNTPGetLine() */
+    return (returnLine);
 
+}                               /* NNTPGetLine() */
 
 /* return a word out of the text */
-void GetWordFromString(text,retStart,retEnd)
-char *text;	 /* text to get a word out of */
-char **retStart; /* RETURNED: start of word in text */
-char **retEnd;	 /* RETURNED: end of word in text */
+void GetWordFromString(text, retStart, retEnd)
+char *text;                     /* text to get a word out of */
+char **retStart;                /* RETURNED: start of word in text */
+char **retEnd;                  /* RETURNED: end of word in text */
 {
-char *start;
-char *end;
+    char *start;
+    char *end;
 
-	if (!text) {
-		*retStart = *retEnd = text;
-		return;
-		}
+    if (!text) {
+        *retStart = *retEnd = text;
+        return;
+    }
 
-	start = text;
-	while ((*start) && isspace(*start)){ /*skip over leading space*/
-		start++;
-		}
+    start = text;
+    while ((*start) && isspace(*start)) {   /*skip over leading space */
+        start++;
+    }
 
-	end = start;
-	while((*end) && (!isspace(*end))){ /* find next space */
-		end++;
-		}
+    end = start;
+    while ((*end) && (!isspace(*end))) {    /* find next space */
+        end++;
+    }
 
-	*retStart = start;
-	*retEnd = end;
-	return;
+    *retStart = start;
+    *retEnd = end;
+    return;
 }
-
-

@@ -19,15 +19,10 @@
 *
 *****************************************************************************/
 
-
 #ifdef RCSLOG
 
- $Log: dtmf77.c,v $
- Revision 1.1.1.1  1995/01/11 00:02:59  alanb
- New CVS source tree, Mosaic 2.5 beta 4
-
- * Revision 2.5  1994/12/29  23:39:40  alanb
- * I'm committing with a new symbolic revision number.
+$Log: dtmf77.c, v $ Revision 1.1 .1 .1 1995 / 01 / 11 00: 02: 59 alanb New CVS source tree, Mosaic 2.5 beta 4 * Revision 2.5 1994 / 12 / 29 23: 39:40 alanb
+    * I 'm committing with a new symbolic revision number.
  *
  * Revision 1.1.1.1  1994/12/28  21:37:31  alanb
  *
@@ -81,7 +76,7 @@ int DTMMIP(s)
 
   len = _fcdlen(s);
   strncpy(portname, _fcdtocp(s), len);
-  portname[len] = '\0';
+  portname[len] = ' \ 0 ';
 
   return DTMmakeInPort(portname, DTM_DEFAULT);
 }
@@ -99,7 +94,7 @@ int DTMMOP(s)
 
   len = _fcdlen(s);
   strncpy(portname, _fcdtocp(s), len);
-  portname[len] = '\0';
+  portname[len] = ' \ 0 ';
 
   return DTMmakeOutPort(portname, DTM_DEFAULT);
 }
@@ -203,7 +198,8 @@ int DTMBW(p, header, size)
 
   len = _fcdlen(header);
   strncpy(buffer, _fcdtocp(header), len);
-  buffer[len] = '\0';
+  buffer[len] = ' \ 0
+    ';
   
   return DTMbeginWrite(*p, buffer, len+1);
 }
@@ -231,3 +227,6 @@ int DTMEW(p)
 {
   return DTMendWrite(*p);
 }
+
+
+

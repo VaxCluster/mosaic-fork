@@ -78,135 +78,129 @@
 #include	"dtmint.h"
 #include	"mdd.h"
 
-
-
 #ifdef DTM_PROTOTYPES
-void MDDsetDimensions(char *h,int rank,int *dims)
+void MDDsetDimensions(char *h, int rank, int *dims)
 #else
 void MDDsetDimensions(h, rank, dims)
-  char	*h;
-  int	rank, *dims;
+char *h;
+int rank, *dims;
 #endif
 {
-  char	num[8];
-  int	i;
+    char num[8];
+    int i;
 
-  sprintf(num, "%d ", rank);
-  strcat(h, MDDdims); strcat(h, " ");
-  strcat(h, num);
-
-  for (i=0; i<rank; i+=1)  {
-    sprintf(num, "%d ", dims[i]);
+    sprintf(num, "%d ", rank);
+    strcat(h, MDDdims);
+    strcat(h, " ");
     strcat(h, num);
+
+    for (i = 0; i < rank; i += 1) {
+        sprintf(num, "%d ", dims[i]);
+        strcat(h, num);
     }
 }
 
-
 #ifdef DTM_PROTOTYPES
-int MDDgetDimensions(char *h,int *rank,int *dims,int len)
+int MDDgetDimensions(char *h, int *rank, int *dims, int len)
 #else
 int MDDgetDimensions(h, rank, dims, len)
-  char	*h;
-  int	*rank, *dims, len;
+char *h;
+int *rank, *dims, len;
 #endif
 {
-  int	i;
+    int i;
 
-  if ((h = dtm_find_tag(h, MDDdims)) == NULL)
-    return DTMERROR;
-  else
-    h = strchr(h, ' ')+1;
-
-  *rank = atoi(h);
-
-  for (i=0; i<*rank && i<len; i+=1)
-    if ((h = strchr(h, ' ')) == NULL)
-      return DTMERROR;
+    if ((h = dtm_find_tag(h, MDDdims)) == NULL)
+        return DTMERROR;
     else
-      dims[i] = atoi(++h);
+        h = strchr(h, ' ') + 1;
 
-  return 0;
+    *rank = atoi(h);
+
+    for (i = 0; i < *rank && i < len; i += 1)
+        if ((h = strchr(h, ' ')) == NULL)
+            return DTMERROR;
+        else
+            dims[i] = atoi(++h);
+
+    return 0;
 }
 
-
 #ifdef DTM_PROTOTYPES
-int MDDnumElements(int rank,int *dims)
+int MDDnumElements(int rank, int *dims)
 #else
 int MDDnumElements(rank, dims)
-  int	rank, *dims;
+int rank, *dims;
 #endif
 {
-  int	size;
+    int size;
 
-  size = *dims++;
-  while (--rank > 0)
-    size *= *dims++;
+    size = *dims++;
+    while (--rank > 0)
+        size *= *dims++;
 
-  return size;
+    return size;
 }
 
-
 #ifdef DTM_PROTOTYPES
-void MDDsetMinMax(char *h,float min,float max)
+void MDDsetMinMax(char *h, float min, float max)
 #else
 void MDDsetMinMax(h, min, max)
-  char	*h;
-  float	min, max;
+char *h;
+float min, max;
 #endif
 {
-  char	num[12];
+    char num[12];
 
-  strcat(h, MDDminmax);  strcat(h, " ");
+    strcat(h, MDDminmax);
+    strcat(h, " ");
 
-  sprintf(num, "%f ", min);
-  strcat(h, num);
+    sprintf(num, "%f ", min);
+    strcat(h, num);
 
-  sprintf(num, "%f ", max);
-  strcat(h, num);
+    sprintf(num, "%f ", max);
+    strcat(h, num);
 }
 
-
 #ifdef DTM_PROTOTYPES
-int MDDgetMinMax(char *h,float *min,float *max)
+int MDDgetMinMax(char *h, float *min, float *max)
 #else
 int MDDgetMinMax(h, min, max)
-  char	*h;
-  float	*min, *max;
+char *h;
+float *min, *max;
 #endif
 {
 
-  if ((h = dtm_find_tag(h, MDDminmax)) == NULL)
-    return DTMERROR;
-  else
-    h = strchr(h, ' ')+1;
+    if ((h = dtm_find_tag(h, MDDminmax)) == NULL)
+        return DTMERROR;
+    else
+        h = strchr(h, ' ') + 1;
 
+    *min = (float)atof(h);
 
-  *min = (float)atof(h);
+    h = strchr(h, ' ') + 1;
+    *max = (float)atof(h);
 
-  h = strchr(h, ' ') + 1;
-  *max = (float)atof(h);
-  
-  return 0;
+    return 0;
 }
 
-
 #ifdef DTM_PROTOTYPES
-void MDDfindMinMax(char *h,float *mdd,float *min,float *max)
+void MDDfindMinMax(char *h, float *mdd, float *min, float *max)
 #else
 void MDDfindMinMax(h, mdd, min, max)
-  char	*h;
-  float	*mdd, *min, *max;
+char *h;
+float *mdd, *min, *max;
 #endif
 {
-  int	i, rank, dims[10];
+    int i, rank, dims[10];
 
-  MDDgetDimensions(h, &rank, dims, sizeof dims);
-  rank = MDDnumElements(rank, dims);
+    MDDgetDimensions(h, &rank, dims, sizeof dims);
+    rank = MDDnumElements(rank, dims);
 
-  *min = *max = *mdd++;
-  for (i=1; i<rank; mdd+=1, i+=1)
-    if (*mdd < *min)
-      *min = *mdd;
+    *min = *max = *mdd++;
+    for (i = 1; i < rank; mdd += 1, i += 1)
+        if (*mdd < *min)
+            *min = *mdd;
     if (*mdd > *max)
-      *max = *mdd;
+        *max = *mdd;
 }

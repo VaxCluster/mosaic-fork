@@ -58,7 +58,7 @@ extern int srcTrace;
 
 #include "mfhdf.h"
 #include "mosaic.h"
-#include "libhtmlw/HTML.h" /* for ImageInfo */
+#include "libhtmlw/HTML.h"      /* for ImageInfo */
 #ifdef HAVE_DTM
 #include "netdata.h"
 #endif
@@ -76,23 +76,18 @@ extern int srcTrace;
 
 #define SHOW_URL              FALSE
 
-static FILE * fp;
-static int    brief;
-static char * my_url;
+static FILE *fp;
+static int brief;
+static char *my_url;
 
 #ifdef CHOUCK
 /* forward decls */
-void hdfStartImage
-    PROTO(());
-void hdfEndImage
-    PROTO(());
-ImageInfo * hdfFetchImage
-    PROTO((intn *bg));
-void hdfXsds
-    PROTO((char *name, int32 rank));
-void hdfXvgroup
-    PROTO((char *name, char *class, int32 count));
-#endif /* CHOUCK */
+void hdfStartImage PROTO(());
+void hdfEndImage PROTO(());
+ImageInfo *hdfFetchImage PROTO((intn * bg));
+void hdfXsds PROTO((char *name, int32 rank));
+void hdfXvgroup PROTO((char *name, char *class, int32 count));
+#endif                          /* CHOUCK */
 
 /* return a string description of the number type */
 char *
@@ -104,88 +99,97 @@ int32 nt;
 #endif
 {
 
-    switch(nt) {
+    switch (nt) {
 
-    case DFNT_CHAR   : return("8-bit characters");
+    case DFNT_CHAR:
+        return ("8-bit characters");
 
-    case DFNT_INT8   : return("signed 8-bit integers");
-    case DFNT_UINT8  : return("unsigned 8-bit integers");
-    case DFNT_INT16  : return("signed 16-bit integers");
-    case DFNT_UINT16 : return("unsigned 8-bit integers");
-    case DFNT_INT32  : return("signed 32-bit integers");
-    case DFNT_UINT32 : return("unsigned 32-bit integers");
+    case DFNT_INT8:
+        return ("signed 8-bit integers");
+    case DFNT_UINT8:
+        return ("unsigned 8-bit integers");
+    case DFNT_INT16:
+        return ("signed 16-bit integers");
+    case DFNT_UINT16:
+        return ("unsigned 8-bit integers");
+    case DFNT_INT32:
+        return ("signed 32-bit integers");
+    case DFNT_UINT32:
+        return ("unsigned 32-bit integers");
 
-    case DFNT_FLOAT32  : return("32-bit floating point numbers");
-    case DFNT_FLOAT64  : return("64-bit floating point numbers");
- 
-    default : return("unknown number type");
+    case DFNT_FLOAT32:
+        return ("32-bit floating point numbers");
+    case DFNT_FLOAT64:
+        return ("64-bit floating point numbers");
+
+    default:
+        return ("unknown number type");
 
     }
 
-} /* get_type */
-
+}                               /* get_type */
 
 /* return a string dump of buffer */
 /* FREES the incoming buffer !!!!!!!!!!!!!!!!!! */
 char *
 #ifdef PROTOTYPE
-buffer_to_string(char * tbuff, int32 nt, int32 count)
+buffer_to_string(char *tbuff, int32 nt, int32 count)
 #else
 buffer_to_string(tbuff, nt, count)
-char * tbuff;
+char *tbuff;
 int32 nt;
 int32 count;
 #endif
 {
     intn i;
-    char * buffer;
-    
-    if(nt == DFNT_CHAR) {
+    char *buffer;
+
+    if (nt == DFNT_CHAR) {
         tbuff[count] = '\0';
         return tbuff;
     }
 
-    buffer = (char *) HDgetspace(80 * count);
-    if(buffer == NULL) return NULL;
+    buffer = (char *)HDgetspace(80 * count);
+    if (buffer == NULL)
+        return NULL;
 
     buffer[0] = '\0';
 
-    switch(nt) {
-    case DFNT_INT8   : 
-    case DFNT_UINT8  : 
-        sprintf(buffer, "%d", ((int8 *)tbuff)[0]);
-        for(i = 1; i < count; i++)
-            sprintf(buffer, "%s, %d", buffer, ((int8 *)tbuff)[i]);
+    switch (nt) {
+    case DFNT_INT8:
+    case DFNT_UINT8:
+        sprintf(buffer, "%d", ((int8 *) tbuff)[0]);
+        for (i = 1; i < count; i++)
+            sprintf(buffer, "%s, %d", buffer, ((int8 *) tbuff)[i]);
         break;
-    case DFNT_INT16   : 
-    case DFNT_UINT16  : 
-        sprintf(buffer, "%d", ((int16 *)tbuff)[0]);
-        for(i = 1; i < count; i++)
-            sprintf(buffer, "%s, %d", buffer, ((int16 *)tbuff)[i]);
+    case DFNT_INT16:
+    case DFNT_UINT16:
+        sprintf(buffer, "%d", ((int16 *) tbuff)[0]);
+        for (i = 1; i < count; i++)
+            sprintf(buffer, "%s, %d", buffer, ((int16 *) tbuff)[i]);
         break;
-    case DFNT_INT32   : 
-    case DFNT_UINT32  : 
-        sprintf(buffer, "%d", ((int32 *)tbuff)[0]);
-        for(i = 1; i < count; i++)
-            sprintf(buffer, "%s, %d", buffer, ((int32 *)tbuff)[i]);
+    case DFNT_INT32:
+    case DFNT_UINT32:
+        sprintf(buffer, "%d", ((int32 *) tbuff)[0]);
+        for (i = 1; i < count; i++)
+            sprintf(buffer, "%s, %d", buffer, ((int32 *) tbuff)[i]);
         break;
-    case DFNT_FLOAT32 : 
-        sprintf(buffer, "%f", ((float32 *)tbuff)[0]);
-        for(i = 1; i < count; i++)
-            sprintf(buffer, "%s, %f", buffer, ((float32 *)tbuff)[i]);
+    case DFNT_FLOAT32:
+        sprintf(buffer, "%f", ((float32 *) tbuff)[0]);
+        for (i = 1; i < count; i++)
+            sprintf(buffer, "%s, %f", buffer, ((float32 *) tbuff)[i]);
         break;
-    case DFNT_FLOAT64 : 
-        sprintf(buffer, "%f", ((float64 *)tbuff)[0]);        
-        for(i = 1; i < count; i++)
-            sprintf(buffer, "%s, %f", buffer, ((float64 *)tbuff)[i]);
+    case DFNT_FLOAT64:
+        sprintf(buffer, "%f", ((float64 *) tbuff)[0]);
+        for (i = 1; i < count; i++)
+            sprintf(buffer, "%s, %f", buffer, ((float64 *) tbuff)[i]);
         break;
     }
 
     HDfreespace((void *)tbuff);
     return buffer;
 
-} /* buffer_to_string */
-
+}                               /* buffer_to_string */
 
 /* return a string of the contents of an attribute */
 char *
@@ -206,18 +210,20 @@ int32 num;
 
     dsize = DFKNTsize(nt);
 
-    if(dsize < 1) return NULL;
+    if (dsize < 1)
+        return NULL;
 
     tbuff = HDgetspace(dsize * (count + 1));
-    if(tbuff == NULL) return NULL;
+    if (tbuff == NULL)
+        return NULL;
 
     status = SDreadattr(id, num, tbuff);
-    if(status == FAIL) return NULL;
+    if (status == FAIL)
+        return NULL;
 
-    return(buffer_to_string(tbuff, nt, count));
+    return (buffer_to_string(tbuff, nt, count));
 
 }
-
 
 /* 
 
@@ -230,7 +236,7 @@ int32 num;
 do_sds(char *fname)
 #else
 do_sds(fname)
-char *fname; 
+char *fname;
 #endif
 {
 
@@ -240,7 +246,7 @@ char *fname;
     int32 i, j;
     char name[512];
     int32 nt, dimsizes[50], rank;
-    intn  count;
+    intn count;
     /* SWP */
     int k;
     char attr_name[MAX_NC_NAME];
@@ -250,121 +256,126 @@ char *fname;
     char longname[MAX_NC_NAME];
 
     fid = SDstart(fname, DFACC_RDONLY);
-    if(fid == FAIL) return;
+    if (fid == FAIL)
+        return;
 
     status = SDfileinfo(fid, &dsets, &nattr);
-    if(status == FAIL) return;
+    if (status == FAIL)
+        return;
 
-    if(dsets + nattr < 1) return;
+    if (dsets + nattr < 1)
+        return;
 
     fprintf(fp, "<H2>Datasets</H2>\n");
 
     /* see if enough to send us into brief mode */
-    if(dsets > MAX_DATASET_DISPLAY)
+    if (dsets > MAX_DATASET_DISPLAY)
         brief = TRUE;
 
-    fprintf(fp, "There are %d dataset%s and %d global attribute%s in this file.<P>\n", 
-           dsets, (dsets == 1 ? "" : "s"), 
-           nattr, (nattr == 1 ? "" : "s"));
+    fprintf(fp,
+            "There are %d dataset%s and %d global attribute%s in this file.<P>\n",
+            dsets, (dsets == 1 ? "" : "s"), nattr, (nattr == 1 ? "" : "s"));
 
-    if(dsets) {
+    if (dsets) {
         fprintf(fp, "Available datasets :\n");
         fprintf(fp, "<UL>\n");
-        for(i = 0; i < dsets; i++) {
+        for (i = 0; i < dsets; i++) {
             sds = SDselect(fid, i);
-            if(sds == FAIL) return;
+            if (sds == FAIL)
+                return;
 
             status = SDgetinfo(sds, name, &rank, dimsizes, &nt, &nattrs);
-            if(status == FAIL) return;
+            if (status == FAIL)
+                return;
 
-	    /* SWP -- 09/06/95 */
+            /* SWP -- 09/06/95 */
             if (get_pref_boolean(eHDFLONGNAME)) {
-		strcpy(longname,"No Label/Longname");
-		for (k=0; k<nattrs; k++) {
-			status = SDattrinfo(sds, k, attr_name, &ant, &alen);
-			if (status == FAIL) {
-			}
-			else if (!strcmp(attr_name,"long_name")) {
-				status = SDreadattr(sds, k, (VOIDP)(&attr_data[0]));
-				if (status == FAIL) {
-				}
-				else {
-					attr_data[alen]='\0';
-					strcpy(longname,attr_data);
-					break;
-				}
-			}
-		}
+                strcpy(longname, "No Label/Longname");
+                for (k = 0; k < nattrs; k++) {
+                    status = SDattrinfo(sds, k, attr_name, &ant, &alen);
+                    if (status == FAIL) {
+                    } else if (!strcmp(attr_name, "long_name")) {
+                        status = SDreadattr(sds, k, (VOIDP) (&attr_data[0]));
+                        if (status == FAIL) {
+                        } else {
+                            attr_data[alen] = '\0';
+                            strcpy(longname, attr_data);
+                            break;
+                        }
+                    }
+                }
 
-		if(POWER_USER)
-			fprintf(fp, "<LI> <A NAME=\"DataSet%d\"><B>%s(%s)</B></A> rank %d : [", 
-				i, name, longname, rank);
-		else
-			fprintf(fp, "<LI> Dataset <A NAME=\"DataSet%d\"><B>%s(%s)</B></A> has rank %d with dimensions [", 
-				i, name, longname, rank);
-	    }
-	    else {
-		if(POWER_USER)
-			fprintf(fp, "<LI> <A NAME=\"DataSet%d\"><B>%s</B></A> rank %d : [", 
-				i, name, rank);
-		else
-			fprintf(fp, "<LI> Dataset <A NAME=\"DataSet%d\"><B>%s</B></A> has rank %d with dimensions [", 
-				i, name, rank);
-	    }
+                if (POWER_USER)
+                    fprintf(fp, "<LI> <A NAME=\"DataSet%d\"><B>%s(%s)</B></A> rank %d : [", i, name, longname, rank);
+                else
+                    fprintf(fp,
+                            "<LI> Dataset <A NAME=\"DataSet%d\"><B>%s(%s)</B></A> has rank %d with dimensions [",
+                            i, name, longname, rank);
+            } else {
+                if (POWER_USER)
+                    fprintf(fp, "<LI> <A NAME=\"DataSet%d\"><B>%s</B></A> rank %d : [", i, name, rank);
+                else
+                    fprintf(fp,
+                            "<LI> Dataset <A NAME=\"DataSet%d\"><B>%s</B></A> has rank %d with dimensions [",
+                            i, name, rank);
+            }
 
 #ifdef CHOUCK
             /* put it in the picture */
             hdfXsds(name, rank);
-#endif /* CHOUCK */
+#endif                          /* CHOUCK */
 
-            for(j = 0; j < rank; j++) 
-                if(j == 0)
+            for (j = 0; j < rank; j++)
+                if (j == 0)
                     fprintf(fp, "%d", dimsizes[j]);
                 else
                     fprintf(fp, ", %d", dimsizes[j]);
 
             fprintf(fp, "]");
-            
-            if(POWER_USER)
+
+            if (POWER_USER)
                 fprintf(fp, "; %s.\n", get_type(nt));
             else
                 fprintf(fp, ".  The dataset is composed of %s.\n", get_type(nt));
 
 #ifdef HAVE_DTM
-        if (mo_dtm_out_active_p () && ((rank == 2) || (rank == 3)))
-          fprintf (fp, "(To broadcast this dataset over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n", 
-                   (int32) DFTAG_NDG, i);
+            if (mo_dtm_out_active_p() && ((rank == 2) || (rank == 3)))
+                fprintf(fp,
+                        "(To broadcast this dataset over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n",
+                        (int32) DFTAG_NDG, i);
 #endif
-            if(nattrs) {
-                if(brief || nattrs > MAX_ATTRIBUTE_DISPLAY) {
-                    
-                    fprintf(fp, "There %s %d <A HREF=\"#hdfref;tag=%d,ref=%d\">attribute%s</A>.\n", 
-                            (nattrs == 1 ? "is" : "are"), nattrs, (int32) DFTAG_NDG, i, 
-                            (nattrs == 1 ? "" : "s"));
+            if (nattrs) {
+                if (brief || nattrs > MAX_ATTRIBUTE_DISPLAY) {
+
+                    fprintf(fp,
+                            "There %s %d <A HREF=\"#hdfref;tag=%d,ref=%d\">attribute%s</A>.\n",
+                            (nattrs == 1 ? "is" : "are"), nattrs, (int32) DFTAG_NDG, i, (nattrs == 1 ? "" : "s"));
 
                 } else {
-                    
-                    if(POWER_USER)
+
+                    if (POWER_USER)
                         fprintf(fp, "Attributes :\n");
                     else
                         fprintf(fp, "It has the following attributes :\n");
 
                     fprintf(fp, "<UL>\n");
-                    for(j = 0; j < nattrs; j++) {
+                    for (j = 0; j < nattrs; j++) {
                         char *valstr;
                         status = SDattrinfo(sds, j, name, &nt, &count);
-                        if(status == FAIL) return;
-                        
+                        if (status == FAIL)
+                            return;
+
                         valstr = get_attribute(sds, j, nt, count);
-                        if(valstr == NULL) continue;
-                        
-                        if(POWER_USER)
+                        if (valstr == NULL)
+                            continue;
+
+                        if (POWER_USER)
                             fprintf(fp, "<LI> <i>%s</i> : <B>%s</B>", name, valstr);
                         else
                             fprintf(fp, "<LI> Attribute <i>%s</i> has the value : <B>%s</B>", name, valstr);
 
                         HDfreespace((void *)valstr);
-                        
+
                     }
                     fprintf(fp, "</UL>\n");
                 }
@@ -375,35 +386,35 @@ char *fname;
         fprintf(fp, "</UL>\n");
     }
 
-
-    if(nattr) {
+    if (nattr) {
         fprintf(fp, "Global attributes :\n");
         fprintf(fp, "<UL>\n");
-        for(i = 0; i < nattr; i++) {
+        for (i = 0; i < nattr; i++) {
 
             char *valstr;
 
             status = SDattrinfo(fid, i, name, &nt, &count);
-            if(status == FAIL) return;
+            if (status == FAIL)
+                return;
 
             valstr = get_attribute(fid, i, nt, count);
-            if(valstr == NULL) continue;
+            if (valstr == NULL)
+                continue;
 
-            if(POWER_USER)
+            if (POWER_USER)
                 fprintf(fp, "<LI> <i>%s</i> : <B>%s</B>", name, valstr);
             else
                 fprintf(fp, "<LI> Attribute <i>%s</i> has the value : <B>%s</B>", name, valstr);
 
             HDfreespace((void *)valstr);
- 
+
         }
         fprintf(fp, "</UL>\n");
     }
 
     SDend(fid);
 
-} /* do_sds */
-
+}                               /* do_sds */
 
 /*
   
@@ -412,49 +423,54 @@ char *fname;
   That's what this function is for
 
 */
-do_attributes(char *fname, int index) {
-    
+do_attributes(char *fname, int index)
+{
+
     char name[MAX_NC_NAME];
     int32 nattrs, nt, dims[MAX_VAR_DIMS], rank, status;
     int32 fid, sds;
     intn j, count;
 
     fid = SDstart(fname, DFACC_RDONLY);
-    if(fid == FAIL) return;
+    if (fid == FAIL)
+        return;
 
     sds = SDselect(fid, index);
-    if(sds == FAIL) return;
+    if (sds == FAIL)
+        return;
 
     status = SDgetinfo(sds, name, &rank, dims, &nt, &nattrs);
-    if(status == FAIL) return;
+    if (status == FAIL)
+        return;
 
-    if(nattrs) {
+    if (nattrs) {
 
         fprintf(fp, "Dataset <B>%s</B> has the following attributes :\n", name);
         fprintf(fp, "<UL>\n");
-        for(j = 0; j < nattrs; j++) {
+        for (j = 0; j < nattrs; j++) {
             char *valstr;
             status = SDattrinfo(sds, j, name, &nt, &count);
-            if(status == FAIL) return;
-            
+            if (status == FAIL)
+                return;
+
             valstr = get_attribute(sds, j, nt, count);
-            if(valstr == NULL) continue;
-            
-            if(POWER_USER)
+            if (valstr == NULL)
+                continue;
+
+            if (POWER_USER)
                 fprintf(fp, "<LI> <i>%s</i> : <B>%s</B>", name, valstr);
             else
                 fprintf(fp, "<LI> Attribute <i>%s</i> has the value : <B>%s</B>", name, valstr);
 
             HDfreespace((void *)valstr);
-            
+
         }
         fprintf(fp, "</UL>\n");
     }
-    
+
     SDend(fid);
 
-} /* do_attributes */
-
+}                               /* do_attributes */
 
 /* 
 
@@ -465,7 +481,7 @@ do_attributes(char *fname, int index) {
 do_fanns(int32 fid)
 #else
 do_fanns(fid)
-int32 fid; 
+int32 fid;
 #endif
 {
     char *buffer;
@@ -473,13 +489,15 @@ int32 fid;
     int32 len;
 
     len = DFANgetfidlen(fid, 1);
-    if(len > 0) {
+    if (len > 0) {
 
         buffer = HDgetspace(len + 1);
-        if(buffer == NULL) return;
+        if (buffer == NULL)
+            return;
 
         status = DFANgetfid(fid, buffer, len + 1, 1);
-        if(status == FAIL) return;
+        if (status == FAIL)
+            return;
 
         fprintf(fp, "This file has the following label: <B>%s</B><P>\n", buffer);
 
@@ -488,23 +506,24 @@ int32 fid;
     }
 
     len = DFANgetfdslen(fid, 1);
-    if(len > 0) {
+    if (len > 0) {
 
         buffer = HDgetspace(len + 1);
-        if(buffer == NULL) return;
+        if (buffer == NULL)
+            return;
 
         status = DFANgetfds(fid, buffer, len, 1);
-        if(status == FAIL) return;
+        if (status == FAIL)
+            return;
 
         buffer[len] = '\0';
-        fprintf(fp, "Here is the file description: <BLOCKQUOTE> %s </BLOCKQUOTE>\n", buffer); 
+        fprintf(fp, "Here is the file description: <BLOCKQUOTE> %s </BLOCKQUOTE>\n", buffer);
 
         HDfreespace((void *)buffer);
 
     }
 
-} /* do_fanns */
-
+}                               /* do_fanns */
 
 /*
 
@@ -525,40 +544,41 @@ char *name;
     char *buffer;
 
     len = DFANgetlablen(fname, tag, ref);
-    if(len > 0) {
+    if (len > 0) {
 
         buffer = HDgetspace(len + 1);
-        if(buffer == NULL) return;
-        
-            status = DFANgetlabel(fname, tag, ref, buffer, len + 1);
-        if(status == SUCCEED) {
+        if (buffer == NULL)
+            return;
+
+        status = DFANgetlabel(fname, tag, ref, buffer, len + 1);
+        if (status == SUCCEED) {
             name[0] = tolower(name[0]);
 
-            if(POWER_USER)
+            if (POWER_USER)
                 fprintf(fp, "Label : <B>%s</B> <P> \n", name, buffer);
             else
                 fprintf(fp, "This %s was given the label : <B>%s</B> <P> \n", name, buffer);
         }
         HDfreespace((void *)buffer);
     }
-    
+
     len = DFANgetdesclen(fname, tag, ref);
-    if(len > 0) {
-        
+    if (len > 0) {
+
         buffer = HDgetspace(len + 1);
-        if(buffer == NULL) return;
-        
+        if (buffer == NULL)
+            return;
+
         status = DFANgetdesc(fname, tag, ref, buffer, len + 1);
-        if(status == SUCCEED) {
+        if (status == SUCCEED) {
             buffer[len] = '\0';
             name[0] = toupper(name[0]);
             fprintf(fp, "%s description : <BLOCKQUOTE> %s </BLOCKQUOTE>\n", name, buffer);
         }
         HDfreespace((void *)buffer);
     }
-    
-} /* print_desc */
 
+}                               /* print_desc */
 
 /* 
 
@@ -569,68 +589,74 @@ char *name;
 do_rigs(char *fname)
 #else
 do_rigs(fname)
-char *fname; 
+char *fname;
 #endif
 {
     int32 count, i, ref, len;
     int32 status, w, h;
-    intn  ip;
+    intn ip;
 
     count = DFR8nimages(fname);
 
-    if(count < 1) return;
+    if (count < 1)
+        return;
 
     fprintf(fp, "<H2>Images</H2>\n");
 
-    if(count == 1)
+    if (count == 1)
         fprintf(fp, "There is 1 image in this file :\n");
     else
         fprintf(fp, "There are %d images in this file :\n", count);
-    
+
     fprintf(fp, "<UL>\n");
 
-    for(i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         status = DFR8getdims(fname, &w, &h, &ip);
-        if(status == FAIL) return;
-        
-        ref = DFR8lastref();
-        if(ref == FAIL) return;
+        if (status == FAIL)
+            return;
 
-        if(POWER_USER) {
-            fprintf(fp, "<LI> Image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> [%d by %d]\n", 
-                    (int32) DFTAG_RIG, ref, w, h);
-            
-            if(w > hdfImageSize || h > hdfImageSize)
+        ref = DFR8lastref();
+        if (ref == FAIL)
+            return;
+
+        if (POWER_USER) {
+            fprintf(fp, "<LI> Image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> [%d by %d]\n", (int32) DFTAG_RIG, ref, w, h);
+
+            if (w > hdfImageSize || h > hdfImageSize)
                 fprintf(fp, "  (subsampled)");
-            
-            if(ip) fprintf(fp, " has a palette\n");
+
+            if (ip)
+                fprintf(fp, " has a palette\n");
 
             fprintf(fp, ".  ");
 
         } else {
-            fprintf(fp, "<LI> This image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> has dimensions %d by %d\n", 
+            fprintf(fp,
+                    "<LI> This image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> has dimensions %d by %d\n",
                     (int32) DFTAG_RIG, ref, w, h);
-            
-            if(w > hdfImageSize || h > hdfImageSize)
+
+            if (w > hdfImageSize || h > hdfImageSize)
                 fprintf(fp, "  (the image has been subsampled for display)");
             fprintf(fp, ".  ");
-            
-            if(ip) fprintf(fp, "There is also a palette associated with this image.\n");
+
+            if (ip)
+                fprintf(fp, "There is also a palette associated with this image.\n");
         }
 
 #ifdef HAVE_DTM
-        if (mo_dtm_out_active_p ())
-          fprintf (fp, "(To broadcast this image over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n", (int32) DFTAG_RIG, ref);
+        if (mo_dtm_out_active_p())
+            fprintf(fp,
+                    "(To broadcast this image over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n",
+                    (int32) DFTAG_RIG, ref);
 #endif
 
-        print_desc(fname, DFTAG_RIG, ref, strdup ("image"));
+        print_desc(fname, DFTAG_RIG, ref, strdup("image"));
 
     }
 
     fprintf(fp, "</UL>\n");
 
-} /* do_rigs */
-
+}                               /* do_rigs */
 
 /* 
 
@@ -641,7 +667,7 @@ char *fname;
 do_pals(char *fname)
 #else
 do_pals(fname)
-char *fname; 
+char *fname;
 #endif
 {
     int32 count, i, ref, len;
@@ -650,39 +676,45 @@ char *fname;
 
     count = DFPnpals(fname);
 
-    if(count < 1) return;
+    if (count < 1)
+        return;
 
     fprintf(fp, "<H2>Palettes</H2>\n");
 
-    if(count == 1)
+    if (count == 1)
         fprintf(fp, "There is 1 palette in this file :\n");
     else
         fprintf(fp, "There are %d palettes in this file :\n", count);
-    
+
     fprintf(fp, "<UL>\n");
 
-    for(i = 0; i < count; i++) {
+    for (i = 0; i < count; i++) {
         status = DFPgetpal(fname, pal);
-        if(status == FAIL) return;
-        
-        ref = DFPlastref();
-        if(ref < 1) return;
+        if (status == FAIL)
+            return;
 
-        fprintf(fp, "<LI> Here's what the palette looks like : <IMG SRC=\"#hdfref;tag=%d,ref=%d\">\n", (int32) DFTAG_IP8, ref);
+        ref = DFPlastref();
+        if (ref < 1)
+            return;
+
+        fprintf(fp,
+                "<LI> Here's what the palette looks like : <IMG SRC=\"#hdfref;tag=%d,ref=%d\">\n",
+                (int32) DFTAG_IP8, ref);
 
 #ifdef HAVE_DTM
-        if (mo_dtm_out_active_p ())
-          fprintf (fp, "(To broadcast this palette over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n", (int32) DFTAG_IP8, ref);
+        if (mo_dtm_out_active_p())
+            fprintf(fp,
+                    "(To broadcast this palette over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n",
+                    (int32) DFTAG_IP8, ref);
 #endif
 
-        print_desc(fname, DFTAG_IP8, ref, strdup ("palette"));
+        print_desc(fname, DFTAG_IP8, ref, strdup("palette"));
 
     }
 
     fprintf(fp, "</UL>\n");
 
-} /* do_pals */
-
+}                               /* do_pals */
 
 /* ------------------------------ dump_vdata ------------------------------ */
 #ifdef PROTOTYPE
@@ -693,70 +725,71 @@ int32 fid;
 int32 ref;
 #endif
 {
-    int32  vd;
-    char   name[VSNAMELENMAX + 1], class[VSNAMELENMAX + 1];
-    char   fields[(FIELDNAMELENMAX + 1) * VSFIELDMAX];
-    char   padded_fields[(FIELDNAMELENMAX + 2) * VSFIELDMAX];
-    int32  intr, sz, cnt;
-    int32  nfields, single;
-    char * p, * q;
-    
+    int32 vd;
+    char name[VSNAMELENMAX + 1], class[VSNAMELENMAX + 1];
+    char fields[(FIELDNAMELENMAX + 1) * VSFIELDMAX];
+    char padded_fields[(FIELDNAMELENMAX + 2) * VSFIELDMAX];
+    int32 intr, sz, cnt;
+    int32 nfields, single;
+    char *p, *q;
+
     vd = VSattach(fid, ref, "r");
-    if(vd == FAIL) return;
-    
+    if (vd == FAIL)
+        return;
+
     VSinquire(vd, &cnt, &intr, fields, &sz, name);
     VSgetclass(vd, class);
-    
+
     nfields = VFnfields(vd);
     single = FALSE;
-    if((cnt == 1) && (nfields == 1))
+    if ((cnt == 1) && (nfields == 1))
         single = TRUE;
 
-    if(name[0]  == '\0') sprintf(name, "[no name value]");
-    
+    if (name[0] == '\0')
+        sprintf(name, "[no name value]");
+
     fprintf(fp, "<LI> Vdata <B>%s</B>", name);
-    if(class[0])
+    if (class[0])
         fprintf(fp, " of class <B>%s</B>", class);
-    if(!single)
-        fprintf(fp," contains %d record%s", cnt, (cnt == 1 ? "" : "s"));
-    fprintf(fp,".  \n");
-    
-    for(p = fields, q = padded_fields; *p; p++, q++) {
+    if (!single)
+        fprintf(fp, " contains %d record%s", cnt, (cnt == 1 ? "" : "s"));
+    fprintf(fp, ".  \n");
+
+    for (p = fields, q = padded_fields; *p; p++, q++) {
         *q = *p;
-        if(*q == ',') *(++q) = ' ';
+        if (*q == ',')
+            *(++q) = ' ';
     }
     *q = '\0';
-    
-    fprintf(fp, "This Vdata contains the field%s <B>%s</B>\n",
-            (nfields == 1 ? "" : "s"), padded_fields);
-    
+
+    fprintf(fp, "This Vdata contains the field%s <B>%s</B>\n", (nfields == 1 ? "" : "s"), padded_fields);
+
     /* if there is a single field with one value print out its values */
-    if(single) {
-        
+    if (single) {
+
         uint8 *tbuff;
-        
+
         /* Attempted bugfix -- added 1 -- marca, 10:52pm sep 23. */
-        tbuff = (uint8 *)HDgetspace(VFfieldisize(vd, 0) + 1);
-        if(tbuff == NULL)
+        tbuff = (uint8 *) HDgetspace(VFfieldisize(vd, 0) + 1);
+        if (tbuff == NULL)
             return;
-        
+
         VSsetfields(vd, fields);
         VSread(vd, tbuff, 1, 0);
         tbuff = buffer_to_string(tbuff, VFfieldtype(vd, 0), VFfieldorder(vd, 0));
 
-        if(tbuff) {
+        if (tbuff) {
             fprintf(fp, ": %s", tbuff);
             HDfreespace((void *)tbuff);
         }
-            
+
     }
 
     fprintf(fp, ".  \n");
 
     VSdetach(vd);
 
-} /* dump_vdata */
-
+}                               /* dump_vdata */
 
 /* ------------------------------- dump_vg -------------------------------- */
 /*
@@ -780,32 +813,34 @@ int32 X;
     char name[VSNAMELENMAX + 1], class[VSNAMELENMAX + 1];
 
     vg = Vattach(fid, ref, "r");
-    if(vg == FAIL) return;
-    
+    if (vg == FAIL)
+        return;
+
     Vgetname(vg, name);
     Vgetclass(vg, class);
     count = Vntagrefs(vg);
-    
-    if(name[0]  == '\0') sprintf(name, "[no name value]");
-    if(class[0] == '\0') sprintf(class, "[no class value]");
-    
-    if(count) 
-        fprintf(fp, "<LI> Vgroup <A HREF=\"#hdfref;tag=%d,ref=%d\">%s</A> of class <B>%s</B> has %d element%s.\n",
+
+    if (name[0] == '\0')
+        sprintf(name, "[no name value]");
+    if (class[0] == '\0')
+        sprintf(class, "[no class value]");
+
+    if (count)
+        fprintf(fp,
+                "<LI> Vgroup <A HREF=\"#hdfref;tag=%d,ref=%d\">%s</A> of class <B>%s</B> has %d element%s.\n",
                 DFTAG_VG, ref, name, class, count, (count == 1 ? "" : "s"));
-                
+
     else
-        fprintf(fp, "<LI> Vgroup %s of class <B>%s</B> is empty.\n",
-                name, class);
-    
+        fprintf(fp, "<LI> Vgroup %s of class <B>%s</B> is empty.\n", name, class);
+
 #ifdef CHOUCK
-    if(X)
+    if (X)
         hdfXvgroup(name, class, count);
-#endif /* CHOUCK */
+#endif                          /* CHOUCK */
 
     Vdetach(vg);
 
-} /* dump_vg */
-
+}                               /* dump_vg */
 
 /* 
   print out the info for Vgroups in the file
@@ -826,9 +861,9 @@ int32 X;
 do_vgs(int32 fid, char *fname, int32 where)
 #else
 do_vgs(fid, fname, where)
-int32  fid;
-char * fname;
-int32  where;
+int32 fid;
+char *fname;
+int32 where;
 #endif
 {
 
@@ -837,38 +872,42 @@ int32  where;
     int32 tag, ref, myref, intr, sz;
     int any;
     char name[VSNAMELENMAX], class[VSNAMELENMAX];
-    
-    if(where == -1) {
-        
-        if(Hnumber(fid, DFTAG_VG) < 1) return;
-        
+
+    if (where == -1) {
+
+        if (Hnumber(fid, DFTAG_VG) < 1)
+            return;
+
         any = FALSE;
 
         /* looking for top level VGroups */
         curr_ref = -1;
-        while((curr_ref = Vgetid(fid, curr_ref)) != FAIL) {
+        while ((curr_ref = Vgetid(fid, curr_ref)) != FAIL) {
             int top_level = TRUE;
 
             /* look through all other VGroups */
             myref = -1;
-            while(top_level && ((myref = Vgetid(fid, myref)) != FAIL)) {
-                if(myref == curr_ref) continue;
+            while (top_level && ((myref = Vgetid(fid, myref)) != FAIL)) {
+                if (myref == curr_ref)
+                    continue;
                 vg = Vattach(fid, myref, "r");
-                if(vg == FAIL) continue;
+                if (vg == FAIL)
+                    continue;
 
                 count = Vntagrefs(vg);
-                for(i = 0; i < count; i++) {
+                for (i = 0; i < count; i++) {
                     Vgettagref(vg, i, &tag, &ref);
-                    if(tag == (int32) DFTAG_VG && ref == curr_ref) top_level = FALSE;
+                    if (tag == (int32) DFTAG_VG && ref == curr_ref)
+                        top_level = FALSE;
 
                 }
 
                 Vdetach(vg);
             }
 
-            if(top_level) {
+            if (top_level) {
 
-                if(any == FALSE) {
+                if (any == FALSE) {
                     fprintf(fp, "<H2>Vgroups</H2>\n");
                     fprintf(fp, "The following Vgroups are visible at this level of the file.\n");
                     fprintf(fp, "<UL>\n");
@@ -881,93 +920,102 @@ int32  where;
 
         }
 
-        if(any) fprintf(fp, "</UL>\n");
+        if (any)
+            fprintf(fp, "</UL>\n");
 
     } else {
         /* looking for stuff inside a given VGroup */
-        
+
         vg = Vattach(fid, where, "r");
-        if(vg == FAIL) return;
+        if (vg == FAIL)
+            return;
 
         Vgetname(vg, name);
         Vgetclass(vg, class);
         count = Vntagrefs(vg);
-        
+
         /* set up title and stuff */
         fprintf(fp, "<TITLE>Vgroup: %s</TITLE>\n", name);
         fprintf(fp, "<H1>Vgroup %s</H1>\n", name);
-        
+
         fprintf(fp, "This Vgroup is named %s and is of class <B>%s</B>.\n", name, class);
 
-        if(count == 0) {
+        if (count == 0) {
             Vdetach(vg);
             return;
         }
 
-        if(count == 1)
-          fprintf(fp, "There is %d element in Vgroup %s : \n", count, name);
+        if (count == 1)
+            fprintf(fp, "There is %d element in Vgroup %s : \n", count, name);
         else
-          fprintf(fp, "There are %d elements in Vgroup %s : \n", count, name);
-        
+            fprintf(fp, "There are %d elements in Vgroup %s : \n", count, name);
+
         fprintf(fp, "<UL>\n");
 
-        for(i = 0; i < count; i++) {
+        for (i = 0; i < count; i++) {
             Vgettagref(vg, i, &tag, &ref);
-            switch((uint16) tag) {
+            switch ((uint16) tag) {
 
-            case DFTAG_VG :
+            case DFTAG_VG:
                 dump_vg(fid, ref, FALSE);
                 break;
-            case DFTAG_VH :
+            case DFTAG_VH:
                 dump_vdata(fid, ref);
                 break;
-            case DFTAG_RIG :
-            case DFTAG_RI8 :
+            case DFTAG_RIG:
+            case DFTAG_RI8:
                 {
                     int32 count, i, len;
                     int32 status, w, h;
-                    intn  ip;
-                    
+                    intn ip;
+
                     DFR8readref(fname, (uint16) ref);
 
                     status = DFR8getdims(fname, &w, &h, &ip);
-                    if(status == FAIL) return;
-        
-                    if(POWER_USER) {
-                        fprintf(fp, "<LI> Image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> [%d by %d]\n", 
+                    if (status == FAIL)
+                        return;
+
+                    if (POWER_USER) {
+                        fprintf(fp,
+                                "<LI> Image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> [%d by %d]\n",
                                 (int32) DFTAG_RIG, ref, w, h);
-                        
-                        if(w > hdfImageSize || h > hdfImageSize)
+
+                        if (w > hdfImageSize || h > hdfImageSize)
                             fprintf(fp, "  (subsampled)");
-                        
-                        if(ip) fprintf(fp, " has a palette\n");
-                        
+
+                        if (ip)
+                            fprintf(fp, " has a palette\n");
+
                         fprintf(fp, ".  ");
-                        
+
                     } else {
-                        fprintf(fp, "<LI> Nested Raster Image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> has dimensions %d by %d\n", 
+                        fprintf(fp,
+                                "<LI> Nested Raster Image : <IMG SRC=\"#hdfref;tag=%d,ref=%d\"> has dimensions %d by %d\n",
                                 (int32) DFTAG_RIG, ref, w, h);
-                        
-                        if(w > hdfImageSize || h > hdfImageSize)
+
+                        if (w > hdfImageSize || h > hdfImageSize)
                             fprintf(fp, "  (the image has been subsampled for display)");
                         fprintf(fp, ".  ");
-                        
-                        if(ip) fprintf(fp, "There is also a palette associated with this image.\n");
+
+                        if (ip)
+                            fprintf(fp, "There is also a palette associated with this image.\n");
                     }
-                    
+
 #ifdef HAVE_DTM
-                    if (mo_dtm_out_active_p ())
-                        fprintf (fp, "(To broadcast this image over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n", (int32) DFTAG_RIG, ref);
+                    if (mo_dtm_out_active_p())
+                        fprintf(fp,
+                                "(To broadcast this image over DTM, click <A HREF=\"#hdfdtm;tag=%d,ref=%d\">here</A>.)\n",
+                                (int32) DFTAG_RIG, ref);
 #endif
-                    
-                    print_desc(fname, DFTAG_RIG, ref, strdup ("image"));
-                    
+
+                    print_desc(fname, DFTAG_RIG, ref, strdup("image"));
+
                 }
-            break;
-            
+                break;
+
             default:
-                if(HDgettagsname((uint16)tag))
-                    fprintf(fp, "<LI> HDF object : %s (Ref = %d)\n", HDgettagsname((uint16)tag), ref);
+                if (HDgettagsname((uint16) tag))
+                    fprintf(fp, "<LI> HDF object : %s (Ref = %d)\n", HDgettagsname((uint16) tag), ref);
                 else
                     fprintf(fp, "<LI> HDF object : Tag = %d; Ref = %d\n", tag, ref);
                 break;
@@ -979,8 +1027,7 @@ int32  where;
 
     }
 
-} /* do_vgs */
-
+}                               /* do_vgs */
 
 /*
   
@@ -1000,26 +1047,28 @@ int32 fid;
     int32 i, *ids, status;
 
     count = VSlone(fid, NULL, 0);
-    if(count < 1) return;
-    
+    if (count < 1)
+        return;
+
     ids = (int32 *) HDgetspace(sizeof(int32) * count);
-    if(ids == NULL) return;
+    if (ids == NULL)
+        return;
 
     status = VSlone(fid, ids, count);
-    if(status != count) return;
+    if (status != count)
+        return;
 
     fprintf(fp, "<H2>Vdatas</H2>\n");
     fprintf(fp, "There are %d Vdatas visible at this level of the file.\n", count);
     fprintf(fp, "<UL>\n");
-    
-    for(i = 0; i < count; i++) 
+
+    for (i = 0; i < count; i++)
         dump_vdata(fid, ids[i]);
-    
+
     fprintf(fp, "<UL>\n");
     HDfreespace((void *)ids);
 
-} /* do_lone_vds */
-
+}                               /* do_lone_vds */
 
 char *
 #ifdef PROTOTYPE
@@ -1038,15 +1087,16 @@ char *realname;
     ncopts = 0;
 
     fp = fopen(tmp, "w");
-    if(!fp) return(NULL);
+    if (!fp)
+        return (NULL);
 
-    fprintf (fp, "<TITLE>Scientific Data Brows-o-rama</TITLE>\n");
-    fprintf (fp, "<H1>Scientific Data Brows-o-rama</H1>\n");
+    fprintf(fp, "<TITLE>Scientific Data Brows-o-rama</TITLE>\n");
+    fprintf(fp, "<H1>Scientific Data Brows-o-rama</H1>\n");
 
-    if(SHOW_URL)
-        fprintf (fp, "This file was accessed as URL <code>%s</code> <p>\n", realname);
+    if (SHOW_URL)
+        fprintf(fp, "This file was accessed as URL <code>%s</code> <p>\n", realname);
 
-    if(my_url)
+    if (my_url)
         free(my_url);
 
     my_url = strdup(realname);
@@ -1062,10 +1112,10 @@ char *realname;
 
     fid = Hopen(fname, DFACC_RDONLY, 0);
 
-    if(fid != FAIL) {
+    if (fid != FAIL) {
 
         Vstart(fid);
-        
+
         /* Do file annotations */
         do_fanns(fid);
 
@@ -1074,24 +1124,24 @@ char *realname;
     /* Do SDSs */
     do_sds(fname);
 
-    if(fid != FAIL) {
+    if (fid != FAIL) {
 
         /* Do RIGs */
         do_rigs(fname);
-        
+
         /* Do Pals */
         do_pals(fname);
-        
+
         /* Do Vgroups */
         do_vgs(fid, fname, -1);
-        
+
         /* Do lone Vdatas */
         do_lone_vds(fid);
-        
+
         /* close the file */
         Vend(fid);
         Hclose(fid);
-        
+
     }
 
 #ifdef CHOUCK
@@ -1112,20 +1162,19 @@ char *realname;
         fseek(fp, 0L, 0);
         data = HDgetspace((len + 1) * sizeof(unsigned char));
         if (data == NULL)
-            return(NULL);
+            return (NULL);
 
         len = fread(data, sizeof(char), len, fp);
         fclose(fp);
         remove(tmp);
         data[len] = '\0';
-        return(data);
+        return (data);
 
     }
 
     return NULL;
-    
-} /* hdfGrokFile */
 
+}                               /* hdfGrokFile */
 
 char *
 #ifdef PROTOTYPE
@@ -1140,26 +1189,28 @@ char *realname;
     int32 t, r;
     int32 x, y;
 
-    char *tmp = (char *)mo_tmpnam((char *) 0);
+    char *tmp = (char *)mo_tmpnam((char *)0);
     char *data;
     int32 len, fid;
 
     fp = fopen(tmp, "w");
-    if(!fp) return(NULL);
+    if (!fp)
+        return (NULL);
 
-    fprintf (fp, "<TITLE>HDF Brows-o-rama Internal</TITLE>\n");
-    fprintf (fp, "<H1>HDF Brows-o-rama Internal</H1>\n");
+    fprintf(fp, "<TITLE>HDF Brows-o-rama Internal</TITLE>\n");
+    fprintf(fp, "<H1>HDF Brows-o-rama Internal</H1>\n");
 
-    if(SHOW_URL)
-        fprintf (fp, "This file was accessed as URL <code>%s</code> <p>\n", realname);
+    if (SHOW_URL)
+        fprintf(fp, "This file was accessed as URL <code>%s</code> <p>\n", realname);
 
-    if(sscanf(ref, "tag=%d,ref=%d", &t, &r) == 2) {
-        
-        switch((uint16) t) {
-        case DFTAG_VG  : 
+    if (sscanf(ref, "tag=%d,ref=%d", &t, &r) == 2) {
+
+        switch ((uint16) t) {
+        case DFTAG_VG:
             fid = Hopen(fname, DFACC_RDONLY, 0);
-            if(fid == FAIL) return(NULL);
-            
+            if (fid == FAIL)
+                return (NULL);
+
             Vstart(fid);
 
             do_vgs(fid, fname, r);
@@ -1167,20 +1218,21 @@ char *realname;
             Vend(fid);
             Hclose(fid);
             break;
-        case DFTAG_NDG :
+        case DFTAG_NDG:
             do_attributes(fname, r);
-           break;
+            break;
         default:
-            fprintf (fp, "<H2>Sorry, Bad Tag</H2> We're sorry, but objects of type %s are not currently recognized.<P>\n",
-                     HDgettagsname((uint16)t));
+            fprintf(fp,
+                    "<H2>Sorry, Bad Tag</H2> We're sorry, but objects of type %s are not currently recognized.<P>\n",
+                    HDgettagsname((uint16) t));
             break;
         }
 
     } else {
-        if(sscanf(ref, "fileImageHit?%d,%d", &x, &y) == 2) {
+        if (sscanf(ref, "fileImageHit?%d,%d", &x, &y) == 2) {
             char *buf;
             fprintf(fp, "<H2>File Image Hit</H2>\n");
-            fprintf(fp, "We're sorry, but we really have no clue what is at location %d %d\n", x, y); 
+            fprintf(fp, "We're sorry, but we really have no clue what is at location %d %d\n", x, y);
 
             buf = malloc(100);
             sprintf(buf, "#DataSet%d", 2);
@@ -1189,11 +1241,12 @@ char *realname;
 
         } else {
             fprintf(fp, "<H2>Sorry, Bad Reference</H2>\n");
-            fprintf(fp, "We're sorry, but reference <I>%s</I> is bad and we can't figure out what to do about it.<P>\n", 
+            fprintf(fp,
+                    "We're sorry, but reference <I>%s</I> is bad and we can't figure out what to do about it.<P>\n",
                     ref);
         }
-    }        
-    
+    }
+
     fclose(fp);
 
     fp = fopen(tmp, "r");
@@ -1208,20 +1261,19 @@ char *realname;
         fseek(fp, 0L, 0);
         data = HDgetspace((len + 1) * sizeof(unsigned char));
         if (data == NULL)
-            return(NULL);
+            return (NULL);
 
         len = fread(data, sizeof(char), len, fp);
         fclose(fp);
         remove(tmp);
         data[len] = '\0';
-        return(data);
+        return (data);
 
     }
-    
-    return NULL;
-    
-} /* hdfGrokReference */
 
+    return NULL;
+
+}                               /* hdfGrokReference */
 
 /*
 
@@ -1251,49 +1303,56 @@ intn *bg;
     ImageInfo *Image;
     int32 tag, ref, i, j;
     int32 status, w, h;
-    intn  isp;
+    intn isp;
     char pal[768];
-    
+
     Image = NULL;
 
 #ifdef CHOUCK
-    if(!strcmp(reference, "fileImage")) {
+    if (!strcmp(reference, "fileImage")) {
         use_this_url_instead = NULL;
         return ((ImageInfo *) hdfFetchImage(bg));
     }
 #endif
 
-    if(sscanf(reference, "tag=%d,ref=%d", &tag, &ref) == 2) {
+    if (sscanf(reference, "tag=%d,ref=%d", &tag, &ref) == 2) {
 
 #ifndef DISABLE_TRACE
-	if (srcTrace) {
-		fprintf (stderr, "[hdfGrokImage] Got tag %d, ref %d\n", tag, ref);
-	}
+        if (srcTrace) {
+            fprintf(stderr, "[hdfGrokImage] Got tag %d, ref %d\n", tag, ref);
+        }
 #endif
 
-        if((uint16)tag == DFTAG_RIG || (uint16)tag == DFTAG_RI8) {
-            
+        if ((uint16) tag == DFTAG_RIG || (uint16) tag == DFTAG_RI8) {
+
             status = DFR8readref(filename, (uint16) ref);
-            if(status == FAIL) return NULL;
+            if (status == FAIL)
+                return NULL;
 
             status = DFR8getdims(filename, &w, &h, &isp);
-            if(status == FAIL) return NULL;
+            if (status == FAIL)
+                return NULL;
 
             /* allocate the basic structure */
             Image = (ImageInfo *) HDgetspace(sizeof(ImageInfo));
-            if(Image == NULL) return NULL;
+            if (Image == NULL)
+                return NULL;
 
             /* allocate space for the data */
-            Image->image_data = (unsigned char *) HDgetspace(w * h * sizeof(unsigned char));
-            if(Image->image_data == NULL) return NULL;
+            Image->image_data = (unsigned char *)HDgetspace(w * h * sizeof(unsigned char));
+            if (Image->image_data == NULL)
+                return NULL;
 
             /* allocate the palette space */
-            Image->reds = (int *) HDgetspace(256 * sizeof(int));
-            if(Image->reds == NULL) return NULL;
-            Image->greens = (int *) HDgetspace(256 * sizeof(int));
-            if(Image->greens == NULL) return NULL;
-            Image->blues = (int *) HDgetspace(256 * sizeof(int));
-            if(Image->blues == NULL) return NULL;
+            Image->reds = (int *)HDgetspace(256 * sizeof(int));
+            if (Image->reds == NULL)
+                return NULL;
+            Image->greens = (int *)HDgetspace(256 * sizeof(int));
+            if (Image->greens == NULL)
+                return NULL;
+            Image->blues = (int *)HDgetspace(256 * sizeof(int));
+            if (Image->blues == NULL)
+                return NULL;
 
             /* fill in the static fields */
             Image->ismap = FALSE;
@@ -1304,57 +1363,59 @@ intn *bg;
 
             /* read the image */
             status = DFR8getimage(filename, Image->image_data, w, h, pal);
-            if(status == FAIL) return NULL;
+            if (status == FAIL)
+                return NULL;
 
             /* set the palette */
-            if(isp) {
+            if (isp) {
                 /* move the palette over into the fields */
-                for(i = 0; i < 256; i++) {
-                    Image->reds  [i] = (int)pal[i * 3]     << 8;
+                for (i = 0; i < 256; i++) {
+                    Image->reds[i] = (int)pal[i * 3] << 8;
                     Image->greens[i] = (int)pal[i * 3 + 1] << 8;
-                    Image->blues [i] = (int)pal[i * 3 + 2] << 8;
+                    Image->blues[i] = (int)pal[i * 3 + 2] << 8;
                 }
             } else {
                 /* create a fake palette */
-                for(i = 0; i < 256; i++) {
-                    Image->reds  [i] = i << 8;
+                for (i = 0; i < 256; i++) {
+                    Image->reds[i] = i << 8;
                     Image->greens[i] = i << 8;
-                    Image->blues [i] = i << 8;
+                    Image->blues[i] = i << 8;
                 }
             }
 
-            if(subsample) {
-                int max   = (h > w ? h : w);
+            if (subsample) {
+                int max = (h > w ? h : w);
                 int skip;
 
 #ifndef DISABLE_TRACE
-		if (srcTrace) {
-			fprintf (stderr, "[***] max '%d'\n", max);
-			fprintf (stderr, "[***] hdfImageSize '%d'\n", hdfImageSize);
-		}
+                if (srcTrace) {
+                    fprintf(stderr, "[***] max '%d'\n", max);
+                    fprintf(stderr, "[***] hdfImageSize '%d'\n", hdfImageSize);
+                }
 #endif
 
                 skip = max / hdfImageSize;
 
-                if(skip) {
-                    
+                if (skip) {
+
                     /* allocate space for the data */
                     int i, j;
                     int cnt = 0;
-                    unsigned char * newSpace = 
-                        (unsigned char *) HDgetspace(max * max * sizeof(unsigned char));
-                    if(newSpace == NULL) return NULL;
+                    unsigned char *newSpace = (unsigned char *)HDgetspace(max * max * sizeof(unsigned char));
+                    if (newSpace == NULL)
+                        return NULL;
 
                     skip++;
-                    for(j = 0; j < h; j += skip)
-                        for(i = 0; i < w; i += skip) 
+                    for (j = 0; j < h; j += skip)
+                        for (i = 0; i < w; i += skip)
                             newSpace[cnt++] = Image->image_data[i + j * w];
-                            
+
                     HDfreespace((void *)(Image->image_data));
                     Image->image_data = newSpace;
                     Image->height = h / skip;
-                    Image->width  = w / skip;
-                    if(w % skip) Image->width++;
+                    Image->width = w / skip;
+                    if (w % skip)
+                        Image->width++;
 
                 }
 
@@ -1364,27 +1425,33 @@ intn *bg;
 
         }
 
-        if((uint16)tag == DFTAG_IP8) {
+        if ((uint16) tag == DFTAG_IP8) {
 
             status = DFPreadref(filename, (uint16) ref);
-            if(status == FAIL) return NULL;
+            if (status == FAIL)
+                return NULL;
 
-             /* allocate the basic structure */
+            /* allocate the basic structure */
             Image = (ImageInfo *) HDgetspace(sizeof(ImageInfo));
-            if(Image == NULL) return NULL;
+            if (Image == NULL)
+                return NULL;
 
             /* allocate space for the data */
             h = 30;
-            Image->image_data = (unsigned char *) HDgetspace(768 * h * sizeof(unsigned char));
-            if(Image->image_data == NULL) return NULL;
+            Image->image_data = (unsigned char *)HDgetspace(768 * h * sizeof(unsigned char));
+            if (Image->image_data == NULL)
+                return NULL;
 
             /* allocate the palette space */
-            Image->reds = (int *) HDgetspace(256 * sizeof(int));
-            if(Image->reds == NULL) return NULL;
-            Image->greens = (int *) HDgetspace(256 * sizeof(int));
-            if(Image->greens == NULL) return NULL;
-            Image->blues = (int *) HDgetspace(256 * sizeof(int));
-            if(Image->blues == NULL) return NULL;
+            Image->reds = (int *)HDgetspace(256 * sizeof(int));
+            if (Image->reds == NULL)
+                return NULL;
+            Image->greens = (int *)HDgetspace(256 * sizeof(int));
+            if (Image->greens == NULL)
+                return NULL;
+            Image->blues = (int *)HDgetspace(256 * sizeof(int));
+            if (Image->blues == NULL)
+                return NULL;
 
             /* fill in the static fields */
             Image->ismap = FALSE;
@@ -1395,26 +1462,25 @@ intn *bg;
 
             /* read the image */
             status = DFPgetpal(filename, pal);
-            if(status == FAIL) return NULL;
+            if (status == FAIL)
+                return NULL;
 
             /* move the palette over into the fields */
-            for(i = 0; i < 256; i++) {
-                Image->reds  [i] = (int)pal[i * 3]     << 8;
+            for (i = 0; i < 256; i++) {
+                Image->reds[i] = (int)pal[i * 3] << 8;
                 Image->greens[i] = (int)pal[i * 3 + 1] << 8;
-                Image->blues [i] = (int)pal[i * 3 + 2] << 8;
-                for(j = 0; j < h; j++) 
+                Image->blues[i] = (int)pal[i * 3 + 2] << 8;
+                for (j = 0; j < h; j++)
                     Image->image_data[i + j * 256] = i;
             }
-                
+
         }
 
         return Image;
 
     }
 
-    
-} /* hdfGetImage */
-
+}                               /* hdfGetImage */
 
 /*
 
@@ -1432,15 +1498,14 @@ hdfGrokImage(char *filename, char *reference, int *bg)
 hdfGrokImage(filename, reference, bg)
 char *filename;
 char *reference;
-int  *bg;
+int *bg;
 #endif
 {
 
     return (hdfGetImage(filename, reference, TRUE, bg));
 
-} /* hdfGrokImage */
+}                               /* hdfGrokImage */
 
-  
 #ifdef HAVE_DTM
 /* Send the referenced image over DTM.  This is bad architecture.
    But what else is new? */
@@ -1455,72 +1520,75 @@ char *reference;
 {
     ImageInfo *img;
     int32 tag, ref;
-    intn  foo;
+    intn foo;
 
     /* Check for presence of DTM output port. */
-    if (!mo_dtm_out_active_p ())
+    if (!mo_dtm_out_active_p())
         return;
-    
-    if(sscanf(reference, "tag=%d,ref=%d", &tag, &ref) == 2) {
 
-        if((uint16)tag == DFTAG_RIG) {
+    if (sscanf(reference, "tag=%d,ref=%d", &tag, &ref) == 2) {
+
+        if ((uint16) tag == DFTAG_RIG) {
             /* Using a cached image is not an option since we quantized. */
             img = hdfGetImage(filename, reference, FALSE, &foo);
             if (img) {
-                mo_dtm_send_image ((void *)img);
+                mo_dtm_send_image((void *)img);
                 /* We specify copy_internally in args to NetSendRaster8Group,
                    so we can free everything here now. */
-                free (img->image_data);
-                free (img->reds);
-                free (img->greens);
-                free (img->blues);
-                free (img);
+                free(img->image_data);
+                free(img->reds);
+                free(img->greens);
+                free(img->blues);
+                free(img);
             }
             return;
         }
-        
-        if((uint16)tag == DFTAG_IP8) {
+
+        if ((uint16) tag == DFTAG_IP8) {
 
             img = hdfGrokImage(filename, reference, NULL);
-            if(img) {
-                mo_dtm_send_palette ((void *)img);
+            if (img) {
+                mo_dtm_send_palette((void *)img);
                 /* We specify copy_internally in args to NetSendRaster8Group,
                    so we can free everything here now. */
-                free (img->image_data);
-                free (img->reds);
-                free (img->greens);
-                free (img->blues);
-                free (img);
+                free(img->image_data);
+                free(img->reds);
+                free(img->greens);
+                free(img->blues);
+                free(img);
 
             }
 
         }
 
-        if((uint16)tag == DFTAG_NDG) {
+        if ((uint16) tag == DFTAG_NDG) {
             int32 start[10], end[10];
             int32 fid, sds, nt, nattr, size, i, tmp;
             char name[512];
             Data *d;
 
             fid = SDstart(filename, DFACC_RDONLY);
-            if(fid == FAIL) return;
+            if (fid == FAIL)
+                return;
 
             sds = SDselect(fid, (int32) ref);
-            if(sds == FAIL) return;
-            
+            if (sds == FAIL)
+                return;
+
             /* davet what the hell is this about ???? */
-            if (!(d = DataNew())) 
+            if (!(d = DataNew()))
                 return;
             d->entity = ENT_Internal;
             d->dot = DOT_Array;
-            
+
             /* get all basic meta-data */
             sprintf(name, "(no name)");
             SDgetinfo(sds, name, &(d->rank), d->dim, &nt, &nattr);
 
-            if((d->rank > 3) || (d->rank < 2)) return;
-            
-            switch(nt) {
+            if ((d->rank > 3) || (d->rank < 2))
+                return;
+
+            switch (nt) {
             case DFNT_INT8:
             case DFNT_UINT8:
                 d->dost = DOST_Char;
@@ -1540,39 +1608,39 @@ char *reference;
                 d->dost = DOST_Double;
                 break;
             }
-       
+
             /* set up the region we want to read */
-            for(i = 0; i < d->rank; i++) {
+            for (i = 0; i < d->rank; i++) {
                 start[i] = 0;
-                end[i]  = d->dim[i];
+                end[i] = d->dim[i];
             }
-            
+
             /* figger out how much space */
-            for(i = 0, size = 1; i < d->rank; i++)
+            for (i = 0, size = 1; i < d->rank; i++)
                 size *= d->dim[i];
-            
+
             /* allocate storage to store the raw numbers */
             if (!(d->data = (VOIDP) HDgetspace(size * DFKNTsize(nt))))
                 return;
 
             /* read that crazy data */
             SDreaddata(sds, start, NULL, end, d->data);
-            
+
             /* set the name */
-            if (d->label = (char *) MALLOC(strlen(name)+1)){
-                strcpy(d->label,name);
+            if (d->label = (char *)MALLOC(strlen(name) + 1)) {
+                strcpy(d->label, name);
             }
 
             SDendaccess(sds);
             SDend(fid);
-            
+
             /* swap numbers because Collage was written by a bunch of idiots */
-            for(i = 0; i < ( d->rank / 2 ); i++) {
+            for (i = 0; i < (d->rank / 2); i++) {
                 tmp = d->dim[i];
                 d->dim[i] = d->dim[d->rank - i - 1];
                 d->dim[d->rank - i - 1] = tmp;
             }
-            
+
             mo_dtm_send_dataset(d);
 
             /* free it */
@@ -1589,7 +1657,7 @@ char *reference;
 }
 #endif
 
-#endif /* HAVE_HDF */
+#endif                          /* HAVE_HDF */
 
 #ifdef CHOUCK
 
@@ -1606,13 +1674,12 @@ Widget view;
 
 int32 sds, images, vgroups, vdatas;
 
-void
-hdfStartImage()
+void hdfStartImage()
 {
     int ret;
     Cardinal argcnt;
     Arg arg[5];
-    XmFontList font_list = (XmFontList)NULL;
+    XmFontList font_list = (XmFontList) NULL;
     XmFontContext font_context;
     XmStringCharSet charset;
 
@@ -1630,15 +1697,14 @@ hdfStartImage()
      * Create the Graphics Context
      */
     scrGC = XCreateGC(dsp, XtWindow(view), 0, NULL);
-    
+
     /*
      * Create a ImSizexImSize pixmap to draw in, and clear it to the background
      */
-    scrPix = XCreatePixmap(dsp, XtWindow(view), ImSize, ImSize,
-                           DefaultDepth(dsp, DefaultScreen(dsp)));
+    scrPix = XCreatePixmap(dsp, XtWindow(view), ImSize, ImSize, DefaultDepth(dsp, DefaultScreen(dsp)));
     XSetForeground(dsp, scrGC, WhitePixel(dsp, DefaultScreen(dsp)));
     XFillRectangle(dsp, scrPix, scrGC, 0, 0, ImSize, ImSize);
-    
+
     /*
      * Prepare to draw our stuff in Black on White
      */
@@ -1652,14 +1718,15 @@ hdfStartImage()
      *  Get a FontStruct so everything will look pretty
      */
     argcnt = 0;
-    XtSetArg(arg[argcnt], XmNfontList, &font_list); argcnt++;
+    XtSetArg(arg[argcnt], XmNfontList, &font_list);
+    argcnt++;
     XtGetValues(view, arg, argcnt);
-    
-    if (font_list == (XmFontList)NULL) 
+
+    if (font_list == (XmFontList) NULL)
         return;
-    
+
     ret = XmFontListInitFontContext(&font_context, font_list);
-    if(ret == False)
+    if (ret == False)
         return;
 
     ret = XmFontListGetNextFont(font_context, &charset, &myFont);
@@ -1676,15 +1743,13 @@ hdfStartImage()
 
 #endif
 
-    
-} /* hdfStartImage */
-
+}                               /* hdfStartImage */
 
     /*
      * Place drawing calls here.
      * XDrawPoint, XDrawLine, XDrawArc, etc.
      */
- 
+
 #define sdsDepth      5
 #define sdsWidth     35
 #define sdsSep       20
@@ -1696,11 +1761,10 @@ hdfStartImage()
 /*
  * Draw an SDS into our image
  */
-void
-hdfXsds(char *name, int32 rank)
+void hdfXsds(char *name, int32 rank)
 {
-    char   rankString[10];
-    char   nameString[512];
+    char rankString[10];
+    char nameString[512];
     XPoint Points[10];
     int x, y;
     int strX, strY;
@@ -1708,7 +1772,7 @@ hdfXsds(char *name, int32 rank)
     int sz;
     XCharStruct overall;
 
-    y = sdsY;   /* all SDSs on same line */
+    y = sdsY;                   /* all SDSs on same line */
     x = sdsSep + (sdsWidth + sdsSep) * sds;
 
     /* 
@@ -1722,27 +1786,30 @@ hdfXsds(char *name, int32 rank)
 
     /* see how big we need to make it */
     sz = sdsWidth;
-    if(height > sz) sz = height;
-    if(width  > sz) sz = width;
+    if (height > sz)
+        sz = height;
+    if (width > sz)
+        sz = width;
 
-    if(x + sz + sdsDepth > ImSize) return;
+    if (x + sz + sdsDepth > ImSize)
+        return;
 
     /* draw the cube */
-    Points[0].x = (short) x;
-    Points[0].y = (short) y;
-    Points[1].x = (short) x + sdsDepth;
-    Points[1].y = (short) y - sdsDepth;
-    Points[2].x = (short) x + sdsDepth + sz;
-    Points[2].y = (short) y - sdsDepth;
-    Points[3].x = (short) x + sz;
-    Points[3].y = (short) y;
-    Points[4].x = (short) x + sdsDepth + sz;
-    Points[4].y = (short) y - sdsDepth;
-    Points[5].x = (short) x + sdsDepth + sz;
-    Points[5].y = (short) y - sdsDepth + sz ;
-    Points[6].x = (short) x + sz;
-    Points[6].y = (short) y + sz;
-    
+    Points[0].x = (short)x;
+    Points[0].y = (short)y;
+    Points[1].x = (short)x + sdsDepth;
+    Points[1].y = (short)y - sdsDepth;
+    Points[2].x = (short)x + sdsDepth + sz;
+    Points[2].y = (short)y - sdsDepth;
+    Points[3].x = (short)x + sz;
+    Points[3].y = (short)y;
+    Points[4].x = (short)x + sdsDepth + sz;
+    Points[4].y = (short)y - sdsDepth;
+    Points[5].x = (short)x + sdsDepth + sz;
+    Points[5].y = (short)y - sdsDepth + sz;
+    Points[6].x = (short)x + sz;
+    Points[6].y = (short)y + sz;
+
     XDrawLines(dsp, scrPix, scrGC, Points, 7, CoordModeOrigin);
     XDrawRectangle(dsp, scrPix, scrGC, x, y, sz, sz);
 
@@ -1753,7 +1820,7 @@ hdfXsds(char *name, int32 rank)
 
     /* draw the name */
     sprintf(nameString, "%s", name);
-    if(strlen(nameString) > 4)
+    if (strlen(nameString) > 4)
         nameString[4] = '\0';
     XTextExtents(myFont, nameString, strlen(nameString), &dir, &asc, &des, &overall);
     strY = sz + height + y;
@@ -1762,12 +1829,10 @@ hdfXsds(char *name, int32 rank)
 
     /* remember where we put it for future reference */
 
-
     /* increment counter */
     sds++;
 
-} /* hdfXsds */
-
+}                               /* hdfXsds */
 
 /* ------------------------------ hdfXvgroup ------------------------------ */
 /*
@@ -1775,11 +1840,10 @@ hdfXsds(char *name, int32 rank)
   Draw a Vgroup object into our image
  
 */
-void
-hdfXvgroup(char *name, char *class, int32 count) 
+void hdfXvgroup(char *name, char *class, int32 count)
 {
-    char   classString[512];
-    char   nameString[512];
+    char classString[512];
+    char nameString[512];
     XPoint Points[10];
     int x, y;
     int strX, strY;
@@ -1787,7 +1851,7 @@ hdfXvgroup(char *name, char *class, int32 count)
     int sz;
     XCharStruct overall;
 
-    y = vgroupY;   /* all Vgroups on same line */
+    y = vgroupY;                /* all Vgroups on same line */
     x = sdsSep + (vgroupWidth + sdsSep) * vgroups;
 
     /* 
@@ -1795,19 +1859,22 @@ hdfXvgroup(char *name, char *class, int32 count)
      * string is going to be
      */
     sprintf(nameString, "%s", name);
-    if(strlen(nameString) > 7)
+    if (strlen(nameString) > 7)
         nameString[7] = '\0';
-       
+
     XTextExtents(myFont, nameString, strlen(nameString), &dir, &asc, &des, &overall);
     height = asc + des;
     width = overall.width;
 
     /* see how big we need to make it */
     sz = vgroupWidth;
-    if(height > sz) sz = height;
-    if(width / 2 > sz) sz = width / 2;
+    if (height > sz)
+        sz = height;
+    if (width / 2 > sz)
+        sz = width / 2;
 
-    if(x + sz > ImSize) return;
+    if (x + sz > ImSize)
+        return;
 
     /* draw a circle */
     XDrawArc(dsp, scrPix, scrGC, x, y, 2 * sz, sz, 0, 360 * 64);
@@ -1824,19 +1891,16 @@ hdfXvgroup(char *name, char *class, int32 count)
     strX = (sz * 2 - overall.width) / 2 + x;
     XDrawString(dsp, scrPix, scrGC, strX, strY, nameString, strlen(nameString));
 
-
     /* added another one to the image */
     vgroups++;
 
-} /* hdfXvgroup */
-
+}                               /* hdfXvgroup */
 
 /*
  *  All done building the image
  *  Build the pixmap and clean up
  */
-void
-hdfEndImage()
+void hdfEndImage()
 {
 
     int x, y;
@@ -1844,36 +1908,27 @@ hdfEndImage()
     XImage *scrImage;
     unsigned char *dptr;
 
-
 /*     XtVaGetValues (view, XtNforeground, &fg_pixel, XtNbackground, &bg_pixel, NULL); */
-    
 
-    
-    scrImage = XGetImage(dsp, scrPix, 0, 0, ImSize, ImSize,
-                         AllPlanes, ZPixmap);
+    scrImage = XGetImage(dsp, scrPix, 0, 0, ImSize, ImSize, AllPlanes, ZPixmap);
     XFreePixmap(dsp, scrPix);
-    img = (ImageInfo *)malloc(sizeof(ImageInfo));
+    img = (ImageInfo *) malloc(sizeof(ImageInfo));
     img->width = ImSize;
     img->height = ImSize;
     img->image_data = (unsigned char *)malloc(ImSize * ImSize);
     img->image = NULL;
     dptr = img->image_data;
-    for (y=0; y<ImSize; y++)
-	{
-            for (x=0; x<ImSize; x++)
-		{
-                    pix = XGetPixel(scrImage, x, y);
-                    if (pix == BlackPixel(dsp, DefaultScreen(dsp)))
-			{
-                            *dptr = (unsigned char)1;
-			}
-                    else
-			{
-                            *dptr = (unsigned char)0;
-			}
-                    dptr++;
-		}
-	}
+    for (y = 0; y < ImSize; y++) {
+        for (x = 0; x < ImSize; x++) {
+            pix = XGetPixel(scrImage, x, y);
+            if (pix == BlackPixel(dsp, DefaultScreen(dsp))) {
+                *dptr = (unsigned char)1;
+            } else {
+                *dptr = (unsigned char)0;
+            }
+            dptr++;
+        }
+    }
     img->num_colors = 256;
     img->reds = (int *)malloc(sizeof(int) * 256);
     img->greens = (int *)malloc(sizeof(int) * 256);
@@ -1882,24 +1937,22 @@ hdfEndImage()
     img->greens[0] = 65535;
     img->blues[0] = 65535;
     {
-      int i;
-      for (i = 1; i < 256; i++)
-        {
-          img->reds[i] = 0;
-          img->greens[i] = 0;
-          img->blues[i] = 0;
+        int i;
+        for (i = 1; i < 256; i++) {
+            img->reds[i] = 0;
+            img->greens[i] = 0;
+            img->blues[i] = 0;
         }
     }
     XDestroyImage(scrImage);
 
-} /* hdfEndImage */
+}                               /* hdfEndImage */
 
-
-ImageInfo *
-hdfFetchImage(intn *bg) 
+ImageInfo *hdfFetchImage(intn *bg)
 {
-    if(bg) *bg = 0;
+    if (bg)
+        *bg = 0;
     return (img);
-} /* hdfFetchImage */
+}                               /* hdfFetchImage */
 
 #endif

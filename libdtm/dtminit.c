@@ -165,22 +165,21 @@
 #include <string.h>
 #include <sys/types.h>
 #ifndef	_ARCH_MACOS
-#  include <sys/signal.h>
+#include <sys/signal.h>
 #endif
 #include <netinet/in.h>
 
 #ifndef _ARCH_MACOS
-# if defined(CONVEX) || defined(NEXT)
-#  include <sys/malloc.h>
-# else
-#  include <malloc.h>
-# endif
+#if defined(CONVEX) || defined(NEXT)
+#include <sys/malloc.h>
+#else
+#include <malloc.h>
+#endif
 #endif
 
 #include "dtm.h"
 #include "dtmint.h"
 #include "debug.h"
-
 
 /*
 			CONTENTS
@@ -213,14 +212,14 @@ END CONTENTS */
 /*
 	STATIC FUNCTION PROTOTYPES
 */
-static  int init_port DTM_PROTO((int ,int ,int ));
-static  int grow_ports DTM_PROTO((VOID ));
-static  int initialize DTM_PROTO((VOID ));
-static  int get_init_port DTM_PROTO((char *,int ,int ));
-static  int set_out_port_address DTM_PROTO((int ,S_ADDR ));
-static  int free_port DTM_PROTO((int ));
-static  int register_port DTM_PROTO((int ));
-static  char *dtm_addr_to_a DTM_PROTO((S_ADDR addr));
+static int init_port DTM_PROTO((int, int, int));
+static int grow_ports DTM_PROTO((VOID));
+static int initialize DTM_PROTO((VOID));
+static int get_init_port DTM_PROTO((char *, int, int));
+static int set_out_port_address DTM_PROTO((int, S_ADDR));
+static int free_port DTM_PROTO((int));
+static int register_port DTM_PROTO((int));
+static char *dtm_addr_to_a DTM_PROTO((S_ADDR addr));
 #endif
 
 /*
@@ -232,26 +231,26 @@ static  char *dtm_addr_to_a DTM_PROTO((S_ADDR addr));
 	 Allocate and intialize port p.
 */
 #ifdef DTM_PROTOTYPES
-static  int init_port(int port,int porttype,int qservice )
+static int init_port(int port, int porttype, int qservice)
 #else
-static 	int init_port( port, porttype, qservice )
-	int	port;
-	int	porttype ;
-	int	qservice ;
+static int init_port(port, porttype, qservice)
+int port;
+int porttype;
+int qservice;
 #endif
 {
-	register DTMPORT *pp ;
+    register DTMPORT *pp;
 
-	DBGFLOW( "init_port called\n" );
+    DBGFLOW("init_port called\n");
 
-	/* allocate port structure */
+    /* allocate port structure */
 
-  	if( (pp = DTMpt[port] = (DTMPORT *)malloc(sizeof (DTMPORT))) == NULL ) {
-		DTMerrno = DTMMEM;
-		DBGFLOW("init_port: could not allocate DTMPORT structure.");
-		return DTMERROR;
-	}
-	memset(pp,0,sizeof(DTMPORT));
+    if ((pp = DTMpt[port] = (DTMPORT *) malloc(sizeof(DTMPORT))) == NULL) {
+        DTMerrno = DTMMEM;
+        DBGFLOW("init_port: could not allocate DTMPORT structure.");
+        return DTMERROR;
+    }
+    memset(pp, 0, sizeof(DTMPORT));
 /*
 #ifdef SOLARIS
 	memset(pp,0,sizeof(DTMPORT));
@@ -259,41 +258,40 @@ static 	int init_port( port, porttype, qservice )
 	bzero( pp, sizeof( DTMPORT ) );
 #endif
 */
-	pp->porttype = porttype ;
-	pp->qservice = qservice ;
-	pp->Xcallback_data = NULL;
-	pp->Xcallback = NULL;
-	pp->XaddInput = NULL;
+    pp->porttype = porttype;
+    pp->qservice = qservice;
+    pp->Xcallback_data = NULL;
+    pp->Xcallback = NULL;
+    pp->XaddInput = NULL;
 
-	/*	Input port data init	*/
+    /*      Input port data init    */
 
-	pp->in = NULL;
-	pp->nextToRead = NULL;
-	pp->callback = NULL;
+    pp->in = NULL;
+    pp->nextToRead = NULL;
+    pp->callback = NULL;
 
-	/*	Output port data init	*/
+    /*      Output port data init   */
 
-	pp->out = NULL ;	
-	pp->fLastWasSuccessfulAvailWrite = FALSE;
-	pp->fGotList = FALSE;
-	pp->fDiscard = FALSE;
+    pp->out = NULL;
+    pp->fLastWasSuccessfulAvailWrite = FALSE;
+    pp->fGotList = FALSE;
+    pp->fDiscard = FALSE;
 
-  	return 0;
+    return 0;
 }
 
 /*
 	grow_ports()
 	Extend the size of the port table by DTM_PORTS_GROW ports.
 */
-static	int	grow_ports( VOID )
+static int grow_ports(VOID)
 {
-	if ( ( DTMpt = (DTMPORT **) realloc( (void *) DTMpt, (DTMptCount + 
-			DTM_PORTS_GROW) * sizeof(DTMPORT))) == NULL ) {
-		DTMerrno = DTMMEM;
-		DTMERR("initialize: insufficient memory for port table.");
-		return DTMERROR;
-	}
-	memset( (char *)&DTMpt[DTMptCount],0,DTM_PORTS_GROW * sizeof(DTMPORT));
+    if ((DTMpt = (DTMPORT **) realloc((void *)DTMpt, (DTMptCount + DTM_PORTS_GROW) * sizeof(DTMPORT))) == NULL) {
+        DTMerrno = DTMMEM;
+        DTMERR("initialize: insufficient memory for port table.");
+        return DTMERROR;
+    }
+    memset((char *)&DTMpt[DTMptCount], 0, DTM_PORTS_GROW * sizeof(DTMPORT));
 /*
 #ifdef SOLARIS
 	memset( (char *)&DTMpt[DTMptCount],0,DTM_PORTS_GROW * sizeof(DTMPORT));
@@ -301,8 +299,8 @@ static	int	grow_ports( VOID )
 	bzero( (char *)&DTMpt[DTMptCount], DTM_PORTS_GROW * sizeof(DTMPORT));
 #endif
 */
-	DTMptCount += DTM_PORTS_GROW;
-	return DTM_OK;
+    DTMptCount += DTM_PORTS_GROW;
+    return DTM_OK;
 }
 
 /*
@@ -310,29 +308,30 @@ static	int	grow_ports( VOID )
 	Initailized DTM by allocating memory for dtm_discard
 		and DTMpt ( the port table ).
 */
-static	int	initialize( VOID )		
+static int initialize(VOID)
 {
-	/* get the debug option flag */
-	if ( getenv( "DTMDEBUG" ) ) uDTMdbg = -1;
+    /* get the debug option flag */
+    if (getenv("DTMDEBUG"))
+        uDTMdbg = -1;
 
-	/* create discard buffer */
-	if ((dtm_discard = (char *)malloc(DISCARDSIZE)) == NULL)  {
-		DTMerrno = DTMMEM;
-		DTMERR("initialize: insufficient memory for dicard buffer.");
-		return DTMERROR;
-	}
+    /* create discard buffer */
+    if ((dtm_discard = (char *)malloc(DISCARDSIZE)) == NULL) {
+        DTMerrno = DTMMEM;
+        DTMERR("initialize: insufficient memory for dicard buffer.");
+        return DTMERROR;
+    }
 
-	if ((DTMpt = (DTMPORT **)calloc(DTM_PORTS_INITIAL, sizeof(DTMPORT)))
-			== NULL)  {
-		DTMerrno = DTMMEM;
-		DTMERR("initialize: insufficient memory for port table.");
-		return DTMERROR;
-	}
-	DTMptCount = DTM_PORTS_INITIAL;
+    if ((DTMpt = (DTMPORT **) calloc(DTM_PORTS_INITIAL, sizeof(DTMPORT)))
+        == NULL) {
+        DTMerrno = DTMMEM;
+        DTMERR("initialize: insufficient memory for port table.");
+        return DTMERROR;
+    }
+    DTMptCount = DTM_PORTS_INITIAL;
 
 #if !defined(_ARCH_MACOS) & !defined(_ARCH_MSDOS)
-	/* ignore SIGPIPE signals, handled by dtm_write call */
-	signal(SIGPIPE, SIG_IGN);
+    /* ignore SIGPIPE signals, handled by dtm_write call */
+    signal(SIGPIPE, SIG_IGN);
 #endif
 }
 
@@ -343,39 +342,40 @@ static	int	initialize( VOID )
 		name before returning it to the user!
 */
 #ifdef DTM_PROTOTYPES
-static int  get_init_port(char *portname,int porttype,int qservice )
+static int get_init_port(char *portname, int porttype, int qservice)
 #else
-static int 	get_init_port( portname, porttype, qservice )
-	char	*portname ;
-	int		porttype ;
-	int		qservice ;
+static int get_init_port(portname, porttype, qservice)
+char *portname;
+int porttype;
+int qservice;
 #endif
 {
-	int	tries = 2;
-	int	port ;
+    int tries = 2;
+    int port;
 
-	DBGFLOW("get_init_port called.\n");
+    DBGFLOW("get_init_port called.\n");
 
-  	/* check for library initialization */
-  	if( !DTM_INITIALIZED ) CHECK_ERR( initialize());
-    
-  	/* find first open DTM port */
-	while ( tries-- ) {
-		for (port=0; port < DTMptCount; port+=1) {
-			if (DTMpt[port] == NULL) {
-				CHECK_ERR(init_port( port, porttype, qservice ));
-				strncpy( DTMpt[port]->portname, portname, (PNAMELEN - 1) );
-				DTMpt[ port ]->portname[ PNAMELEN - 1 ] = '\0' ;
-				DTMpt[ port ]->key = DTMportSequenceNumber++; 
-				return port;
-			}
-		}
-		grow_ports();
-	}
+    /* check for library initialization */
+    if (!DTM_INITIALIZED)
+        CHECK_ERR(initialize());
 
-	/* we should never get here */
-  	DTMerrno = DTMNOPORT;
-  	return DTMERROR;
+    /* find first open DTM port */
+    while (tries--) {
+        for (port = 0; port < DTMptCount; port += 1) {
+            if (DTMpt[port] == NULL) {
+                CHECK_ERR(init_port(port, porttype, qservice));
+                strncpy(DTMpt[port]->portname, portname, (PNAMELEN - 1));
+                DTMpt[port]->portname[PNAMELEN - 1] = '\0';
+                DTMpt[port]->key = DTMportSequenceNumber++;
+                return port;
+            }
+        }
+        grow_ports();
+    }
+
+    /* we should never get here */
+    DTMerrno = DTMNOPORT;
+    return DTMERROR;
 }
 
 /*
@@ -384,64 +384,63 @@ static int 	get_init_port( portname, porttype, qservice )
 		specification.
 */
 #ifdef DTM_PROTOTYPES
-static int set_out_port_address(int port,S_ADDR addr )
+static int set_out_port_address(int port, S_ADDR addr)
 #else
-static int set_out_port_address( port, addr )
-	int		port;
-	S_ADDR	addr;
+static int set_out_port_address(port, addr)
+int port;
+S_ADDR addr;
 #endif
 {
-	Port	aPort ;
-	Outport	*outp ;
+    Port aPort;
+    Outport *outp;
 
-	DBGINT( "set_out_port_address: Physical TCP portname - %x ", 
-				ntohl( addr.sin_addr.s_addr ));
-	DBGINT( "%d\n", ntohs( addr.sin_port ));
+    DBGINT("set_out_port_address: Physical TCP portname - %x ", ntohl(addr.sin_addr.s_addr));
+    DBGINT("%d\n", ntohs(addr.sin_port));
 
-	aPort.portid = addr.sin_port ;
-	aPort.nethostid = addr.sin_addr.s_addr ;	
-	CHECK_ERR( outp = dtm_new_out_port( &aPort ));
+    aPort.portid = addr.sin_port;
+    aPort.nethostid = addr.sin_addr.s_addr;
+    CHECK_ERR(outp = dtm_new_out_port(&aPort));
 
-	DTMpt[port]->out = outp ;	
+    DTMpt[port]->out = outp;
 
-	return DTM_OK;
-}	
+    return DTM_OK;
+}
 
 #ifdef DTM_PROTOTYPES
-static int  free_port(int port )
+static int free_port(int port)
 #else
-static int	free_port( port )
-	int port;
+static int free_port(port)
+int port;
 #endif
 {
-	Outport *	outport = DTMpt[ port ]->out; 
-	Outport *	tempPort;
-	int			returnValue = DTM_OK;	
+    Outport *outport = DTMpt[port]->out;
+    Outport *tempPort;
+    int returnValue = DTM_OK;
 
-	while ( outport != NULL ) {
-		tempPort = outport->next;
+    while (outport != NULL) {
+        tempPort = outport->next;
 #ifdef FREE_RETURNS_INT
-		if ( free( outport ) != 0 ) {
-			DTMerrno = DTMCORPT;	
-			returnValue = DTMERROR;
-			break;
-		}
+        if (free(outport) != 0) {
+            DTMerrno = DTMCORPT;
+            returnValue = DTMERROR;
+            break;
+        }
 #else
-		free( outport );
+        free(outport);
 #endif
-		outport = tempPort;
-	}	
+        outport = tempPort;
+    }
 #ifdef FREE_RETURNS_INT
-	if ( free( DTMpt[ port ] ) != 0 ) {
-		DTMerrno = DTMCORPT;	
-		returnValue = DTMERROR;
-	}
+    if (free(DTMpt[port]) != 0) {
+        DTMerrno = DTMCORPT;
+        returnValue = DTMERROR;
+    }
 #else
-	free( DTMpt[ port ] );
+    free(DTMpt[port]);
 #endif
 
-	DTMpt[port] = NULL;
-	return DTM_OK ;
+    DTMpt[port] = NULL;
+    return DTM_OK;
 }
 
 /*
@@ -451,26 +450,24 @@ static int	free_port( port )
 	returns: DTM_OK and DTMERROR.
 */
 #ifdef DTM_PROTOTYPES
-static int register_port(int port )
+static int register_port(int port)
 #else
-static int register_port( port )
-	int	port;
-#endif	
+static int register_port(port)
+int port;
+#endif
 {
-	int		fd ;
-	S_ADDR	addr ;
-	char	*naddr ;
+    int fd;
+    S_ADDR addr;
+    char *naddr;
 
-	CHECK_ERR( naddr = dtm_get_naddr( &addr, &fd ));
-	if(dtm_nsend_sockaddr(fd, naddr, dtm_get_refname(), DTMpt[port]->portname, 
-			&DTMpt[ port ]->sockaddr ) < 0 ) {
-		DTMdestroyPort( DTMpt[port]->sockfd ) ;
-		DTMerrno = DTMTIMEOUT;
-		return DTMERROR ;
-	}
-	return DTM_OK;
+    CHECK_ERR(naddr = dtm_get_naddr(&addr, &fd));
+    if (dtm_nsend_sockaddr(fd, naddr, dtm_get_refname(), DTMpt[port]->portname, &DTMpt[port]->sockaddr) < 0) {
+        DTMdestroyPort(DTMpt[port]->sockfd);
+        DTMerrno = DTMTIMEOUT;
+        return DTMERROR;
+    }
+    return DTM_OK;
 }
-
 
 /*
 	IN-LIBRARY GLOBAL FUNCTIONS
@@ -485,39 +482,38 @@ static int register_port( port )
 	returns: DTMERROR, DTM_OK sets error codes DTMBADPORT
 */
 #ifdef DTM_PROTOTYPES
-int dtm_map_port_internal( int32 port )
+int dtm_map_port_internal(int32 port)
 #else
-int	dtm_map_port_internal( port )
-	int32	port;
+int dtm_map_port_internal(port)
+int32 port;
 #endif
 {
-	int32	thePort = port & DTM_PORT_MASK;
+    int32 thePort = port & DTM_PORT_MASK;
 
-	if ( ( thePort ) >= DTMptCount ) {
-		DTMerrno = DTMBADPORT;
-		return DTMERROR;	
-	}
-	if ( DTMpt[ thePort ] == NULL ) {
-		DTMerrno = DTMBADPORT;
-		return DTMERROR;	
-	}
-	if ( ( port >> DTM_PORT_KEY_SHIFT ) != DTMpt[ thePort ]->key ) {
-		DTMerrno = DTMBADPORT;
-		return DTMERROR;	
-	}
-	return thePort;
+    if ((thePort) >= DTMptCount) {
+        DTMerrno = DTMBADPORT;
+        return DTMERROR;
+    }
+    if (DTMpt[thePort] == NULL) {
+        DTMerrno = DTMBADPORT;
+        return DTMERROR;
+    }
+    if ((port >> DTM_PORT_KEY_SHIFT) != DTMpt[thePort]->key) {
+        DTMerrno = DTMBADPORT;
+        return DTMERROR;
+    }
+    return thePort;
 }
 
 #ifdef DTM_PROTOTYPES
-void dtm_map_port_external(int32 *port )
+void dtm_map_port_external(int32 *port)
 #else
-void dtm_map_port_external( port )
-	int32	*port;
+void dtm_map_port_external(port)
+int32 *port;
 #endif
 {
-	*port = *port | (DTMpt[ *port ]->key << DTM_PORT_KEY_SHIFT); 
+    *port = *port | (DTMpt[*port]->key << DTM_PORT_KEY_SHIFT);
 }
-
 
 /*
 	EXTERNALLY GLOBAL FUNCTIONS
@@ -530,38 +526,36 @@ void dtm_map_port_external( port )
 		qservice is reserved for future use.
 */
 #ifdef DTM_PROTOTYPES
-int DTMmakeInPort(char *portname,int qservice )
+int DTMmakeInPort(char *portname, int qservice)
 #else
-int DTMmakeInPort(portname, qservice )
-	char	*portname;
-	int		qservice ;
+int DTMmakeInPort(portname, qservice)
+char *portname;
+int qservice;
 #endif
 {
-	int	port;
-	int	fLogicalName = FALSE;
+    int port;
+    int fLogicalName = FALSE;
 
-	DBGFLOW("DTMmakeInPort called.\n");
+    DBGFLOW("DTMmakeInPort called.\n");
 
-  	CHECK_ERR(port = get_init_port(portname, INPORTTYPE, qservice ));
-	DBGMSG2("DTMmakeInPort port %d addr %X\n", port, DTMpt[port] );
-	CHECK_ERR(dtm_init_sockaddr( &DTMpt[ port ]->sockaddr, 
-				DTMpt[ port ]->portname, &fLogicalName ));
-	DTMpt[port]->fLogical = fLogicalName;
+    CHECK_ERR(port = get_init_port(portname, INPORTTYPE, qservice));
+    DBGMSG2("DTMmakeInPort port %d addr %X\n", port, DTMpt[port]);
+    CHECK_ERR(dtm_init_sockaddr(&DTMpt[port]->sockaddr, DTMpt[port]->portname, &fLogicalName));
+    DTMpt[port]->fLogical = fLogicalName;
 
-	if ((DTMpt[port]->sockfd = dtm_socket_init( &DTMpt[port]->sockaddr, 
-			INPORTTYPE, fLogicalName )) == DTMERROR ) {
-		free_port(port);
-		return DTMERROR ;
-	}
+    if ((DTMpt[port]->sockfd = dtm_socket_init(&DTMpt[port]->sockaddr, INPORTTYPE, fLogicalName)) == DTMERROR) {
+        free_port(port);
+        return DTMERROR;
+    }
 
-	DBGMSG1( "DTMmakeInPort: sockfd = %d\n", DTMpt[ port ]->sockfd );
+    DBGMSG1("DTMmakeInPort: sockfd = %d\n", DTMpt[port]->sockfd);
 
-	if( fLogicalName ) CHECK_ERR( register_port( port ));
+    if (fLogicalName)
+        CHECK_ERR(register_port(port));
 
-	dtm_map_port_external( &port ) ;
-  	return port;
+    dtm_map_port_external(&port);
+    return port;
 }
-
 
 /*
 	DTMmakeOutPort() 
@@ -571,37 +565,37 @@ int DTMmakeInPort(portname, qservice )
 */
 
 #ifdef DTM_PROTOTYPES
-int DTMmakeOutPort(char *portname,int qservice )
+int DTMmakeOutPort(char *portname, int qservice)
 #else
-int DTMmakeOutPort(portname, qservice )
-	char	*portname;
-	int		qservice ;
-#endif	
+int DTMmakeOutPort(portname, qservice)
+char *portname;
+int qservice;
+#endif
 {
-	int		port;
-	int		fLogicalName = TRUE;
-	S_ADDR	addr;
+    int port;
+    int fLogicalName = TRUE;
+    S_ADDR addr;
 
-  	DBGFLOW("DTMmakeOutPort called.\n");
+    DBGFLOW("DTMmakeOutPort called.\n");
 
-  	CHECK_ERR( (port = get_init_port( portname, OUTPORTTYPE, qservice)));
-	CHECK_ERR((dtm_init_sockaddr(&addr, DTMpt[port]->portname,&fLogicalName))); 
-	DTMpt[port]->fLogical = fLogicalName;
+    CHECK_ERR((port = get_init_port(portname, OUTPORTTYPE, qservice)));
+    CHECK_ERR((dtm_init_sockaddr(&addr, DTMpt[port]->portname, &fLogicalName)));
+    DTMpt[port]->fLogical = fLogicalName;
 
-	if( !fLogicalName ) CHECK_ERR( set_out_port_address( port, addr )); 
+    if (!fLogicalName)
+        CHECK_ERR(set_out_port_address(port, addr));
 
-	if( (DTMpt[port] -> sockfd = dtm_socket_init( &DTMpt[port] -> sockaddr,
-		OUTPORTTYPE, fLogicalName )) == DTMERROR ) {
-			DTMdestroyPort( port );
-			return DTMERROR ;
-	}
+    if ((DTMpt[port]->sockfd = dtm_socket_init(&DTMpt[port]->sockaddr, OUTPORTTYPE, fLogicalName)) == DTMERROR) {
+        DTMdestroyPort(port);
+        return DTMERROR;
+    }
 
-	if( fLogicalName ) CHECK_ERR( register_port( port ));
+    if (fLogicalName)
+        CHECK_ERR(register_port(port));
 
-	dtm_map_port_external( &port ) ;
-	return port;
+    dtm_map_port_external(&port);
+    return port;
 }
-
 
 /*
 	DTMdestroyPort()
@@ -613,46 +607,49 @@ int DTMmakeOutPort(portname, qservice )
 int DTMdestroyPort(int port)
 #else
 int DTMdestroyPort(port)
-	int		port;
-#endif	
+int port;
+#endif
 {
-	reg DTMPORT *pp ;
+    reg DTMPORT *pp;
 
-	DBGFLOW("DTMdestroyPort called.\n");
+    DBGFLOW("DTMdestroyPort called.\n");
 
-	CHECK_ERR( port = dtm_map_port_internal( port ));
+    CHECK_ERR(port = dtm_map_port_internal(port));
 
-  	/* close main socket */
+    /* close main socket */
 
-	pp = DTMpt[port];
-  	if (pp->sockfd != -1) {
-		if ( pp->XinputId ) pp->XremoveInput( pp->XinputId );
-		close(pp->sockfd);
-	}
+    pp = DTMpt[port];
+    if (pp->sockfd != -1) {
+        if (pp->XinputId)
+            pp->XremoveInput(pp->XinputId);
+        close(pp->sockfd);
+    }
 
-  	/* close connections */
+    /* close connections */
 
-	if( pp -> porttype == INPORTTYPE ) {
-		register  Inport *pcur ;
-		FOR_EACH_IN_PORT( pcur, pp ) { 
-			if( pcur->fd != DTM_NO_CONNECTION ) {
-				if ( pp->Xcallback ) pp->XremoveInput( pcur->XinputId );
-				close( pcur->fd ) ;
-			}
-		}
-	} else {
-		register  Outport *pcur ;
+    if (pp->porttype == INPORTTYPE) {
+        register Inport *pcur;
+        FOR_EACH_IN_PORT(pcur, pp) {
+            if (pcur->fd != DTM_NO_CONNECTION) {
+                if (pp->Xcallback)
+                    pp->XremoveInput(pcur->XinputId);
+                close(pcur->fd);
+            }
+        }
+    } else {
+        register Outport *pcur;
 
-		FOR_EACH_OUT_PORT( pcur, pp ) { 
-			if( pcur->connfd != DTM_NO_CONNECTION )  close( pcur->connfd ) ;
-		}
-	}
- 
-  	/* free space allocated for port */
+        FOR_EACH_OUT_PORT(pcur, pp) {
+            if (pcur->connfd != DTM_NO_CONNECTION)
+                close(pcur->connfd);
+        }
+    }
 
-  	free_port( port );
+    /* free space allocated for port */
 
-  	return DTM_OK;
+    free_port(port);
+
+    return DTM_OK;
 }
 
 /*
@@ -664,49 +661,48 @@ int DTMdestroyPort(port)
 	BUGS: does not check the length until adding the port.
 */
 #ifdef DTM_PROTOTYPES
-int DTMgetPortAddr(int port,char *addr,int length)
+int DTMgetPortAddr(int port, char *addr, int length)
 #else
 int DTMgetPortAddr(port, addr, length)
-	int		port;
-	int		length;
-	char	*addr;
+int port;
+int length;
+char *addr;
 #endif
 {
-	char	pnum[10];
+    char pnum[10];
 
-  	DBGFLOW("DTMgetPortAddr called.\n");
+    DBGFLOW("DTMgetPortAddr called.\n");
 
-	CHECK_ERR( port = dtm_map_port_internal( port ));
+    CHECK_ERR(port = dtm_map_port_internal(port));
 
-  	if (dtm_get_ipaddr(addr) == 0) {
-		DTMerrno = DTMHOST;
-		return DTMERROR;
-	}
+    if (dtm_get_ipaddr(addr) == 0) {
+        DTMerrno = DTMHOST;
+        return DTMERROR;
+    }
 
-  	sprintf(pnum, ":%d", ntohs( DTMpt[port]->sockaddr.sin_port ) );
-	if ( strlen( pnum ) + strlen( addr ) + 1 > length ) {
-		DTMerrno = DTMBUFOVR;
-		return DTMERROR;		
-	}
-  	strcat(addr, pnum);
+    sprintf(pnum, ":%d", ntohs(DTMpt[port]->sockaddr.sin_port));
+    if (strlen(pnum) + strlen(addr) + 1 > length) {
+        DTMerrno = DTMBUFOVR;
+        return DTMERROR;
+    }
+    strcat(addr, pnum);
 
-  	return DTM_OK;
+    return DTM_OK;
 }
 
 #ifdef DTM_PROTOTYPES
-static char *    dtm_addr_to_a(S_ADDR addr )
+static char *dtm_addr_to_a(S_ADDR addr)
 #else
-static char *	dtm_addr_to_a( addr )
-	S_ADDR		addr;
+static char *dtm_addr_to_a(addr)
+S_ADDR addr;
 #endif
 {
-	static	char	addr_buf[32];
-	uint32			hnum = addr.sin_addr.s_addr;
-	unsigned char *	p_hnum = (unsigned char *) &hnum;
+    static char addr_buf[32];
+    uint32 hnum = addr.sin_addr.s_addr;
+    unsigned char *p_hnum = (unsigned char *)&hnum;
 
-	sprintf(addr_buf, "%d.%d.%d.%d:%d", 
-		p_hnum[0], p_hnum[1], p_hnum[2], p_hnum[3], ntohs( addr.sin_port ));
-	return addr_buf;
+    sprintf(addr_buf, "%d.%d.%d.%d:%d", p_hnum[0], p_hnum[1], p_hnum[2], p_hnum[3], ntohs(addr.sin_port));
+    return addr_buf;
 }
 
 /*
@@ -717,39 +713,39 @@ static char *	dtm_addr_to_a( addr )
 	Up to the user to free the list.
 */
 #ifdef DTM_PROTOTYPES
-int DTMgetRemotePortAddr(int port,char ***addrs,int *n_addrs)
+int DTMgetRemotePortAddr(int port, char ***addrs, int *n_addrs)
 #else
 int DTMgetRemotePortAddr(port, addrs, n_addrs)
-	int         port;
-	char    ***	addrs;
-	int     *   n_addrs;
+int port;
+char ***addrs;
+int *n_addrs;
 #endif
 {
-	int				size = 0;
-	int				count = 0;
-	reg Outport *	pcur;
-	reg DTMPORT *	pp;
-	char *			strings;
+    int size = 0;
+    int count = 0;
+    reg Outport *pcur;
+    reg DTMPORT *pp;
+    char *strings;
 
-	CHECK_ERR( port = dtm_map_port_internal( port ));
-	pp = DTMpt[port];
+    CHECK_ERR(port = dtm_map_port_internal(port));
+    pp = DTMpt[port];
 
-	FOR_EACH_OUT_PORT( pcur, pp ) {
-		count++;
-		size += strlen( dtm_addr_to_a( pcur->sockaddr )) + 1 + 4;
-	}
-	*n_addrs = count;
-	*addrs = (char **) malloc( size );
-	if ( !*addrs ) {
-		DTMerrno = DTMMEM;
-		return DTMERROR;
-	}
-	strings = (char *) *addrs;
-	strings += 4 * count;
-	FOR_EACH_OUT_PORT( pcur, pp ) {
-		(*addrs)[--count] = strings;
-		strcpy( strings, dtm_addr_to_a( pcur->sockaddr ));
-		strings += strlen(strings) + 1;
-	}
-	return DTM_OK;
+    FOR_EACH_OUT_PORT(pcur, pp) {
+        count++;
+        size += strlen(dtm_addr_to_a(pcur->sockaddr)) + 1 + 4;
+    }
+    *n_addrs = count;
+    *addrs = (char **)malloc(size);
+    if (!*addrs) {
+        DTMerrno = DTMMEM;
+        return DTMERROR;
+    }
+    strings = (char *)*addrs;
+    strings += 4 * count;
+    FOR_EACH_OUT_PORT(pcur, pp) {
+        (*addrs)[--count] = strings;
+        strcpy(strings, dtm_addr_to_a(pcur->sockaddr));
+        strings += strlen(strings) + 1;
+    }
+    return DTM_OK;
 }

@@ -59,7 +59,6 @@
 #include "list.h"
 #include <stdio.h>
 
-
 #ifndef DISABLE_TRACE
 extern int srcTrace;
 #endif
@@ -67,59 +66,53 @@ extern int srcTrace;
 List childProcessList;
 
 typedef struct {
-	pid_t pid;
-	void (*callback)();
-	void *callBackData;
-	} ProcessHandle;
-
+    pid_t pid;
+    void (*callback)();
+    void *callBackData;
+} ProcessHandle;
 
 static ProcessHandle *SearchForChildRecordByPID(pid_t pid);
 
-
-
 void InitChildProcessor(void)
 {
-	childProcessList = ListCreate();
+    childProcessList = ListCreate();
 }
-
 
 /* Add a child process handler.  Callback is made when child dies */
 /* callback is of the form callback(callBackData,pid); */
-void AddChildProcessHandler(pid_t pid,void (*callback)(), void *callBackData)
+void AddChildProcessHandler(pid_t pid, void (*callback)(), void *callBackData)
 {
-ProcessHandle *p;
+    ProcessHandle *p;
 
-	if (!(p = (ProcessHandle *) malloc(sizeof(ProcessHandle)))) {
+    if (!(p = (ProcessHandle *) malloc(sizeof(ProcessHandle)))) {
 #ifndef DISABLE_TRACE
-		if (srcTrace) {
-			fprintf(stderr,"Out of Memory\n");
-		}
+        if (srcTrace) {
+            fprintf(stderr, "Out of Memory\n");
+        }
 #endif
 
-		return;
-		}
-	p->pid = pid;
-	p->callback = callback;
-	p->callBackData = callBackData;
+        return;
+    }
+    p->pid = pid;
+    p->callback = callback;
+    p->callBackData = callBackData;
 
-	ListAddEntry(childProcessList,p);
+    ListAddEntry(childProcessList, p);
 }
-
-
 
 static ProcessHandle *SearchForChildRecordByPID(pid_t pid)
 {
-ProcessHandle *p;
+    ProcessHandle *p;
 
-	p = (ProcessHandle *) ListHead(childProcessList);
-	while(p) {
-		if (p->pid == pid) {
-			return(p);
-			}
-		p = (ProcessHandle *) ListNext(childProcessList);
-		}
+    p = (ProcessHandle *) ListHead(childProcessList);
+    while (p) {
+        if (p->pid == pid) {
+            return (p);
+        }
+        p = (ProcessHandle *) ListNext(childProcessList);
+    }
 
-	return(NULL);
+    return (NULL);
 
 }
 
@@ -128,53 +121,51 @@ ProcessHandle *p;
 */
 void KillAllChildren(void)
 {
-ProcessHandle *p;
+    ProcessHandle *p;
 
-	/* first, be nice and send SIGHUP */
-	p = (ProcessHandle *) ListHead(childProcessList);
-	while(p) {
-		kill(p->pid,SIGHUP);
-		p = (ProcessHandle *) ListNext(childProcessList);
-		}
+    /* first, be nice and send SIGHUP */
+    p = (ProcessHandle *) ListHead(childProcessList);
+    while (p) {
+        kill(p->pid, SIGHUP);
+        p = (ProcessHandle *) ListNext(childProcessList);
+    }
 
-	/* hack and slash */
-	p = (ProcessHandle *) ListHead(childProcessList);
-	while(p) {
-		kill(p->pid,SIGKILL);
-		p = (ProcessHandle *) ListNext(childProcessList);
-		}
+    /* hack and slash */
+    p = (ProcessHandle *) ListHead(childProcessList);
+    while (p) {
+        kill(p->pid, SIGKILL);
+        p = (ProcessHandle *) ListNext(childProcessList);
+    }
 }
-
 
 /* callback routine for SIGCHLD signal handler */
 void ChildTerminated(void)
 {
-pid_t pid;
-ProcessHandle *p;
+    pid_t pid;
+    ProcessHandle *p;
 #ifdef __sgi
-union wait stat_loc;
+    union wait stat_loc;
 #else
-int stat_loc;
+    int stat_loc;
 #endif
 
 #ifdef SVR4
-	pid = waitpid((pid_t)(-1),NULL,WNOHANG);
-	signal(SIGCHLD, (void (*)())ChildTerminated); /*Solaris resets the signal on a catch*/
+    pid = waitpid((pid_t) (-1), NULL, WNOHANG);
+    signal(SIGCHLD, (void (*)())ChildTerminated);   /*Solaris resets the signal on a catch */
 #else
-	pid = wait3(&stat_loc,WNOHANG,NULL);
+    pid = wait3(&stat_loc, WNOHANG, NULL);
 #endif
 
-	p = SearchForChildRecordByPID(pid);
-	if (!p) {
-		/* un registered child process */
-		return;
-		}
+    p = SearchForChildRecordByPID(pid);
+    if (!p) {
+        /* un registered child process */
+        return;
+    }
 
-	(p->callback)(p->callBackData,p->pid);
+    (p->callback) (p->callBackData, p->pid);
 
-	ListDeleteEntry(childProcessList,p);
-	free(p);
+    ListDeleteEntry(childProcessList, p);
+    free(p);
 
-	return;
+    return;
 }
-

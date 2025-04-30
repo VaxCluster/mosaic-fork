@@ -69,7 +69,6 @@ extern int srcTrace;
 #include "HTAnchor.h"
 #include "HTParse.h"
 
-
 static int HtLoadHTTPANN(char *arg, char *data, int len, char *com);
 
 /****************************************************************************
@@ -85,118 +84,106 @@ static int HtLoadHTTPANN(char *arg, char *data, int len, char *com);
  * remarks: 
  *   
  ****************************************************************************/
-static int
-HtLoadHTTPANN(char *arg, char *data, int len, char *com)
+static int HtLoadHTTPANN(char *arg, char *data, int len, char *com)
 {
-	int s;				/* Socket number for returned data */
-	char *command;			/* The whole command */
-	int status;			/* tcp return */
-	SockA soc_address;		/* Binary network address */
-	SockA *sin = &soc_address;
-	char *tptr;
-	int fmt, compressed;
-	int command_len;
-	HTParentAnchor *anchor;
+    int s;                      /* Socket number for returned data */
+    char *command;              /* The whole command */
+    int status;                 /* tcp return */
+    SockA soc_address;          /* Binary network address */
+    SockA *sin = &soc_address;
+    char *tptr;
+    int fmt, compressed;
+    int command_len;
+    HTParentAnchor *anchor;
 
-	/*
-	 * Set up defaults:
-	 */
+    /*
+     * Set up defaults:
+     */
 #ifdef DECNET
-	sin->sdn_family = AF_DECnet;        /* Family = DECnet, host order */
-	sin->sdn_objnum = DNP_OBJ;          /* Default: http object number */
-#else  /* Internet */
-	sin->sin_family = AF_INET;          /* Family = internet, host order */
-	sin->sin_port = htons(TCP_PORT);    /* Default: http port    */
+    sin->sdn_family = AF_DECnet;    /* Family = DECnet, host order */
+    sin->sdn_objnum = DNP_OBJ;  /* Default: http object number */
+#else                           /* Internet */
+    sin->sin_family = AF_INET;  /* Family = internet, host order */
+    sin->sin_port = htons(TCP_PORT);    /* Default: http port    */
 #endif
 
-	tptr = HTParse(arg, "", PARSE_HOST);
-	status = HTParseInet(sin, tptr);
-	free(tptr);
-	if (status)
-	{
-		return(status);
-	}
+    tptr = HTParse(arg, "", PARSE_HOST);
+    status = HTParseInet(sin, tptr);
+    free(tptr);
+    if (status) {
+        return (status);
+    }
 
-	/*
-	 * Now, let's get a socket set up from the server for the data.
-	 */
+    /*
+     * Now, let's get a socket set up from the server for the data.
+     */
 #ifdef DECNET
-	s = socket(AF_DECnet, SOCK_STREAM, 0);
+    s = socket(AF_DECnet, SOCK_STREAM, 0);
 #else
-	s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 #endif
-	status = connect
-          (s, (struct sockaddr*)&soc_address,sizeof(soc_address));
-	if (status < 0)
-	{
-		return(HTInetStatus("connect"));
-	}
+    status = connect(s, (struct sockaddr *)&soc_address, sizeof(soc_address));
+    if (status < 0) {
+        return (HTInetStatus("connect"));
+    }
 
-        /* If there's an anchor at this point, leave it in. */
-	tptr = HTParse(arg, "", PARSE_PATH|PARSE_PUNCTUATION|PARSE_ANCHOR);
+    /* If there's an anchor at this point, leave it in. */
+    tptr = HTParse(arg, "", PARSE_PATH | PARSE_PUNCTUATION | PARSE_ANCHOR);
 #ifndef DISABLE_TRACE
-	if (srcTrace) {
-		fprintf(stderr, "HTParse(%s) returns:\n\t(%s)\n", arg, tptr);
-	}
+    if (srcTrace) {
+        fprintf(stderr, "HTParse(%s) returns:\n\t(%s)\n", arg, tptr);
+    }
 #endif
-	command_len = strlen(com) + strlen(tptr);
-	command = malloc(command_len + len + 1);
-	if (command == NULL) outofmem(__FILE__, "HTLoadHTTP");
-	strcpy(command, com);
-	strcat(command, tptr);
-	if (len != 0)
-	{
-		char *bptr;
+    command_len = strlen(com) + strlen(tptr);
+    command = malloc(command_len + len + 1);
+    if (command == NULL)
+        outofmem(__FILE__, "HTLoadHTTP");
+    strcpy(command, com);
+    strcat(command, tptr);
+    if (len != 0) {
+        char *bptr;
 
-		bptr = (char *)(command + command_len);
+        bptr = (char *)(command + command_len);
 /*		bcopy(data, bptr, len);*/
-		memcpy(bptr, data, len);
-		command_len += len;
-	}
-	else
-	{
-		command_len++;
-	}
-	free(tptr);
+        memcpy(bptr, data, len);
+        command_len += len;
+    } else {
+        command_len++;
+    }
+    free(tptr);
 
-	status = NETWRITE(s, command, command_len);
-	free(command);
-	if (status < 0)
-	{
-		return(HTInetStatus("send"));
-	}
+    status = NETWRITE(s, command, command_len);
+    free(command);
+    if (status < 0) {
+        return (HTInetStatus("send"));
+    }
 
-	tptr = HTParse(arg, "",
-		  PARSE_ACCESS | PARSE_HOST | PARSE_PATH |
-		  PARSE_PUNCTUATION);
+    tptr = HTParse(arg, "", PARSE_ACCESS | PARSE_HOST | PARSE_PATH | PARSE_PUNCTUATION);
 #if 0
-	/* fmt = HTFileFormat (tptr, WWW_HTML, &compressed); */
-        fmt = WWW_HTML;
-	anchor = HTAnchor_parent(HTAnchor_findAddress(arg));
-	HTParseFormat(fmt, anchor, s, 0);
+    /* fmt = HTFileFormat (tptr, WWW_HTML, &compressed); */
+    fmt = WWW_HTML;
+    anchor = HTAnchor_parent(HTAnchor_findAddress(arg));
+    HTParseFormat(fmt, anchor, s, 0);
 #endif
-	free(tptr);
+    free(tptr);
 
-	status = NETCLOSE(s);
+    status = NETCLOSE(s);
 
-	return(HT_LOADED);
+    return (HT_LOADED);
 }
 
-#endif /* 0 */
+#endif                          /* 0 */
 
-char *
-grpan_doit(char *com, char *url, char *data, int len, char **texthead)
+char *grpan_doit(char *com, char *url, char *data, int len, char **texthead)
 {
 #if 0
-	char *txt;
+    char *txt;
 
-	if (HtLoadHTTPANN(url, data, len, com) == HT_LOADED)
-	{
-		txt = mo_get_html_return(texthead);
-		return(txt);
-	}
-	*texthead = NULL;
-#endif /* 0 */
-	return(NULL);
+    if (HtLoadHTTPANN(url, data, len, com) == HT_LOADED) {
+        txt = mo_get_html_return(texthead);
+        return (txt);
+    }
+    *texthead = NULL;
+#endif                          /* 0 */
+    return (NULL);
 }
-

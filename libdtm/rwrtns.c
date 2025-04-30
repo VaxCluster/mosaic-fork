@@ -154,10 +154,8 @@
 #include	"dtmint.h"
 #include	"debug.h"
 
-
 /*
 	CONTENTS
-
 
 	dtm_read_buffer() 	- attempts to fill the next dtm buffer. 
 	dtm_recv_header() 	- Function to read header and return size.  
@@ -170,12 +168,12 @@
 	STATIC FUNCTION PROTOTYPES
 */
 #ifdef DTM_PROTOTYPES
-static  int dtm_recv_reliable DTM_PROTO((int ,char *,int ));
-static  int dtm_writev_failed DTM_PROTO((int ,struct msghdr *,int ));
-static  int dtm_send_some DTM_PROTO((int d, char *buf, int bufsize ));
+static int dtm_recv_reliable DTM_PROTO((int, char *, int));
+static int dtm_writev_failed DTM_PROTO((int, struct msghdr *, int));
+static int dtm_send_some DTM_PROTO((int d, char *buf, int bufsize));
 #endif
 
-static int	padding[] = {0, 3, 2, 1};
+static int padding[] = { 0, 3, 2, 1 };
 
 /*		Technique from XlibInt.c
 */
@@ -190,101 +188,99 @@ static int	padding[] = {0, 3, 2, 1};
 #endif
 
 #ifdef DTM_PROTOTYPES
-static int   ready_bytes(int d, int length )
+static int ready_bytes(int d, int length)
 #else
-static int	ready_bytes( d, length )
-	int	d, length;
+static int ready_bytes(d, length)
+int d, length;
 #endif
 {
-	int		num;
-	fd_set	mask;
-	struct timeval  timeout ;
+    int num;
+    fd_set mask;
+    struct timeval timeout;
 
-	
-	/* set the select timeout value */
-	timeout.tv_sec = 2;
-	timeout.tv_usec = 0;
+    /* set the select timeout value */
+    timeout.tv_sec = 2;
+    timeout.tv_usec = 0;
 
-	FD_ZERO(&mask);
-	FD_SET(d, &mask);
+    FD_ZERO(&mask);
+    FD_SET(d, &mask);
 #ifdef __hpux
-	num = select(FD_SETSIZE, (int *)&mask, (int *)0, (int *)0, &timeout);
+    num = select(FD_SETSIZE, (int *)&mask, (int *)0, (int *)0, &timeout);
 #else
-  	num = select(FD_SETSIZE, &mask, (fd_set *)0, (fd_set *)0, &timeout);
+    num = select(FD_SETSIZE, &mask, (fd_set *) 0, (fd_set *) 0, &timeout);
 #endif
 
-	if (num < 0)  {
-		DTMerrno = DTMSELECT;
-		return DTMERROR;
-	}
+    if (num < 0) {
+        DTMerrno = DTMSELECT;
+        return DTMERROR;
+    }
 
-	else if (num == 0)  {
-		DTMerrno = DTMTIMEOUT;
-		return DTMERROR;
-	}
+    else if (num == 0) {
+        DTMerrno = DTMTIMEOUT;
+        return DTMERROR;
+    }
 
-	else {
-		ioctl(d, FIONREAD, &num);
-		if (num < length)  {
-			DTMerrno = DTMTIMEOUT;
-			return DTMERROR;
-		}
+    else {
+        ioctl(d, FIONREAD, &num);
+        if (num < length) {
+            DTMerrno = DTMTIMEOUT;
+            return DTMERROR;
+        }
 
-		else
-			return DTM_OK;
-	}
+        else
+            return DTM_OK;
+    }
 }
-
-        
 
 /*
 	Reliably read from a port in the face of signals and other
 	'errors' produced by the operating system.
 */
 #ifdef DTM_PROTOTYPES
-static int   dtm_recv_reliable(int d,char *buffer,int length )
+static int dtm_recv_reliable(int d, char *buffer, int length)
 #else
-int	dtm_recv_reliable( d, buffer, length )
-	int		d;
-	char *	buffer;
-	int		length;
+int dtm_recv_reliable(d, buffer, length)
+int d;
+char *buffer;
+int length;
 #endif
 {
-	int		bytes_read;
-	while ( (bytes_read = recv( d, buffer, length, 0)) !=  length ) {
-		if ( bytes_read > 0) {
-			length -= bytes_read;
-			buffer += bytes_read;
-		} else if (ERRTEST(errno)) {
-			fd_set  filedes;
-			int		got;
+    int bytes_read;
+    while ((bytes_read = recv(d, buffer, length, 0)) != length) {
+        if (bytes_read > 0) {
+            length -= bytes_read;
+            buffer += bytes_read;
+        } else if (ERRTEST(errno)) {
+            fd_set filedes;
+            int got;
 
-			/* FD_ZERO and FD_SET were moved into the select loop */
-			/* just in case the select is clearing filedes */
-			do {
-				FD_ZERO( &filedes );
-				FD_SET( d, &filedes );
+            /* FD_ZERO and FD_SET were moved into the select loop */
+            /* just in case the select is clearing filedes */
+            do {
+                FD_ZERO(&filedes);
+                FD_SET(d, &filedes);
 #ifdef __hpux
-				got = select( d, (int *)&filedes, (int *)NULL, (int *)NULL,
+                got = select(d, (int *)&filedes, (int *)NULL, (int *)NULL,
 #else
-  				got = select( d, &filedes, (fd_set *)NULL, (fd_set *)NULL,
+                got = select(d, &filedes, (fd_set *) NULL, (fd_set *) NULL,
 #endif
-						NULL );
-				if (got < 0 &&  errno != EINTR ) {
-					DTMerrno = DTMREAD;
-					return DTMERROR;
-				}
-			} while ( got <= 0 );
-			continue;
-		} else if (bytes_read == 0) {
-			DTMerrno = DTMEOF;
-			return DTMERROR;
-		} else if (errno != EINTR) {
-			DTMerrno = DTMREAD;
-			return DTMERROR;
-		}
-	}
-	return DTM_OK;
+                             NULL);
+                if (got < 0 && errno != EINTR) {
+                    DTMerrno = DTMREAD;
+                    return DTMERROR;
+                }
+            }
+            while (got <= 0);
+            continue;
+        } else if (bytes_read == 0) {
+            DTMerrno = DTMEOF;
+            return DTMERROR;
+        } else if (errno != EINTR) {
+            DTMerrno = DTMREAD;
+            return DTMERROR;
+        }
+    }
+    return DTM_OK;
 }
 
 /*
@@ -293,120 +289,118 @@ int	dtm_recv_reliable( d, buffer, length )
  *	to force recv_buffer to move the next dataset.
  */
 #ifdef DTM_PROTOTYPES
-int dtm_read_buffer(int d,int32 *blocklen,VOIDPTR buffer,int length)
+int dtm_read_buffer(int d, int32 *blocklen, VOIDPTR buffer, int length)
 #else
 int dtm_read_buffer(d, blocklen, buffer, length)
-  int		d, *blocklen;
-  VOIDPTR	buffer;
-  int		length;
+int d, *blocklen;
+VOIDPTR buffer;
+int length;
 #endif
 {
-  reg int	tmp, readcnt, count = 0;
+    reg int tmp, readcnt, count = 0;
 
-  DBGFLOW("# dtm_read_buffer called.\n");
-  DBGMSG1("dtm_recv_buffer: attempting to read %d bytes.\n", length);
-  DBGMSG1("dtm_recv_buffer: initial blocklen = %d\n", *blocklen);
+    DBGFLOW("# dtm_read_buffer called.\n");
+    DBGMSG1("dtm_recv_buffer: attempting to read %d bytes.\n", length);
+    DBGMSG1("dtm_recv_buffer: initial blocklen = %d\n", *blocklen);
 
-  /* if block length is DTM_NEW_DATASET this is a new dataset 
-   * get initial block count 
-   */
-  if (*blocklen == DTM_NEW_DATASET)  {
-    CHECK_ERR(dtm_recv_reliable(d, (char *)blocklen, 4));
-    LOCALINT(*blocklen);
-    DBGINT("initial blocklen = %d\n", *blocklen);
-  }
+    /* if block length is DTM_NEW_DATASET this is a new dataset 
+     * get initial block count 
+     */
+    if (*blocklen == DTM_NEW_DATASET) {
+        CHECK_ERR(dtm_recv_reliable(d, (char *)blocklen, 4));
+        LOCALINT(*blocklen);
+        DBGINT("initial blocklen = %d\n", *blocklen);
+    }
 
-  /* attempt to get a full buffer */
-  while (TRUE)  {
+    /* attempt to get a full buffer */
+    while (TRUE) {
 
-    /* if block length is 0, because last call to fill_buffer hit
-     * the EOS or because this dataset is zero length, return 0  
-     * to indicate the end of dataset.				 
-	 */
-    if (*blocklen == 0)
-      return 0;
+        /* if block length is 0, because last call to fill_buffer hit
+         * the EOS or because this dataset is zero length, return 0  
+         * to indicate the end of dataset.                           
+         */
+        if (*blocklen == 0)
+            return 0;
 
-    /* if block length is greater than buffer size then... */
-    if (*blocklen >= length - count)  {
+        /* if block length is greater than buffer size then... */
+        if (*blocklen >= length - count) {
 
-      readcnt = length - count;
-      CHECK_ERR( dtm_recv_reliable( d, ((char *)buffer) + length - readcnt,
-         readcnt));
+            readcnt = length - count;
+            CHECK_ERR(dtm_recv_reliable(d, ((char *)buffer) + length - readcnt, readcnt));
 
-		/* decrement block length, if 0 get next block length */
-		*blocklen -= (length - count);
-		if (*blocklen == 0)  
-			*blocklen = DTM_NEW_DATASET;
+            /* decrement block length, if 0 get next block length */
+            *blocklen -= (length - count);
+            if (*blocklen == 0)
+                *blocklen = DTM_NEW_DATASET;
 
-      /* if block length is 0 now, the EOS will be returned on */
-      /* the next call to fill_buffer */
+            /* if block length is 0 now, the EOS will be returned on */
+            /* the next call to fill_buffer */
 
-      /* return full buffer count */
-      DBGINT("recv_buffer: buffer full, returning %d\n", length);
-      return length;
-      }
+            /* return full buffer count */
+            DBGINT("recv_buffer: buffer full, returning %d\n", length);
+            return length;
+        }
 
-    /* else block length is less than buffer size */
-    else  {
+        /* else block length is less than buffer size */
+        else {
 
-      readcnt = *blocklen;
-      CHECK_ERR( dtm_recv_reliable( d, (char *)buffer + count +
-         *blocklen - readcnt, readcnt));
+            readcnt = *blocklen;
+            CHECK_ERR(dtm_recv_reliable(d, (char *)buffer + count + *blocklen - readcnt, readcnt));
 
-      /* increment count */
-      count += *blocklen;
+            /* increment count */
+            count += *blocklen;
 
-      /* get next block length */
-      CHECK_ERR( dtm_recv_reliable(d, (char *)blocklen, 4));
-      LOCALINT(*blocklen);
-      DBGINT("blocklen = %d\n", *blocklen);
+            /* get next block length */
+            CHECK_ERR(dtm_recv_reliable(d, (char *)blocklen, 4));
+            LOCALINT(*blocklen);
+            DBGINT("blocklen = %d\n", *blocklen);
 
-      /* if block length is 0 now, the correct count will be */
-      /* returned now, and EOS on the next call to fill_buffer */ 
-      if (*blocklen == 0)
-        return count;
+            /* if block length is 0 now, the correct count will be */
+            /* returned now, and EOS on the next call to fill_buffer */
+            if (*blocklen == 0)
+                return count;
 
-      }
-    } /* end while */
+        }
+    }                           /* end while */
 }
 
 /*
        Replaces dtm_recv_header for nornal communication.
 */
 #ifdef DTM_PROTOTYPES
-int   dtm_read_header(int fd,void *buf,int buflen )
+int dtm_read_header(int fd, void *buf, int buflen)
 #else
-int   dtm_read_header( fd, buf, buflen )
-	int		fd;
-	void * 	buf;
-	int		buflen;
+int dtm_read_header(fd, buf, buflen)
+int fd;
+void *buf;
+int buflen;
 #endif
 {
-   int32		hdrsize;
+    int32 hdrsize;
 
+    CHECK_ERR(ready_bytes(fd, 4));
 
-   CHECK_ERR(ready_bytes(fd, 4));
-
-   CHECK_ERR( dtm_recv_reliable( fd, (char *)&hdrsize, 4 ));
-   LOCALINT(hdrsize);
-   if ( hdrsize <= buflen ) {
-        CHECK_ERR( dtm_recv_reliable( fd, buf, hdrsize ));
+    CHECK_ERR(dtm_recv_reliable(fd, (char *)&hdrsize, 4));
+    LOCALINT(hdrsize);
+    if (hdrsize <= buflen) {
+        CHECK_ERR(dtm_recv_reliable(fd, buf, hdrsize));
         return hdrsize;
-   } else {
-        CHECK_ERR( dtm_recv_reliable( fd, buf, buflen ));
+    } else {
+        CHECK_ERR(dtm_recv_reliable(fd, buf, buflen));
         {
-            int                     left  = hdrsize - buflen;
-            int                     readcnt = left % DISCARDSIZE;
-            if (!readcnt) readcnt = DISCARDSIZE;
+            int left = hdrsize - buflen;
+            int readcnt = left % DISCARDSIZE;
+            if (!readcnt)
+                readcnt = DISCARDSIZE;
             while (left) {
-                CHECK_ERR(dtm_recv_reliable( fd, dtm_discard, readcnt ));
+                CHECK_ERR(dtm_recv_reliable(fd, dtm_discard, readcnt));
                 left -= readcnt;
                 readcnt = DISCARDSIZE;
-             }
+            }
         }
     }
-	DTMerrno = DTMHEADER;
-	return DTMERROR;
+    DTMerrno = DTMHEADER;
+    return DTMERROR;
 }
 
 /*
@@ -420,87 +414,84 @@ int   dtm_read_header( fd, buf, buflen )
 		  everywhere since that was the first usage of the function.
 */
 #ifdef DTM_PROTOTYPES
-int dtm_recv_header(int d,VOIDPTR header,int length )
+int dtm_recv_header(int d, VOIDPTR header, int length)
 #else
-int dtm_recv_header( d, header, length )
-	int		d;
-	int		length;
-	VOIDPTR	header;
+int dtm_recv_header(d, header, length)
+int d;
+int length;
+VOIDPTR header;
 #endif
 {
-	int	readcnt, headerlen, tmp;
-	struct	sockaddr_in from ;
-	int	fromlen = sizeof( struct sockaddr_in ) ;
+    int readcnt, headerlen, tmp;
+    struct sockaddr_in from;
+    int fromlen = sizeof(struct sockaddr_in);
 
-	DBGFLOW("# dtm_recv_header called.\n");
-	DBGMSG1("dtm_recv_header: fd = %d.\n", d);
-	DBGMSG1("dtm_recv_header: buf length = %d.\n", length);
+    DBGFLOW("# dtm_recv_header called.\n");
+    DBGMSG1("dtm_recv_header: fd = %d.\n", d);
+    DBGMSG1("dtm_recv_header: buf length = %d.\n", length);
 
-  	/* get header length */
-	
-  	if( (readcnt = recvfrom(d, (char *)&headerlen, 4, 0, ( struct sockaddr *)&from,
-			( int *)&fromlen)) != 4) {
-    		/* somehow hit EOF, return DTMEOF instead */
+    /* get header length */
 
-		if( readcnt == 0 ) {
-			DTMerrno = DTMEOF;
-			DBGMSG("dtm_recv_header: EOF1.\n");
-			return DTMERROR;
-		} else {
-			if( errno == ECONNRESET ) {
-				/* connection closed by writer, return EOF */
+    if ((readcnt = recvfrom(d, (char *)&headerlen, 4, 0, (struct sockaddr *)&from, (int *)&fromlen)) != 4) {
+        /* somehow hit EOF, return DTMEOF instead */
 
-				DBGMSG("dtm_recv_header: EOF2.\n");
-				DTMerrno = DTMEOF;
-				return DTMERROR;
-			} else {
-				/* don't know what the problem is, punt... */
-				DBGMSG("dtm_recv_header: EOF3.\n");
-				DTMerrno = DTMREAD;
-				return DTMERROR;
-			}
-		}
-  	}    
+        if (readcnt == 0) {
+            DTMerrno = DTMEOF;
+            DBGMSG("dtm_recv_header: EOF1.\n");
+            return DTMERROR;
+        } else {
+            if (errno == ECONNRESET) {
+                /* connection closed by writer, return EOF */
 
-  	LOCALINT(headerlen);
-	DBGMSG("dtm_recv_header: got length.\n");
+                DBGMSG("dtm_recv_header: EOF2.\n");
+                DTMerrno = DTMEOF;
+                return DTMERROR;
+            } else {
+                /* don't know what the problem is, punt... */
+                DBGMSG("dtm_recv_header: EOF3.\n");
+                DTMerrno = DTMREAD;
+                return DTMERROR;
+            }
+        }
+    }
 
-	/*  read the header */ 
+    LOCALINT(headerlen);
+    DBGMSG("dtm_recv_header: got length.\n");
 
-  	readcnt = (length > headerlen) ? headerlen : length ;
-  	header = (void *) (((char *) header) + readcnt);
+    /*  read the header */
 
-  	while(readcnt) {
-		if( (tmp = recvfrom(d, ((char *)header) - readcnt, readcnt, 0, 
-		( struct sockaddr *)&from, ( int *)&fromlen)) > 0) 
-			readcnt -= tmp;
-		else {
-      			DTMerrno = DTMREAD;
-      			return DTMERROR;
-		}
-	}
+    readcnt = (length > headerlen) ? headerlen : length;
+    header = (void *)(((char *)header) + readcnt);
 
-   	/* check for header greater than buffer size provided */ 
+    while (readcnt) {
+        if ((tmp = recvfrom(d, ((char *)header) - readcnt, readcnt, 0, (struct sockaddr *)&from, (int *)&fromlen)) > 0)
+            readcnt -= tmp;
+        else {
+            DTMerrno = DTMREAD;
+            return DTMERROR;
+        }
+    }
 
-  	if( length >= headerlen ) 
-		return headerlen;
-  	else {
-  		/* discard remaining header */
+    /* check for header greater than buffer size provided */
 
-    		readcnt = headerlen - length;
-		while (readcnt) {
-			if ((tmp = recvfrom(d, dtm_discard, readcnt, 0, 
-					(struct sockaddr *)&from, (int *)&fromlen)) > 0) 
-				readcnt -= tmp;
-			else {
-      				DTMerrno = DTMREAD;
-      				return DTMERROR;
-			}
-		}
-    
-		DTMerrno = DTMHEADER;
-		return DTMERROR;
-	}
+    if (length >= headerlen)
+        return headerlen;
+    else {
+        /* discard remaining header */
+
+        readcnt = headerlen - length;
+        while (readcnt) {
+            if ((tmp = recvfrom(d, dtm_discard, readcnt, 0, (struct sockaddr *)&from, (int *)&fromlen)) > 0)
+                readcnt -= tmp;
+            else {
+                DTMerrno = DTMREAD;
+                return DTMERROR;
+            }
+        }
+
+        DTMerrno = DTMHEADER;
+        return DTMERROR;
+    }
 }
 
 /*
@@ -516,87 +507,89 @@ int dtm_recv_header( d, header, length )
 		  say DTMFCONN ( DTM connection failed error )
 */
 #ifdef DTM_PROTOTYPES
-int dtm_recv_ack(int d,int *ack )
+int dtm_recv_ack(int d, int *ack)
 #else
-int	dtm_recv_ack( d, ack )
-	int	d;
-	int	*ack;
+int dtm_recv_ack(d, ack)
+int d;
+int *ack;
 #endif
 {
-	int	tmp ;
+    int tmp;
 
-	DBGFLOW("# dtm_recv_ack called.\n");
+    DBGFLOW("# dtm_recv_ack called.\n");
 
-	/* there should be no possibility of blocking after this call */
-	CHECK_ERR(ready_bytes(d, 4));
+    /* there should be no possibility of blocking after this call */
+    CHECK_ERR(ready_bytes(d, 4));
 
-  	if( (tmp = recv( d, (char *)ack, 4, 0 )) != 4 ) {
-		DBGINT( "Recv_ack errno = %d\n", errno ) ;
-		if( tmp == 0 ) 
-			/* Courtesy Berkeley */
+    if ((tmp = recv(d, (char *)ack, 4, 0)) != 4) {
+        DBGINT("Recv_ack errno = %d\n", errno);
+        if (tmp == 0)
+            /* Courtesy Berkeley */
 
-			DTMerrno = DTMEOF ;
-		else {
-			if( errno == ECONNRESET ) 
-				/* Courtesy system V */
+            DTMerrno = DTMEOF;
+        else {
+            if (errno == ECONNRESET)
+                /* Courtesy system V */
 
-				DTMerrno = DTMEOF;
-			else 
-				DTMerrno = DTMREAD;
-		}
-		return DTMERROR;
-	}
+                DTMerrno = DTMEOF;
+            else
+                DTMerrno = DTMREAD;
+        }
+        return DTMERROR;
+    }
 
-	DBGMSG1( "ack received, tmp = %d\n", tmp );
-  	LOCALINT(*ack);
-  	return DTM_OK;
+    DBGMSG1("ack received, tmp = %d\n", tmp);
+    LOCALINT(*ack);
+    return DTM_OK;
 }
 
 #ifdef DTM_PROTOTYPES
-static int dtm_send_some(int d, char *buf, int bufsize )
+static int dtm_send_some(int d, char *buf, int bufsize)
 #else
-int	dtm_send_some( d, buf, bufsize )
-	int		d;
-	char *	buf;
-	int		bufsize;
+int dtm_send_some(d, buf, bufsize)
+int d;
+char *buf;
+int bufsize;
 #endif
 {
-	int	tmp ;
+    int tmp;
 
-	while (bufsize ) {
-		tmp = send(d, buf, bufsize, 0);
-		if ( tmp >= 0 ) {
-			bufsize -= tmp;
-			buf += tmp;
-			continue;
-		}
-		if (errno == EPIPE) {
-				/* socket connection broke in middle */
-			DTMerrno = DTMEOF ;
-			return DTMERROR;
-		} else if ( ERRTEST( errno ) ) {
-			fd_set  filedes;
-			int		got;
+    while (bufsize) {
+        tmp = send(d, buf, bufsize, 0);
+        if (tmp >= 0) {
+            bufsize -= tmp;
+            buf += tmp;
+            continue;
+        }
+        if (errno == EPIPE) {
+            /* socket connection broke in middle */
+            DTMerrno = DTMEOF;
+            return DTMERROR;
+        } else if (ERRTEST(errno)) {
+            fd_set filedes;
+            int got;
 
-			FD_ZERO( &filedes );
-			FD_SET( d, &filedes );
-			do {
+            FD_ZERO(&filedes);
+            FD_SET(d, &filedes);
+            do {
 #ifdef __hpux
-				got = select( 32, (int *)&filedes, (int *)NULL, (int *)NULL,
+                got = select(32, (int *)&filedes, (int *)NULL, (int *)NULL,
 #else
-  				got = select( 32, &filedes, (fd_set *)NULL, (fd_set *)NULL,
+                got = select(32, &filedes, (fd_set *) NULL, (fd_set *) NULL,
 #endif
-						NULL );
-				if (got < 0 &&  errno != EINTR ) {
-					DTMerrno = DTMWRITE;
-					return DTMERROR;
-				}
-			} while ( got <= 0 );
-			continue;
-		} else DTMerrno = DTMWRITE ;
-		return DTMERROR;
-	}
-	return DTM_OK;
+                             NULL);
+                if (got < 0 && errno != EINTR) {
+                    DTMerrno = DTMWRITE;
+                    return DTMERROR;
+                }
+            }
+            while (got <= 0);
+            continue;
+        } else
+            DTMerrno = DTMWRITE;
+        return DTMERROR;
+    }
+    return DTM_OK;
 }
 
 /*
@@ -605,76 +598,75 @@ int	dtm_send_some( d, buf, bufsize )
 #ifdef DTM_PROTOTYPES
 int dtm_send_ack(int d, int32 ack)
 #else
-int	dtm_send_ack(d, ack)
-	int		d;
-	int32	ack;
+int dtm_send_ack(d, ack)
+int d;
+int32 ack;
 #endif
 {
-	DBGFLOW("# dtm_send_ack called.\n");
+    DBGFLOW("# dtm_send_ack called.\n");
 
-  	STDINT(ack);
-	return dtm_send_some( d, (char *)&ack, 4 );
+    STDINT(ack);
+    return dtm_send_some(d, (char *)&ack, 4);
 }
 
-
 #ifdef DTM_PROTOTYPES
-static int dtm_writev_failed(int fd,struct msghdr *msgbuf,int tmp )
+static int dtm_writev_failed(int fd, struct msghdr *msgbuf, int tmp)
 #else
-int dtm_writev_failed( fd, msgbuf, tmp )
-	int					fd;
-	struct msghdr * 	msgbuf;
-	int					tmp;
+int dtm_writev_failed(fd, msgbuf, tmp)
+int fd;
+struct msghdr *msgbuf;
+int tmp;
 #endif
 {
-	int					done = tmp;
-	int					i;
-	struct	iovec	*	iov;
+    int done = tmp;
+    int i;
+    struct iovec *iov;
 
-	iov=msgbuf->msg_iov;
+    iov = msgbuf->msg_iov;
 
-	if ( tmp < 0 ) done = 0;
-	for ( i = 0; i < msgbuf->msg_iovlen; i++ ) {
-		done -= iov[i].iov_len;
-		if ( done > 0 ) continue;
-		if ( dtm_send_some( fd, iov[i].iov_base + done + iov[i].iov_len, 
-				(- done )) == DTMERROR )
-			return DTMERROR;
-		done = 0;
-	}
+    if (tmp < 0)
+        done = 0;
+    for (i = 0; i < msgbuf->msg_iovlen; i++) {
+        done -= iov[i].iov_len;
+        if (done > 0)
+            continue;
+        if (dtm_send_some(fd, iov[i].iov_base + done + iov[i].iov_len, (-done)) == DTMERROR)
+            return DTMERROR;
+        done = 0;
+    }
 }
 
 /*
 	dtm_writev_buffer() - sends the buffers to receiving process.
 */
 #ifdef DTM_PROTOTYPES
-int dtm_writev_buffer(int fd,struct iovec *iov,int32 iovlen,int32 iovsize,
-			struct sockaddr *addr,int addrlen )
+int dtm_writev_buffer(int fd, struct iovec *iov, int32 iovlen, int32 iovsize, struct sockaddr *addr, int addrlen)
 #else
-int	dtm_writev_buffer( fd, iov, iovlen, iovsize, addr, addrlen )
-	int				fd ;
-	struct	iovec	*iov ;
-	int32			iovlen ;
-	int32			iovsize ;
-	struct sockaddr	*addr ;
-	int				addrlen ;
+int dtm_writev_buffer(fd, iov, iovlen, iovsize, addr, addrlen)
+int fd;
+struct iovec *iov;
+int32 iovlen;
+int32 iovsize;
+struct sockaddr *addr;
+int addrlen;
 #endif
 {
-	int	tmp;
-	struct	msghdr	msgbuf ;
-	int	todo;
+    int tmp;
+    struct msghdr msgbuf;
+    int todo;
 
-  	DBGINT("# dtm_writev_buffer called, fd %d.\n", fd );
-	
-	msgbuf.msg_name = (caddr_t)addr ; 
-	msgbuf.msg_namelen = addrlen ;
-	msgbuf.msg_iov = iov ;
-	msgbuf.msg_iovlen = iovlen ;
-	msgbuf.msg_accrights = 0 ;
+    DBGINT("# dtm_writev_buffer called, fd %d.\n", fd);
 
-	if( (tmp = sendmsg( fd, &msgbuf, 0 )) != iovsize ) 
-		return dtm_writev_failed( fd, &msgbuf, tmp );
+    msgbuf.msg_name = (caddr_t) addr;
+    msgbuf.msg_namelen = addrlen;
+    msgbuf.msg_iov = iov;
+    msgbuf.msg_iovlen = iovlen;
+    msgbuf.msg_accrights = 0;
 
-	DBGINT( "dtm_writev_buffer tmp = %d\n", tmp );
-	
-	return	DTM_OK ;
+    if ((tmp = sendmsg(fd, &msgbuf, 0)) != iovsize)
+        return dtm_writev_failed(fd, &msgbuf, tmp);
+
+    DBGINT("dtm_writev_buffer tmp = %d\n", tmp);
+
+    return DTM_OK;
 }

@@ -69,7 +69,7 @@
 #include "HTCompressed.h"
 
 extern void MoCCISendOutputToClient();
-extern void HTCompressedFileToFile (char *fnam, int compressed);
+extern void HTCompressedFileToFile(char *fnam, int compressed);
 
 #ifndef DISABLE_TRACE
 extern int srcTrace;
@@ -80,13 +80,13 @@ extern int srcTrace;
 */
 
 struct _HTStream {
-	WWW_CONST HTStreamClass *	isa;
+    WWW_CONST HTStreamClass *isa;
 
-	HTAtom *dataType;
-	char fileName[L_tmpnam]; /* name of temp file... kept for unlink()ing*/
-	FILE *fp; 
-   
-        int compressed;
+    HTAtom *dataType;
+    char fileName[L_tmpnam];    /* name of temp file... kept for unlink()ing */
+    FILE *fp;
+
+    int compressed;
 };
 
 /*_________________________________________________________________________
@@ -100,28 +100,23 @@ struct _HTStream {
 
 PRIVATE void CCI_put_character ARGS2(HTStream *, me, char, c)
 {
-	fputc(c,me->fp);
+    fputc(c, me->fp);
 }
-
-
 
 /*	String handling
 **	---------------
 **
 */
-PRIVATE void CCI_put_string ARGS2(HTStream *, me, WWW_CONST char*, s)
+PRIVATE void CCI_put_string ARGS2(HTStream *, me, WWW_CONST char *, s)
 {
 
-	fwrite(s,1,strlen(s),me->fp);
+    fwrite(s, 1, strlen(s), me->fp);
 }
 
-
-PRIVATE void CCI_write ARGS3(HTStream *, me, WWW_CONST char*, s, int, l)
+PRIVATE void CCI_write ARGS3(HTStream *, me, WWW_CONST char *, s, int, l)
 {
-	fwrite(s,1,l,me->fp);
+    fwrite(s, 1, l, me->fp);
 }
-
-
 
 /*	Free an HTML object
 **	-------------------
@@ -133,9 +128,9 @@ PRIVATE void CCI_free ARGS1(HTStream *, me)
 {
 
 #ifndef DISABLE_TRACE
-	if (srcTrace) {
-		fprintf(stderr,"CCI_free()\n");
-	}
+    if (srcTrace) {
+        fprintf(stderr, "CCI_free()\n");
+    }
 #endif
 
 /*
@@ -160,11 +155,11 @@ PRIVATE void CCI_free ARGS1(HTStream *, me)
 PRIVATE void CCI_end_document ARGS1(HTStream *, me)
 {
 
-	fclose(me->fp);
-	/* ship it */
-	if ( me->compressed != COMPRESSED_NOT)
-	  HTCompressedFileToFile (me->fileName, me->compressed);	
-	MoCCISendOutputToClient(HTAtom_name(me->dataType),me->fileName);
+    fclose(me->fp);
+    /* ship it */
+    if (me->compressed != COMPRESSED_NOT)
+        HTCompressedFileToFile(me->fileName, me->compressed);
+    MoCCISendOutputToClient(HTAtom_name(me->dataType), me->fileName);
 /*
 	unlink(me->fileName);
 */
@@ -172,51 +167,43 @@ PRIVATE void CCI_end_document ARGS1(HTStream *, me)
 
 PRIVATE void CCI_handle_interrupt ARGS1(HTStream *, me)
 {
-	fclose(me->fp);
-	unlink(me->fileName);
+    fclose(me->fp);
+    unlink(me->fileName);
 }
-
-
 
 /*		Structured Object Class
 **		-----------------------
 */
-PUBLIC WWW_CONST HTStreamClass CCIout =
-{		
-	"CCIout",
-	CCI_free,
-	CCI_end_document,
-	CCI_put_character, 	CCI_put_string, CCI_write,
-        CCI_handle_interrupt
-}; 
-
+PUBLIC WWW_CONST HTStreamClass CCIout = {
+    "CCIout",
+    CCI_free,
+    CCI_end_document,
+    CCI_put_character, CCI_put_string, CCI_write,
+    CCI_handle_interrupt
+};
 
 /*		New object
 **		----------
 */
-PUBLIC HTStream* CCIPresent ARGS5(
-	HTPresentation *,	pres,
-	HTParentAnchor *,	anchor,	
-	HTStream *,		sink,
-        HTFormat,               format_in,
-        int,                    compressed)
+PUBLIC HTStream *CCIPresent ARGS5(HTPresentation *, pres,
+                                  HTParentAnchor *, anchor, HTStream *, sink, HTFormat, format_in, int, compressed)
 {
-HTStream* me = (HTStream*)malloc(sizeof(HTStream));
+    HTStream *me = (HTStream *) malloc(sizeof(HTStream));
 
-	me->isa = &CCIout;       
+    me->isa = &CCIout;
 
-	(void) tmpnam(me->fileName);
-	if (!(me->fp = fopen(me->fileName,"w"))) {
-		/*error, can't open tmp file */
-		return(sink);
-		}
-	me->dataType = pres->rep;
-	me->compressed = compressed;
+    (void)tmpnam(me->fileName);
+    if (!(me->fp = fopen(me->fileName, "w"))) {
+        /*error, can't open tmp file */
+        return (sink);
+    }
+    me->dataType = pres->rep;
+    me->compressed = compressed;
 
 /*
   if (me->compressed == COMPRESSED_NOT)
     HText_appendText(me->text, "<PLAINTEXT>\n");
 */
 
-  return (HTStream*) me;
+    return (HTStream *) me;
 }

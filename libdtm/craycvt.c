@@ -25,15 +25,11 @@
 **
 **********************************************************************/
 
-
 #ifdef RCSLOG
 
- $Log: craycvt.c,v $
- Revision 1.1.1.1  1995/01/11 00:02:57  alanb
- New CVS source tree, Mosaic 2.5 beta 4
-
- * Revision 2.5  1994/12/29  23:39:21  alanb
- * I'm committing with a new symbolic revision number.
+$Log: craycvt.c, v $ Revision 1.1 .1 .1 1995 / 01 / 11 00: 02: 57 alanb New CVS source tree, Mosaic 2.5 beta 4 * Revision 2.5 1994 / 12 / 29 23: 39:21 alanb
+    *
+    I 'm committing with a new symbolic revision number.
  *
  * Revision 1.1.1.1  1994/12/28  21:37:30  alanb
  *
@@ -50,7 +46,7 @@
  * disclaimer added
  *
  * Revision 1.2  1991/01/31  17:08:16  jefft
- * Added 'icheck' variable to force checking of floating point values and
+ * Added ' icheck ' variable to force checking of floating point values and
  * changing to 0 on underflow.
  *
  * Revision 1.1  90/11/08  16:29:13  jefft
@@ -214,3 +210,6 @@ int	(*DTMconvertRtns[])() = {
                 dtm_complex,
 		dtm_triplet
 		};
+
+
+

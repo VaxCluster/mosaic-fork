@@ -78,7 +78,6 @@
 #endif
 */
 
-
 #include	<stdio.h>
 #include	<sys/types.h>
 #ifdef _ARCH_MSDOS
@@ -89,63 +88,60 @@
 
 #include	"dtmint.h"
 
-static char	*err_msg[] = {
-	"No error",
-	"Out of memory - can not create port",
-	"Invalid port name - should be 'hostname:tcp port'",
-	"Out of DTM ports - 256 ports max",
-	"Couldn't initialize port",
-	"DTM routines called in wrong order",
-	"Encounted EOF",
-	"Error creating socket",
-	"Bad hostname",
-	"Timeout waiting for connection",
-	"Couldn't connect",
-	"DTM read error",
-	"DTM write error",
-	"DTM header to long for buffer",
-	"SDS error",
-	"Select call error",
-	"Environment not setup",
-	"User buffer overflow",
-	"Port table corrupted",
-	"Bad port supplied to library",
-	"Bad ack to internal flow control",
-	"Bad address",
-	"Problem communicating with server"
-	};
-
+static char *err_msg[] = {
+    "No error",
+    "Out of memory - can not create port",
+    "Invalid port name - should be 'hostname:tcp port'",
+    "Out of DTM ports - 256 ports max",
+    "Couldn't initialize port",
+    "DTM routines called in wrong order",
+    "Encounted EOF",
+    "Error creating socket",
+    "Bad hostname",
+    "Timeout waiting for connection",
+    "Couldn't connect",
+    "DTM read error",
+    "DTM write error",
+    "DTM header to long for buffer",
+    "SDS error",
+    "Select call error",
+    "Environment not setup",
+    "User buffer overflow",
+    "Port table corrupted",
+    "Bad port supplied to library",
+    "Bad ack to internal flow control",
+    "Bad address",
+    "Problem communicating with server"
+};
 
 #ifdef DTM_PROTOTYPES
-void dtm_version(void )
+void dtm_version(void)
 #else
 void dtm_version()
 #endif
 {
-  fprintf(stderr, "\nDTMlib version %s.\n", DTM_VERSION);
+    fprintf(stderr, "\nDTMlib version %s.\n", DTM_VERSION);
 }
-
 
 #ifdef DTM_PROTOTYPES
 char *DTMerrmsg(int quiet)
 #else
 char *DTMerrmsg(quiet)
-	int	quiet;
+int quiet;
 #endif
 {
-	char	* 	strUnknown = "unknown error: %d"; 
-	char		strOut[60];
-	char	*	strErr;
+    char *strUnknown = "unknown error: %d";
+    char strOut[60];
+    char *strErr;
 
-	if ( DTMerrno < (sizeof(err_msg)/sizeof(char *))) 
-		strErr = err_msg[(int)DTMerrno];
-	else {
-		sprintf( strOut, strUnknown, DTMerrno);
-		strErr = strOut;
-	}
+    if (DTMerrno < (sizeof(err_msg) / sizeof(char *)))
+        strErr = err_msg[(int)DTMerrno];
+    else {
+        sprintf(strOut, strUnknown, DTMerrno);
+        strErr = strOut;
+    }
 
-	if (!quiet)
-		fprintf(stderr, "\nDTMerrno = %d: %s\n", DTMerrno, 
-					strErr);
-	return strErr;
+    if (!quiet)
+        fprintf(stderr, "\nDTMerrno = %d: %s\n", DTMerrno, strErr);
+    return strErr;
 }

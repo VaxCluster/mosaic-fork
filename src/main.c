@@ -76,117 +76,110 @@
 #define _KCMS_H_
 #include "kcms.h"
 
-char *userPath=NULL;
+char *userPath = NULL;
 
-void mo_exit (void)
+void mo_exit(void)
 {
-  mo_write_default_hotlist ();
-  newsrc_kill ();
-  if (get_pref_boolean(eUSE_GLOBAL_HISTORY))
-    mo_write_global_history ();
-  mo_write_pan_list ();
+    mo_write_default_hotlist();
+    newsrc_kill();
+    if (get_pref_boolean(eUSE_GLOBAL_HISTORY))
+        mo_write_global_history();
+    mo_write_pan_list();
 
-  preferences_armegeddon();
+    preferences_armegeddon();
 
 #ifdef HAVE_DTM
-  mo_dtm_disconnect ();
+    mo_dtm_disconnect();
 #endif
 
-  exit (0);
+    exit(0);
 }
 
 #ifndef VMS
-MO_SIGHANDLER_RETURNTYPE ProcessExternalDirective (MO_SIGHANDLER_ARGS)
+MO_SIGHANDLER_RETURNTYPE ProcessExternalDirective(MO_SIGHANDLER_ARGS)
 {
-  char filename[64];
-  char line[MO_LINE_LENGTH], *status, *directive, *url;
-  FILE *fp;
-  
+    char filename[64];
+    char line[MO_LINE_LENGTH], *status, *directive, *url;
+    FILE *fp;
 
-  signal (SIGUSR1, SIG_IGN);
+    signal(SIGUSR1, SIG_IGN);
 
-  /* Construct filename from our pid. */
-  sprintf (filename, "/tmp/Mosaic.%d", getpid ());
+    /* Construct filename from our pid. */
+    sprintf(filename, "/tmp/Mosaic.%d", getpid());
 
-  fp = fopen (filename, "r");
-  if (!fp)
-    goto done;
+    fp = fopen(filename, "r");
+    if (!fp)
+        goto done;
 
-  status = fgets (line, MO_LINE_LENGTH, fp);
-  if (!status || !(*line)) {
+    status = fgets(line, MO_LINE_LENGTH, fp);
+    if (!status || !(*line)) {
+        fclose(fp);
+        goto done;
+    }
+    directive = strdup(line);
+
+    /* We now allow URL to not exist, since some directives
+       don't need it. */
+    status = fgets(line, MO_LINE_LENGTH, fp);
+    if (!status || !(*line))
+        url = strdup("dummy");
+    else
+        url = strdup(line);
+
+    mo_process_external_directive(directive, url);
+
+    free(directive);
+    free(url);
+
     fclose(fp);
-    goto done;
-  }
-  directive = strdup (line);
 
-  /* We now allow URL to not exist, since some directives
-     don't need it. */
-  status = fgets (line, MO_LINE_LENGTH, fp);
-  if (!status || !(*line))
-    url = strdup ("dummy");
-  else
-    url = strdup (line);
-  
-  mo_process_external_directive (directive, url);
-
-  free (directive);
-  free (url);
-
-  fclose(fp);
-
- done:
-  signal (SIGUSR1, (void *)ProcessExternalDirective);
-  return;
-}  
+  done:
+    signal(SIGUSR1, (void *)ProcessExternalDirective);
+    return;
+}
 #endif
 
-static void RealFatal (void)
+static void RealFatal(void)
 {
-  signal (SIGBUS, 0);
-  signal (SIGSEGV, 0);
-  signal (SIGILL, 0);
-  abort ();
+    signal(SIGBUS, 0);
+    signal(SIGSEGV, 0);
+    signal(SIGILL, 0);
+    abort();
 }
 
 #ifdef __STDC__
-static void FatalProblem (int sig)
-#else /* not __STDC__ */
+static void FatalProblem(int sig)
+#else                           /* not __STDC__ */
 #ifdef _HPUX_SOURCE
-static MO_SIGHANDLER_RETURNTYPE FatalProblem
-  (int sig, int code, struct sigcontext *scp,
-                        char *addr)
+static MO_SIGHANDLER_RETURNTYPE FatalProblem(int sig, int code, struct sigcontext *scp, char *addr)
 #else
-static MO_SIGHANDLER_RETURNTYPE FatalProblem
-  (int sig, int code, struct sigcontext *scp, char *addr)
+static MO_SIGHANDLER_RETURNTYPE FatalProblem(int sig, int code, struct sigcontext *scp, char *addr)
 #endif
-#endif /* not __STDC__ */
+#endif                          /* not __STDC__ */
 {
-  fprintf (stderr, "\nCongratulations, you have found a bug in\n");
-  fprintf (stderr, "NCSA Mosaic %s on %s.\n\n", MO_VERSION_STRING, 
-           MO_MACHINE_TYPE);
-  fprintf (stderr, "If a core file was generated in your directory,\n");
-  fprintf (stderr, "please do one of the following:\n\n");
-  fprintf (stderr, "  %% dbx /path/to/Mosaic /path/to/core\n");
-  fprintf (stderr, "  dbx> where\n\n");
-  fprintf (stderr, "OR\n\n");
-  fprintf (stderr, "  %% gdb /path/to/Mosaic /path/to/core\n");
-  fprintf (stderr, "  gdb> where\n\n");
-  fprintf (stderr, "Mail the results, and a description of what you were doing at the time,\n");
-  fprintf (stderr, "(include any URLs involved!) to %s.\n\nWe thank you for your support.\n\n", 
-           MO_DEVELOPER_ADDRESS);
-  fprintf (stderr, "...exiting NCSA Mosaic now.\n\n");
+    fprintf(stderr, "\nCongratulations, you have found a bug in\n");
+    fprintf(stderr, "NCSA Mosaic %s on %s.\n\n", MO_VERSION_STRING, MO_MACHINE_TYPE);
+    fprintf(stderr, "If a core file was generated in your directory,\n");
+    fprintf(stderr, "please do one of the following:\n\n");
+    fprintf(stderr, "  %% dbx /path/to/Mosaic /path/to/core\n");
+    fprintf(stderr, "  dbx> where\n\n");
+    fprintf(stderr, "OR\n\n");
+    fprintf(stderr, "  %% gdb /path/to/Mosaic /path/to/core\n");
+    fprintf(stderr, "  gdb> where\n\n");
+    fprintf(stderr, "Mail the results, and a description of what you were doing at the time,\n");
+    fprintf(stderr, "(include any URLs involved!) to %s.\n\nWe thank you for your support.\n\n", MO_DEVELOPER_ADDRESS);
+    fprintf(stderr, "...exiting NCSA Mosaic now.\n\n");
 
-  RealFatal ();
+    RealFatal();
 }
 
-
-main (int argc, char **argv, char **envp)
+main(int argc, char **argv, char **envp)
 {
-  struct utsname u;
-  FILE *fp;
-  int i;
+    struct utsname u;
+    FILE *fp;
+    int i;
 
-	userPath=getenv("PATH");
+    userPath = getenv("PATH");
 
 /*
 	if (getenv("XKEYSYMDB")==NULL) {
@@ -224,29 +217,27 @@ main (int argc, char **argv, char **envp)
 	}
 */
 
-  signal (SIGBUS, FatalProblem);
-  signal (SIGSEGV, FatalProblem);
-  signal (SIGILL, FatalProblem);
+    signal(SIGBUS, FatalProblem);
+    signal(SIGSEGV, FatalProblem);
+    signal(SIGILL, FatalProblem);
 
-  /* Since we're doing lots of TCP, just ignore SIGPIPE altogether. */
-  signal (SIGPIPE, SIG_IGN);
+    /* Since we're doing lots of TCP, just ignore SIGPIPE altogether. */
+    signal(SIGPIPE, SIG_IGN);
 
-  InitChildProcessor();
-  MoCCIPreInitialize();
+    InitChildProcessor();
+    MoCCIPreInitialize();
 
 #ifdef SVR4
-  signal(SIGCLD, (void (*)())ChildTerminated);
+    signal(SIGCLD, (void (*)())ChildTerminated);
 #else
-  signal(SIGCHLD, (void (*)())ChildTerminated);
+    signal(SIGCHLD, (void (*)())ChildTerminated);
 #endif
-
-
 
 #ifdef SOCKS
-  SOCKSinit(argv[0]);
+    SOCKSinit(argv[0]);
 #endif
 
-  CheckKCMS();
+    CheckKCMS();
 
-  mo_do_gui (argc, argv);
+    mo_do_gui(argc, argv);
 }

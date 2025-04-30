@@ -83,44 +83,42 @@
 #include	"dtmint.h"
 #include	"ris.h"
 
-
-char		PAL[] = "PAL ";
-
+char PAL[] = "PAL ";
 
 #ifdef DTM_PROTOTYPES
-void RISsetDimensions(char *h,int x,int y)
+void RISsetDimensions(char *h, int x, int y)
 #else
 void RISsetDimensions(h, x, y)
-  char	*h;
-  int	x, y;
+char *h;
+int x, y;
 #endif
 {
-  char	append[32];
+    char append[32];
 
-  sprintf(append, "%s 2 %d %d ", RISdims, x, y);
-  strcat(h, append);
+    sprintf(append, "%s 2 %d %d ", RISdims, x, y);
+    strcat(h, append);
 }
 
 #ifdef DTM_PROTOTYPES
-int RISgetDimensions(char *h,int *x,int *y)
+int RISgetDimensions(char *h, int *x, int *y)
 #else
 int RISgetDimensions(h, x, y)
-  char	*h;
-  int	*x, *y;
+char *h;
+int *x, *y;
 #endif
 {
 
-  if ((h = dtm_find_tag(h, RISdims)) == NULL)
-    return DTMERROR;
-  else
-    h = strchr(h, ' ')+1;
+    if ((h = dtm_find_tag(h, RISdims)) == NULL)
+        return DTMERROR;
+    else
+        h = strchr(h, ' ') + 1;
 
-  /* skip rank */
-  h = strchr(h, ' ')+1;
+    /* skip rank */
+    h = strchr(h, ' ') + 1;
 
-  *x = atoi(h);
-  h = strchr(h, ' ') + 1;
-  *y = atoi(h);
+    *x = atoi(h);
+    h = strchr(h, ' ') + 1;
+    *y = atoi(h);
 
-  return 0;
+    return 0;
 }

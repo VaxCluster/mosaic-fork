@@ -71,61 +71,56 @@
  * 
  */
 
-
-
 #include	<stdio.h>
 #include	<string.h>
 
 #include	"dtm.h"
 #include	"sdl.h"
 
-
 #ifdef DTM_PROTOTYPES
 void SDLsetBoundingBox(char *header, float *min, float *max)
 #else
 void SDLsetBoundingBox(header, min, max)
-char		*header;
-float		*min, *max;
+char *header;
+float *min, *max;
 #endif
 {
-   char         num[128];
+    char num[128];
 
-   strcat(header, SDLbounds);
-   strcat(header, " ");
+    strcat(header, SDLbounds);
+    strcat(header, " ");
 
-   sprintf(num, "%f %f %f %f %f %f ",
-		min[0], min[1], min[2], max[0], max[1], max[2]);
-   strcat(header, num);
+    sprintf(num, "%f %f %f %f %f %f ", min[0], min[1], min[2], max[0], max[1], max[2]);
+    strcat(header, num);
 
 }
-
 
 #ifdef DTM_PROTOTYPES
 int SDLgetBoundingBox(char *header, float *min, float *max)
 #else
 int SDLgetBoundingBox(header, min, max)
-char            *header;
-float           *min, *max;
+char *header;
+float *min, *max;
 #endif
 {
-   int   i;
+    int i;
 
-   if ((header = dtm_find_tag(header, SDLbounds)) == NULL)
-      return DTMERROR;
-   else
-      header = strchr(header, ' ')+1;
+    if ((header = dtm_find_tag(header, SDLbounds)) == NULL)
+        return DTMERROR;
+    else
+        header = strchr(header, ' ') + 1;
 
-   for (i=0; i<3; i+=1)
-      if ((header = strchr(header, ' ')) == NULL)
-         return DTMERROR;
-      else
-         min[i] = atoi(++header);
+    for (i = 0; i < 3; i += 1)
+        if ((header = strchr(header, ' ')) == NULL)
+            return DTMERROR;
+        else
+            min[i] = atoi(++header);
 
-   for (i=0; i<3; i+=1)
-      if ((header = strchr(header, ' ')) == NULL)
-         return DTMERROR;
-      else
-         max[i] = atoi(++header);
+    for (i = 0; i < 3; i += 1)
+        if ((header = strchr(header, ' ')) == NULL)
+            return DTMERROR;
+        else
+            max[i] = atoi(++header);
 
-   return 0;
+    return 0;
 }

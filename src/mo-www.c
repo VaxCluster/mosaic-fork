@@ -66,10 +66,8 @@
 extern mo_window *current_win;
 extern Pixmap *IconPixSmall;
 
-/*SWP*/
-Pixmap *tmp_pix=NULL;
-EASTER_EXTERNS
-extern int cci_docommand;
+ /*SWP*/ Pixmap * tmp_pix = NULL;
+EASTER_EXTERNS extern int cci_docommand;
 #define __MAX_HOME_LEN__ 256
 #define __SRC__
 #include "../libwww2/HTAAUtil.h"
@@ -80,15 +78,15 @@ extern mo_window *current_win;
 
 extern int is_uncompressed;
 
-extern Pixmap *IconPixTom,*IconPixBig,*IconPix;
-extern int logo_count,logo_save;
+extern Pixmap *IconPixTom, *IconPixBig, *IconPix;
+extern int logo_count, logo_save;
 
 #ifndef DISABLE_TRACE
 extern int srcTrace;
 #endif
 
 /*SWP -- 9.21.95 -- Binary save filename*/
-char *saveFileName=NULL;
+char *saveFileName = NULL;
 
 /* Grumble grumble... */
 #if defined(__sgi) && !defined(__STDC__)
@@ -113,31 +111,31 @@ char *saveFileName=NULL;
 
 /* Bare minimum. */
 struct _HText {
-  char *expandedAddress;
-  char *simpleAddress;
+    char *expandedAddress;
+    char *simpleAddress;
 
-  /* This is what we should parse and display; it is *not*
-     safe to free. */
-  char *htmlSrc;
-  /* This is what we should free. */
-  char *htmlSrcHead;
-  int srcalloc;    /* amount of space allocated */
-  int srclen;      /* amount of space used */
+    /* This is what we should parse and display; it is *not*
+       safe to free. */
+    char *htmlSrc;
+    /* This is what we should free. */
+    char *htmlSrcHead;
+    int srcalloc;               /* amount of space allocated */
+    int srclen;                 /* amount of space used */
 };
 
 /* Mosaic does NOT use either the anchor system or the style sheet
    system of libwww. */
 
-HText* HTMainText = 0;                  /* Equivalent of main window */
+HText *HTMainText = 0;          /* Equivalent of main window */
 
 /* these are used in libwww */
 char *HTAppName = "NCSA_Mosaic";
-char *HTAppVersion;  /* now set this in gui.c -- mo_do_gui() */
+char *HTAppVersion;             /* now set this in gui.c -- mo_do_gui() */
 extern char *HTLibraryVersion;
 
-int force_dump_to_file = 0;             /* hook to force dumping binary data
-                                           straight to file named by... */
-char *force_dump_filename = 0;          /* this filename. */
+int force_dump_to_file = 0;     /* hook to force dumping binary data
+                                   straight to file named by... */
+char *force_dump_filename = 0;  /* this filename. */
 
 /* From gui-documents.c */
 extern int interrupted;
@@ -158,13 +156,11 @@ extern int cci_get;
 
 extern char *HTTP_expires;
 
-
 /* SWP -- Agent Spoofing Public Variables */
 #define MAX_AGENTS 51
 int numAgents;
 char **agent;
-int selectedAgent=0;
-
+int selectedAgent = 0;
 
 #define FRAME_CHECK_SIZE 2048
 
@@ -173,70 +169,69 @@ int selectedAgent=0;
    were supposed to see as frames. We also show the NOFRAMES stuff. */
 static void frame_hack()
 {
-  extern char *ParseMarkTag();
-  char *start, *new_src, *place,*tmp, *url, *frame_anchors[25], *new_html;
-  int num_frames=0, new_size=0, i;
-  char *ptr;
+    extern char *ParseMarkTag();
+    char *start, *new_src, *place, *tmp, *url, *frame_anchors[25], *new_html;
+    int num_frames = 0, new_size = 0, i;
+    char *ptr;
 
-  start=NULL;
-  for (i=0,ptr=HTMainText->htmlSrc; ptr && i<FRAME_CHECK_SIZE; ptr++,i++) {
-	if (*ptr=='<' && (*(ptr+1)=='f' || *(ptr+1)=='F')) {
-		if (!my_strncasecmp("rameset",ptr+2,7)) {
-			start=ptr;
-			break;
-		}
-	}
-  }
+    start = NULL;
+    for (i = 0, ptr = HTMainText->htmlSrc; ptr && i < FRAME_CHECK_SIZE; ptr++, i++) {
+        if (*ptr == '<' && (*(ptr + 1) == 'f' || *(ptr + 1) == 'F')) {
+            if (!my_strncasecmp("rameset", ptr + 2, 7)) {
+                start = ptr;
+                break;
+            }
+        }
+    }
 /*
   start = strstr(HTMainText->htmlSrc, "<frameset");
   
   if(!start)
     start = strstr(HTMainText->htmlSrc, "<FRAMESET");
 */
-  
-  if(!start)
-    return;
 
-  place = start;
+    if (!start)
+        return;
 
-  while((tmp=strstr(place, "<frame ")) || (tmp=strstr(place, "<FRAME ")))
-    {
-      url = ParseMarkTag(tmp, "FRAME", "SRC");
-      if (url) {
-	frame_anchors[num_frames] = malloc(strlen(url)*2 + 
-					 strlen("<LI> <A HREF=  > </A> ")+4);
-	sprintf(frame_anchors[num_frames], "<LI> <A HREF=\"%s\"> %s </A>", url, url);
-	new_size += strlen(frame_anchors[num_frames])+1;
-	num_frames++;
-      }
-      place = tmp+6;
+    place = start;
+
+    while ((tmp = strstr(place, "<frame "))
+           || (tmp = strstr(place, "<FRAME "))) {
+        url = ParseMarkTag(tmp, "FRAME", "SRC");
+        if (url) {
+            frame_anchors[num_frames] = malloc(strlen(url) * 2 + strlen("<LI> <A HREF=  > </A> ")
+                                               + 4);
+            sprintf(frame_anchors[num_frames], "<LI> <A HREF=\"%s\"> %s </A>", url, url);
+            new_size += strlen(frame_anchors[num_frames]) + 1;
+            num_frames++;
+        }
+        place = tmp + 6;
     }
 
-  new_src = malloc(new_size+strlen(HTMainText->htmlSrc) + strlen(" <HR> ") +
-		   strlen("<H2> Frame Index: </H2> <UL> </UL>") +6);
+    new_src =
+        malloc(new_size + strlen(HTMainText->htmlSrc) + strlen(" <HR> ") +
+               strlen("<H2> Frame Index: </H2> <UL> </UL>") + 6);
 
-  /* copy everything up to first frameset tag to new_src */
-  strncpy(new_src, HTMainText->htmlSrc, strlen(HTMainText->htmlSrc) -
-	  strlen(start));
+    /* copy everything up to first frameset tag to new_src */
+    strncpy(new_src, HTMainText->htmlSrc, strlen(HTMainText->htmlSrc) - strlen(start));
 
-  new_src[strlen(HTMainText->htmlSrc) - strlen(start)]='\0';
+    new_src[strlen(HTMainText->htmlSrc) - strlen(start)] = '\0';
 
-  sprintf(new_src, "%s <H2> Frame Index: </H2> <UL>", new_src);
-  
-  for(i=0;i<num_frames;i++)
-    {
-      sprintf(new_src, "%s%s", new_src, frame_anchors[i]);
-      free(frame_anchors[i]);
+    sprintf(new_src, "%s <H2> Frame Index: </H2> <UL>", new_src);
+
+    for (i = 0; i < num_frames; i++) {
+        sprintf(new_src, "%s%s", new_src, frame_anchors[i]);
+        free(frame_anchors[i]);
     }
 
-  /* end list */
-  sprintf(new_src, "%s </UL> <HR>", new_src);
+    /* end list */
+    sprintf(new_src, "%s </UL> <HR>", new_src);
 
-  /* add in rest of document */
-  strcat(new_src, start);
+    /* add in rest of document */
+    strcat(new_src, start);
 
-  free(HTMainText->htmlSrc);
-  HTMainText->htmlSrc = new_src;
+    free(HTMainText->htmlSrc);
+    HTMainText->htmlSrc = new_src;
 }
 
 /****************************************************************************
@@ -260,67 +255,51 @@ static void frame_hack()
  *   appropriate remark to make adjustments, and keep the original
  *   head of the allocated block of text in HTMainText->htmlSrcHead.
  ****************************************************************************/
-static char *hack_htmlsrc (void)
+static char *hack_htmlsrc(void)
 {
-  if (!HTMainText)
-    return NULL;
+    if (!HTMainText)
+        return NULL;
 
-  if (!HTMainText->htmlSrc)
-    {
-      HTMainText->htmlSrcHead = NULL;
-      return NULL;
+    if (!HTMainText->htmlSrc) {
+        HTMainText->htmlSrcHead = NULL;
+        return NULL;
     }
 
-  if(get_pref_boolean(eFRAME_HACK))
-    frame_hack();
+    if (get_pref_boolean(eFRAME_HACK))
+        frame_hack();
 
+    /* Keep pointer to real head of htmlSrc memory block. */
+    HTMainText->htmlSrcHead = HTMainText->htmlSrc;
 
-  /* Keep pointer to real head of htmlSrc memory block. */
-  HTMainText->htmlSrcHead = HTMainText->htmlSrc;
-  
-  if (HTMainText->htmlSrc && HTMainText->srclen > 30)
-    {
-      if (!strncmp (HTMainText->htmlSrc, "<plaintext>", 11) ||
-          !strncmp (HTMainText->htmlSrc, "<PLAINTEXT>", 11))
-        {
-          if (!strncmp (HTMainText->htmlSrc + 11, "<plaintext>", 11) ||
-              !strncmp (HTMainText->htmlSrc + 11, "<PLAINTEXT>", 11))
-            {
-              HTMainText->htmlSrc += 11;
-            }
-          else if (!strncmp (HTMainText->htmlSrc + 11, "\n<plaintext>", 12) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<PLAINTEXT>", 12))
-            {
-              HTMainText->htmlSrc += 12;
-            }
-          else if (!strncmp (HTMainText->htmlSrc + 11, "\n<title>", 8) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<TITLE>", 8))
-            {
-              HTMainText->htmlSrc += 12;
-            }
-          else if (!strncmp (HTMainText->htmlSrc + 11, "\n<HEAD>", 7) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<head>", 7) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<HTML>", 7) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<html>", 7) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<BASE",  6) ||
-                   !strncmp (HTMainText->htmlSrc + 11, "\n<base",  6))
-            {
-              HTMainText->htmlSrc += 12;
+    if (HTMainText->htmlSrc && HTMainText->srclen > 30) {
+        if (!strncmp(HTMainText->htmlSrc, "<plaintext>", 11) || !strncmp(HTMainText->htmlSrc, "<PLAINTEXT>", 11)) {
+            if (!strncmp(HTMainText->htmlSrc + 11, "<plaintext>", 11) ||
+                !strncmp(HTMainText->htmlSrc + 11, "<PLAINTEXT>", 11)) {
+                HTMainText->htmlSrc += 11;
+            } else if (!strncmp(HTMainText->htmlSrc + 11, "\n<plaintext>", 12)
+                       || !strncmp(HTMainText->htmlSrc + 11, "\n<PLAINTEXT>", 12)) {
+                HTMainText->htmlSrc += 12;
+            } else if (!strncmp(HTMainText->htmlSrc + 11, "\n<title>", 8) ||
+                       !strncmp(HTMainText->htmlSrc + 11, "\n<TITLE>", 8)) {
+                HTMainText->htmlSrc += 12;
+            } else if (!strncmp(HTMainText->htmlSrc + 11, "\n<HEAD>", 7) ||
+                       !strncmp(HTMainText->htmlSrc + 11, "\n<head>", 7) ||
+                       !strncmp(HTMainText->htmlSrc + 11, "\n<HTML>", 7) ||
+                       !strncmp(HTMainText->htmlSrc + 11, "\n<html>", 7) ||
+                       !strncmp(HTMainText->htmlSrc + 11, "\n<BASE", 6) ||
+                       !strncmp(HTMainText->htmlSrc + 11, "\n<base", 6)) {
+                HTMainText->htmlSrc += 12;
             }
         }
-      if (!strncmp (HTMainText->htmlSrc, 
-                    "<TITLE>Document</TITLE>\n<PLAINTEXT>", 35))
-        {
-          if (!strncmp (HTMainText->htmlSrc + 35, "\n<title>", 8) ||
-              !strncmp (HTMainText->htmlSrc + 35, "\n<TITLE>", 8))
-            {
-              HTMainText->htmlSrc += 36;
+        if (!strncmp(HTMainText->htmlSrc, "<TITLE>Document</TITLE>\n<PLAINTEXT>", 35)) {
+            if (!strncmp(HTMainText->htmlSrc + 35, "\n<title>", 8) ||
+                !strncmp(HTMainText->htmlSrc + 35, "\n<TITLE>", 8)) {
+                HTMainText->htmlSrc += 36;
             }
         }
     }
-  return HTMainText->htmlSrc;
+    return HTMainText->htmlSrc;
 }
-
 
 /****************************************************************************
  * name:    doit (PRIVATE)
@@ -333,88 +312,84 @@ static char *hack_htmlsrc (void)
  * returns: 
  *   The text intended for display (char *).
  ****************************************************************************/
-static char *doit (char *url, char **texthead)
+static char *doit(char *url, char **texthead)
 {
-  char *msg;
-  int rv;
-  extern char *use_this_url_instead;
-  mo_window *win=current_win;
+    char *msg;
+    int rv;
+    extern char *use_this_url_instead;
+    mo_window *win = current_win;
 
-  /* Hmmmmmmm... */
-  if (HTMainText)
-    {
-      free (HTMainText);
-      HTMainText = NULL;
+    /* Hmmmmmmm... */
+    if (HTMainText) {
+        free(HTMainText);
+        HTMainText = NULL;
     }
 
-  /* Is it April? */
-  if (IconPix!=IconPixSmall) { /* We aren't small... */
-	if (strstr(url,"~mag/")) {
-		int tmp=21;
+    /* Is it April? */
+    if (IconPix != IconPixSmall) {  /* We aren't small... */
+        if (strstr(url, "~mag/")) {
+            int tmp = 21;
 
-		tmp_pix=IconPix;
-		IconPix = IconPixTom;
-		logo_count = 0;
-		set_pref(ePIX_COUNT, (void *)&tmp);
-		XmxApplyPixmapToLabelWidget(win->logo, IconPix[0]);
-	}
-	EASTER
-  }
+            tmp_pix = IconPix;
+            IconPix = IconPixTom;
+            logo_count = 0;
+            set_pref(ePIX_COUNT, (void *)&tmp);
+            XmxApplyPixmapToLabelWidget(win->logo, IconPix[0]);
+        }
+    EASTER}
 
-  XmxApplyPixmapToLabelWidget(win->logo, IconPix[0]);
+    XmxApplyPixmapToLabelWidget(win->logo, IconPix[0]);
 
-  is_uncompressed=0;
+    is_uncompressed = 0;
 
-  rv = HTLoadAbsolute (url);
+    rv = HTLoadAbsolute(url);
 
-  if (rv == 1)
-    {
-      char *txt = hack_htmlsrc ();
-      if (HTMainText)
-        *texthead = HTMainText->htmlSrcHead;
-      else
+    if (rv == 1) {
+        char *txt = hack_htmlsrc();
+        if (HTMainText)
+            *texthead = HTMainText->htmlSrcHead;
+        else
+            *texthead = NULL;
+        return txt;
+    } else if (rv == -1) {
+        interrupted = 1;
         *texthead = NULL;
-      return txt;
-    }
-  else if (rv == -1)
-    {
-      interrupted = 1;
-      *texthead = NULL;
-      return NULL;
+        return NULL;
     }
 
-   /*
-   ** Just because we errored out, doesn't mean there isn't markup to 
-   ** look at.  For example, an FTP site that doesn't let a user in because
-   ** the maximum number of users has been reached often has a message
-   ** telling about other mirror sites.  The failed FTP connection returns
-   ** a message that is taken care of below.  
-   */
-   if (HTMainText) {
-	char *txt = hack_htmlsrc();
-	*texthead = HTMainText->htmlSrcHead;
+    /*
+     ** Just because we errored out, doesn't mean there isn't markup to 
+     ** look at.  For example, an FTP site that doesn't let a user in because
+     ** the maximum number of users has been reached often has a message
+     ** telling about other mirror sites.  The failed FTP connection returns
+     ** a message that is taken care of below.  
+     */
+    if (HTMainText) {
+        char *txt = hack_htmlsrc();
+        *texthead = HTMainText->htmlSrcHead;
 
-	if (cci_get){
-		if (txt)
-			return txt;
-		else
-			/* take care of failed local access */
-			txt = strdup("<H1>ERROR</H1>"); 
-	}
-	return txt;
-		
-   }
+        if (cci_get) {
+            if (txt)
+                return txt;
+            else
+                /* take care of failed local access */
+                txt = strdup("<H1>ERROR</H1>");
+        }
+        return txt;
 
-  /* Return proper error message if we experienced redirection. */
-  if (use_this_url_instead)
-    url = use_this_url_instead;
-  msg = (char *)malloc ((strlen (url) + 200) * sizeof (char));
-  sprintf (msg, "<H1>ERROR</H1> Requested document (URL %s) could not be accessed.<p>The information server either is not accessible or is refusing to serve the document to you.<p>", url);
-  *texthead = msg;
-  securityType=HTAA_UNKNOWN;
-  return msg;
+    }
+
+    /* Return proper error message if we experienced redirection. */
+    if (use_this_url_instead)
+        url = use_this_url_instead;
+    msg = (char *)malloc((strlen(url) + 200) * sizeof(char));
+    sprintf(msg,
+            "<H1>ERROR</H1> Requested document (URL %s) could not be accessed.<p>The information server either is not accessible or is refusing to serve the document to you.<p>",
+            url);
+    *texthead = msg;
+    securityType = HTAA_UNKNOWN;
+    return msg;
 }
-
 
 /****************************************************************************
  * name:    mo_pull_er_over
@@ -427,71 +402,61 @@ static char *doit (char *url, char **texthead)
  * remarks: 
  *   
  ****************************************************************************/
-char *mo_pull_er_over (char *url, char **texthead)
+char *mo_pull_er_over(char *url, char **texthead)
 {
-  char *rv;
-  extern int binary_transfer;
+    char *rv;
+    extern int binary_transfer;
 
-  if (binary_transfer)
-    {
-      force_dump_to_file = 1;
-      force_dump_filename = mo_tmpnam(url);
+    if (binary_transfer) {
+        force_dump_to_file = 1;
+        force_dump_filename = mo_tmpnam(url);
     }
 
-  if (saveFileName!=NULL) {
-	free(saveFileName);
-  }
-  saveFileName=strdup(url);
+    if (saveFileName != NULL) {
+        free(saveFileName);
+    }
+    saveFileName = strdup(url);
 
-  if (HTTP_last_modified)
-  {
-      free(HTTP_last_modified);
-      HTTP_last_modified = 0;
-  }
-  rv = doit (url, texthead);
-  if (binary_transfer)
-    {
-      force_dump_to_file = 0;
-      force_dump_filename = NULL;
+    if (HTTP_last_modified) {
+        free(HTTP_last_modified);
+        HTTP_last_modified = 0;
+    }
+    rv = doit(url, texthead);
+    if (binary_transfer) {
+        force_dump_to_file = 0;
+        force_dump_filename = NULL;
     }
 
-  return rv;
+    return rv;
 }
 
-
-char *mo_post_pull_er_over (char *url, char *content_type, char *data, 
-                            char **texthead)
+char *mo_post_pull_er_over(char *url, char *content_type, char *data, char **texthead)
 {
-  char *rv;
-  extern int binary_transfer;
+    char *rv;
+    extern int binary_transfer;
 
-  do_post = 1;
-  post_content_type = content_type;
-  post_data = data;
+    do_post = 1;
+    post_content_type = content_type;
+    post_data = data;
 
-  if (binary_transfer)
-    {
-      force_dump_to_file = 1;
-      force_dump_filename = mo_tmpnam(url);
+    if (binary_transfer) {
+        force_dump_to_file = 1;
+        force_dump_filename = mo_tmpnam(url);
     }
-  if (HTTP_last_modified)
-  {
-      free(HTTP_last_modified);
-      HTTP_last_modified = 0;
-  }
-  rv = doit (url, texthead);
-  if (binary_transfer)
-    {
-      force_dump_to_file = 0;
-      force_dump_filename = NULL;
+    if (HTTP_last_modified) {
+        free(HTTP_last_modified);
+        HTTP_last_modified = 0;
+    }
+    rv = doit(url, texthead);
+    if (binary_transfer) {
+        force_dump_to_file = 0;
+        force_dump_filename = NULL;
     }
 
-  do_post = 0;
+    do_post = 0;
 
-  return rv;
-}  
-
-
+    return rv;
+}
 
 /****************************************************************************
  * name:    mo_pull_er_over_virgin
@@ -510,251 +475,237 @@ char *mo_post_pull_er_over (char *url, char *content_type, char *data,
  *   are set to make this happen.
  *   This must be made cleaner.
  ****************************************************************************/
-mo_status mo_pull_er_over_virgin (char *url, char *fnam)
+mo_status mo_pull_er_over_virgin(char *url, char *fnam)
 {
-  int rv;
+    int rv;
 
-  /* Force dump to file. */
-  force_dump_to_file = 1;
-  force_dump_filename = fnam;
-  if (saveFileName!=NULL) {
-	free(saveFileName);
-  }
-  saveFileName=strdup(url);
-
-  is_uncompressed=0;
-
-  rv = HTLoadAbsolute (url);
-
-  if (rv == 1)
-    {
-      force_dump_to_file = 0;
-      return mo_succeed;
+    /* Force dump to file. */
+    force_dump_to_file = 1;
+    force_dump_filename = fnam;
+    if (saveFileName != NULL) {
+        free(saveFileName);
     }
-  else if (rv == -1)
-    {
-      force_dump_to_file = 0;
-      interrupted = 1;
-      return mo_fail;
-    }
-  else
-    {
-      force_dump_to_file = 0;
-      return mo_fail;
+    saveFileName = strdup(url);
+
+    is_uncompressed = 0;
+
+    rv = HTLoadAbsolute(url);
+
+    if (rv == 1) {
+        force_dump_to_file = 0;
+        return mo_succeed;
+    } else if (rv == -1) {
+        force_dump_to_file = 0;
+        interrupted = 1;
+        return mo_fail;
+    } else {
+        force_dump_to_file = 0;
+        return mo_fail;
     }
 }
 
-
-mo_status mo_re_init_formats (void)
+mo_status mo_re_init_formats(void)
 {
-  HTReInit ();
-  return mo_succeed;
+    HTReInit();
+    return mo_succeed;
 }
 
 /* ------------------------------------------------------------------------ */
 
-HText *HText_new (void)
+HText *HText_new(void)
 {
-  HText *htObj = (HText *)malloc (sizeof (HText));
+    HText *htObj = (HText *) malloc(sizeof(HText));
 
-  htObj->expandedAddress = NULL;
-  htObj->simpleAddress = NULL;
-  htObj->htmlSrc = NULL;
-  htObj->htmlSrcHead = NULL;
-  htObj->srcalloc = 0;
-  htObj->srclen = 0;
+    htObj->expandedAddress = NULL;
+    htObj->simpleAddress = NULL;
+    htObj->htmlSrc = NULL;
+    htObj->htmlSrcHead = NULL;
+    htObj->srcalloc = 0;
+    htObj->srclen = 0;
 
-  /* Free the struct but not the text, as it will be handled
-     by Mosaic proper -- apparently. */
-  if (HTMainText)
-    free (HTMainText);
+    /* Free the struct but not the text, as it will be handled
+       by Mosaic proper -- apparently. */
+    if (HTMainText)
+        free(HTMainText);
 
-  HTMainText = htObj;
+    HTMainText = htObj;
 
-  return htObj;
+    return htObj;
 }
 
-void HText_free (HText *self)
+void HText_free(HText *self)
 {
-  if (self)
-    {
-      if (self->htmlSrcHead)
-        free (self->htmlSrcHead);
-      free (self);
+    if (self) {
+        if (self->htmlSrcHead)
+            free(self->htmlSrcHead);
+        free(self);
     }
-  return;
+    return;
 }
 
-void HText_beginAppend (HText *text)
+void HText_beginAppend(HText *text)
 {
-  HTMainText = text;
-  return;
+    HTMainText = text;
+    return;
 }
 
-void HText_endAppend (HText *text)
+void HText_endAppend(HText *text)
 {
-  if (text)
-    {
-      HText_appendCharacter (text, '\0');
+    if (text) {
+        HText_appendCharacter(text, '\0');
     }
-  HTMainText = text;
-  return;
+    HTMainText = text;
+    return;
 }
 
-void HText_doAbort (HText *self)
+void HText_doAbort(HText *self)
 {
-  /* Clean up -- we want to free htmlSrc here because htmlSrcHead
-     doesn't get assigned until hack_htmlsrc, and by the time we
-     reach that, this should never be called. */
-  if (self)
-    {
-      if (self->htmlSrc)
-        free (self->htmlSrc);
-      self->htmlSrc = NULL;
-      self->htmlSrcHead = NULL;
-      self->srcalloc = 0;
-      self->srclen = 0;
+    /* Clean up -- we want to free htmlSrc here because htmlSrcHead
+       doesn't get assigned until hack_htmlsrc, and by the time we
+       reach that, this should never be called. */
+    if (self) {
+        if (self->htmlSrc)
+            free(self->htmlSrc);
+        self->htmlSrc = NULL;
+        self->htmlSrcHead = NULL;
+        self->srcalloc = 0;
+        self->srclen = 0;
     }
-  return;
+    return;
 }
 
-void HText_clearOutForNewContents (HText *self)
+void HText_clearOutForNewContents(HText *self)
 {
-  if (self)
-    {
-      if (self->htmlSrc)
-        free (self->htmlSrc);
-      self->htmlSrc = NULL;
-      self->htmlSrcHead = NULL;
-      self->srcalloc = 0;
-      self->srclen = 0;
+    if (self) {
+        if (self->htmlSrc)
+            free(self->htmlSrc);
+        self->htmlSrc = NULL;
+        self->htmlSrcHead = NULL;
+        self->srcalloc = 0;
+        self->srclen = 0;
     }
-  return;
+    return;
 }
 
-static void new_chunk (HText *text)
+static void new_chunk(HText *text)
 {
-  if (text->srcalloc == 0)
-    {
-      text->htmlSrc = (char *)malloc (MO_BUFFER_SIZE);
-      text->htmlSrc[0] = '\0';
-    }
-  else
-    {
-      text->htmlSrc = (char *)realloc
-        (text->htmlSrc, text->srcalloc + MO_BUFFER_SIZE);
+    if (text->srcalloc == 0) {
+        text->htmlSrc = (char *)malloc(MO_BUFFER_SIZE);
+        text->htmlSrc[0] = '\0';
+    } else {
+        text->htmlSrc = (char *)realloc(text->htmlSrc, text->srcalloc + MO_BUFFER_SIZE);
     }
 
-  text->srcalloc += MO_BUFFER_SIZE;
+    text->srcalloc += MO_BUFFER_SIZE;
 
-  return;
+    return;
 }
 
 #if defined(__alpha) || defined(_IBMR2)
-void HText_appendCharacter (text, ch)
+void HText_appendCharacter(text, ch)
 HText *text;
 char ch;
 #else
-void HText_appendCharacter (HText *text, char ch)
+void HText_appendCharacter(HText *text, char ch)
 #endif
 {
-  if (text->srcalloc < text->srclen + 1)
-    new_chunk (text);
-  
-  text->htmlSrc[text->srclen++] = ch;
+    if (text->srcalloc < text->srclen + 1)
+        new_chunk(text);
 
-  return;
+    text->htmlSrc[text->srclen++] = ch;
+
+    return;
 }
 
-void HText_appendText (HText *text, char *str)
+void HText_appendText(HText *text, char *str)
 {
-  int len;
+    int len;
 
-  if (!str)
-    return;
+    if (!str)
+        return;
 
-  len = strlen (str);
+    len = strlen(str);
 
-  while (text->srcalloc < text->srclen + len + 1)
-    new_chunk (text);
+    while (text->srcalloc < text->srclen + len + 1)
+        new_chunk(text);
 
 /*  bcopy (str, (text->htmlSrc + text->srclen), len);*/
-  memcpy((text->htmlSrc + text->srclen), str, len);
+    memcpy((text->htmlSrc + text->srclen), str, len);
 
-  text->srclen += len;
-  text->htmlSrc[text->srclen] = '\0';
+    text->srclen += len;
+    text->htmlSrc[text->srclen] = '\0';
 
-  return;
+    return;
 }
 
-void HText_appendBlock (HText *text, char *data, int len)
+void HText_appendBlock(HText *text, char *data, int len)
 {
-  if (!data)
-    return;
-  
-  while (text->srcalloc < text->srclen + len + 1)
-    new_chunk (text);
+    if (!data)
+        return;
+
+    while (text->srcalloc < text->srclen + len + 1)
+        new_chunk(text);
 
 /*  bcopy (data, (text->htmlSrc + text->srclen), len);*/
-  memcpy((text->htmlSrc + text->srclen), data, len);
+    memcpy((text->htmlSrc + text->srclen), data, len);
 
-  text->srclen += len;
-  text->htmlSrc[text->srclen] = '\0';
+    text->srclen += len;
+    text->htmlSrc[text->srclen] = '\0';
 
-  return;
+    return;
 }
 
-void HText_appendParagraph (HText *text)
+void HText_appendParagraph(HText *text)
 {
-  /* Boy, talk about a misnamed function. */
-  char *str = " <p> \n";
+    /* Boy, talk about a misnamed function. */
+    char *str = " <p> \n";
 
-  HText_appendText (text, str);
+    HText_appendText(text, str);
 
-  return;
+    return;
 }
 
-void HText_beginAnchor (HText *text, char *anc)
+void HText_beginAnchor(HText *text, char *anc)
 {
-  HText_appendText (text, "<A HREF=\"");
-  HText_appendText (text, anc);
-  HText_appendText (text, "\">");
-  return;
+    HText_appendText(text, "<A HREF=\"");
+    HText_appendText(text, anc);
+    HText_appendText(text, "\">");
+    return;
 }
 
-void HText_endAnchor (HText * text)
+void HText_endAnchor(HText *text)
 {
-  HText_appendText (text, "</A>");
-  return;
+    HText_appendText(text, "</A>");
+    return;
 }
 
-void HText_dump (HText *me)
+void HText_dump(HText *me)
 {
-  return;
+    return;
 }
 
-char *HText_getText (HText *me)
+char *HText_getText(HText *me)
 {
-  if (me)
-    return me->htmlSrc;
-  else
-    return NULL;
+    if (me)
+        return me->htmlSrc;
+    else
+        return NULL;
 }
 
-char **HText_getPtrToText (HText *me)
+char **HText_getPtrToText(HText *me)
 {
-  if (me)
-    return &(me->htmlSrc);
-  else
-    return NULL;
+    if (me)
+        return &(me->htmlSrc);
+    else
+        return NULL;
 }
 
-int HText_getTextLength (HText *me)
+int HText_getTextLength(HText *me)
 {
-  if (me)
-    return me->srclen;
-  else
-    return 0;
+    if (me)
+        return me->srclen;
+    else
+        return 0;
 }
 
 /*
@@ -763,7 +714,6 @@ BOOL HText_select (HText *text)
   return ;
 }
 */
-
 
 /****************************************************************************
  * name:    fileOrServer
@@ -777,32 +727,29 @@ BOOL HText_select (HText *text)
  * remarks: 
  *   Written by spowers@ncsa.uiuc.edu
  ****************************************************************************/
-char *fileOrServer(char *url) {
+char *fileOrServer(char *url)
+{
 
-struct stat buf;
-char *xurl;
+    struct stat buf;
+    char *xurl;
 
-	/*
-	 * At this point we know the URL specified is of the form:
-	 *   shire.ncsa.uiuc.edu[:PORT]/path/to/something
-	 */
+    /*
+     * At this point we know the URL specified is of the form:
+     *   shire.ncsa.uiuc.edu[:PORT]/path/to/something
+     */
 
-	if (!stat(url,&buf)) { /*its a file and we have access*/
-		xurl=mo_url_canonicalize_local(url);
-	}
-	else if (!(get_pref_string(eDEFAULT_PROTOCOL)) || 
-		 !*(get_pref_string(eDEFAULT_PROTOCOL))) {
-		xurl=(char *)calloc(strlen(url)+15,sizeof(char));
-		sprintf(xurl,"http://%s",url);
-	}
-	else {
-		xurl=(char *)calloc(strlen(url)+strlen(get_pref_string(eDEFAULT_PROTOCOL))+10,sizeof(char));
-		sprintf(xurl,"%s://%s",get_pref_string(eDEFAULT_PROTOCOL),url);
-	}
+    if (!stat(url, &buf)) {     /*its a file and we have access */
+        xurl = mo_url_canonicalize_local(url);
+    } else if (!(get_pref_string(eDEFAULT_PROTOCOL)) || !*(get_pref_string(eDEFAULT_PROTOCOL))) {
+        xurl = (char *)calloc(strlen(url) + 15, sizeof(char));
+        sprintf(xurl, "http://%s", url);
+    } else {
+        xurl = (char *)calloc(strlen(url) + strlen(get_pref_string(eDEFAULT_PROTOCOL)) + 10, sizeof(char));
+        sprintf(xurl, "%s://%s", get_pref_string(eDEFAULT_PROTOCOL), url);
+    }
 
-	return(xurl);
+    return (xurl);
 }
-
 
 /****************************************************************************
  * name:    mo_url_prepend_protocol
@@ -814,58 +761,47 @@ char *xurl;
  * remarks: 
  *   Contributed by martin@gizmo.lut.ac.uk, modified by spowers@ncsa.uiuc.edu
  ****************************************************************************/
-char *mo_url_prepend_protocol(char *url) {
+char *mo_url_prepend_protocol(char *url)
+{
 
-char *xurl;
+    char *xurl;
 
-	if (!url || !*url) {
-		return(NULL);
-	}
+    if (!url || !*url) {
+        return (NULL);
+    }
 
-	if (!get_pref_string(eEXPAND_URLS)) {
-		if (!strchr(url,':')) { /*no colon found, treat as file*/
-			xurl = mo_url_canonicalize_local (url);
-		}
-		else { /*its prolly a real url*/
-			xurl=strdup(url);
-		}
-	}
-	else if (strncasecmp(url,"mailto:",7) &&
-		 strncasecmp(url,"news:",5) &&
-		 strncasecmp(url,"about:",6) &&
-		 !strstr(url,"://")) { /*no protocol specified, default*/
-		if (get_pref_string(eEXPAND_URLS_WITH_NAME)) {
-			if (!strncmp(url, "www.", 4)) {
-				xurl = (char *)malloc(strlen(url) + (8 * sizeof(char)));
-				sprintf(xurl, "http://%s", url);
-			}
-			else if (!strncmp(url, "ftp.", 4)) {
-				xurl = (char *)malloc(strlen(url) + (7 * sizeof(char)));
-				sprintf(xurl, "ftp://%s", url);
-			}
-			else if (!strncmp(url, "gopher.", 7)) {
-				xurl = (char *)malloc(strlen(url) + (10 * sizeof(char)));
-				sprintf(xurl, "gopher://%s", url);
-			}
-			else if (!strncmp(url, "wais.", 5)) {
-				xurl = (char *)malloc(strlen(url) + (8 * sizeof(char)));
-				sprintf(xurl, "wais://%s", url);
-			}
-			else {
-				xurl=fileOrServer(url);
-			}
-		}
-		else {
-			xurl=fileOrServer(url);
-		}
-	}
-	else { /*protocol was specified*/
-		xurl=strdup(url);
-	}
+    if (!get_pref_string(eEXPAND_URLS)) {
+        if (!strchr(url, ':')) {    /*no colon found, treat as file */
+            xurl = mo_url_canonicalize_local(url);
+        } else {                /*its prolly a real url */
+            xurl = strdup(url);
+        }
+    } else if (strncasecmp(url, "mailto:", 7) && strncasecmp(url, "news:", 5) && strncasecmp(url, "about:", 6) && !strstr(url, "://")) {    /*no protocol specified, default */
+        if (get_pref_string(eEXPAND_URLS_WITH_NAME)) {
+            if (!strncmp(url, "www.", 4)) {
+                xurl = (char *)malloc(strlen(url) + (8 * sizeof(char)));
+                sprintf(xurl, "http://%s", url);
+            } else if (!strncmp(url, "ftp.", 4)) {
+                xurl = (char *)malloc(strlen(url) + (7 * sizeof(char)));
+                sprintf(xurl, "ftp://%s", url);
+            } else if (!strncmp(url, "gopher.", 7)) {
+                xurl = (char *)malloc(strlen(url) + (10 * sizeof(char)));
+                sprintf(xurl, "gopher://%s", url);
+            } else if (!strncmp(url, "wais.", 5)) {
+                xurl = (char *)malloc(strlen(url) + (8 * sizeof(char)));
+                sprintf(xurl, "wais://%s", url);
+            } else {
+                xurl = fileOrServer(url);
+            }
+        } else {
+            xurl = fileOrServer(url);
+        }
+    } else {                    /*protocol was specified */
+        xurl = strdup(url);
+    }
 
-	return(xurl);
+    return (xurl);
 }
-
 
 /****************************************************************************
  * name:    mo_url_canonicalize
@@ -880,14 +816,11 @@ char *xurl;
  * remarks: 
  *   All we do is call HTParse.
  ****************************************************************************/
-char *mo_url_canonicalize (char *url, char *oldurl)
+char *mo_url_canonicalize(char *url, char *oldurl)
 {
-  /* We LOSE anchor information. */
-  return HTParse (url, oldurl,
-                  PARSE_ACCESS | PARSE_HOST | PARSE_PATH |
-                  PARSE_PUNCTUATION);
+    /* We LOSE anchor information. */
+    return HTParse(url, oldurl, PARSE_ACCESS | PARSE_HOST | PARSE_PATH | PARSE_PUNCTUATION);
 }
-
 
 /****************************************************************************
  * name:    mo_url_canonicalize_keep_anchor
@@ -902,21 +835,17 @@ char *mo_url_canonicalize (char *url, char *oldurl)
  * remarks: 
  *   All we do is call HTParse.
  ****************************************************************************/
-char *mo_url_canonicalize_keep_anchor (char *url, char *oldurl)
+char *mo_url_canonicalize_keep_anchor(char *url, char *oldurl)
 {
-  char *rv;
-  /* We KEEP anchor information already present in url,
-     but NOT in oldurl. */
-  oldurl = HTParse (oldurl, "", PARSE_ACCESS | PARSE_HOST | PARSE_PATH |
-                    PARSE_PUNCTUATION);
-  rv = HTParse (url, oldurl,
-                PARSE_ACCESS | PARSE_HOST | PARSE_PATH |
-                PARSE_PUNCTUATION | PARSE_ANCHOR);
-  /* We made a new copy of oldurl, so free the new copy. */
-  free (oldurl);
-  return rv;
+    char *rv;
+    /* We KEEP anchor information already present in url,
+       but NOT in oldurl. */
+    oldurl = HTParse(oldurl, "", PARSE_ACCESS | PARSE_HOST | PARSE_PATH | PARSE_PUNCTUATION);
+    rv = HTParse(url, oldurl, PARSE_ACCESS | PARSE_HOST | PARSE_PATH | PARSE_PUNCTUATION | PARSE_ANCHOR);
+    /* We made a new copy of oldurl, so free the new copy. */
+    free(oldurl);
+    return rv;
 }
-
 
 /****************************************************************************
  * name:    mo_url_to_unique_document
@@ -933,21 +862,20 @@ char *mo_url_canonicalize_keep_anchor (char *url, char *oldurl)
  * remarks: 
  *   
  ****************************************************************************/
-char *mo_url_to_unique_document (char *url)
+char *mo_url_to_unique_document(char *url)
 {
-  char *target = mo_url_extract_anchor (url), *rv;
+    char *target = mo_url_extract_anchor(url), *rv;
 
-  if (target && !strncmp (target, "hdfref;", 7))
-    rv = strdup (url);
-  else
-    rv = mo_url_canonicalize (url, "");
+    if (target && !strncmp(target, "hdfref;", 7))
+        rv = strdup(url);
+    else
+        rv = mo_url_canonicalize(url, "");
 
-  if (target)
-    free (target);
+    if (target)
+        free(target);
 
-  return rv;
+    return rv;
 }
-
 
 /****************************************************************************
  * name:    mo_url_extract_anchor
@@ -960,11 +888,10 @@ char *mo_url_to_unique_document (char *url)
  * remarks: 
  *   
  ****************************************************************************/
-char *mo_url_extract_anchor (char *url)
+char *mo_url_extract_anchor(char *url)
 {
-  return HTParse (url, "", PARSE_ANCHOR);
+    return HTParse(url, "", PARSE_ANCHOR);
 }
-
 
 /****************************************************************************
  * name:    mo_url_extract_access
@@ -977,45 +904,38 @@ char *mo_url_extract_anchor (char *url)
  * remarks: 
  *   
  ****************************************************************************/
-char *mo_url_extract_access (char *url, char *oldurl)
+char *mo_url_extract_access(char *url, char *oldurl)
 {
-  return HTParse (url, oldurl, PARSE_ACCESS);
+    return HTParse(url, oldurl, PARSE_ACCESS);
 }
 
-
-
-char *mo_url_canonicalize_local (char *url)
+char *mo_url_canonicalize_local(char *url)
 {
-  /* Convex OS apparently sucks. */
+    /* Convex OS apparently sucks. */
 #ifdef CONVEX
-  char blah[129];
-  char *cwd = getcwd (blah, 128);
+    char blah[129];
+    char *cwd = getcwd(blah, 128);
 #else
-  char *cwd = getcwd (NULL, 128);
+    char *cwd = getcwd(NULL, 128);
 #endif
-  char *tmp;
+    char *tmp;
 
-  if (!url)
-    return NULL;
+    if (!url)
+        return NULL;
 
-  tmp = (char *)malloc ((strlen (url) +
-                         strlen (cwd) + 32));
-  if (url[0] == '/')
-    sprintf (tmp, "file://localhost%s", 
-             url);
-  else
-    sprintf (tmp, "file://localhost%s/%s",
-             cwd,
-             url);
+    tmp = (char *)malloc((strlen(url) + strlen(cwd) + 32));
+    if (url[0] == '/')
+        sprintf(tmp, "file://localhost%s", url);
+    else
+        sprintf(tmp, "file://localhost%s/%s", cwd, url);
 
-  /* Sigh... */
+    /* Sigh... */
 #ifndef CONVEX
-  free (cwd);
+    free(cwd);
 #endif
-  
-  return tmp;
-}
 
+    return tmp;
+}
 
 /****************************************************************************
  * name:    mo_tmpnam
@@ -1032,246 +952,218 @@ char *mo_url_canonicalize_local (char *url)
 #ifndef L_tmpnam
 #define L_tmpnam 32
 #endif
-char *mo_tmpnam (char *url)
+char *mo_tmpnam(char *url)
 {
-  extern void MoCCIAddFileURLToList(char *, char *);
-  char *tmp = (char *)malloc (sizeof (char) * L_tmpnam);
-  char *tmp_dir = get_pref_string(eTMP_DIRECTORY);
+    extern void MoCCIAddFileURLToList(char *, char *);
+    char *tmp = (char *)malloc(sizeof(char) * L_tmpnam);
+    char *tmp_dir = get_pref_string(eTMP_DIRECTORY);
 
-  tmpnam (tmp);
+    tmpnam(tmp);
 
-  if (!tmp_dir)
-    {
-      /* Fast path. */
-      if(url) MoCCIAddFileURLToList(tmp,url);
-      return tmp;
-    }
-  else
-    {
-      /* OK, reconstruct to go in the directory of our choice. */
-      char *oldtmp = tmp;
-      int i;
+    if (!tmp_dir) {
+        /* Fast path. */
+        if (url)
+            MoCCIAddFileURLToList(tmp, url);
+        return tmp;
+    } else {
+        /* OK, reconstruct to go in the directory of our choice. */
+        char *oldtmp = tmp;
+        int i;
 
-      /* Start at the back and work our way forward. */
-      for (i = strlen(oldtmp)-1; i >= 0; i--)
-        {
-          if (oldtmp[i] == '/')
-            goto found_it;
-        }
-      
-      /* No luck, just punt. */
-      if(url) MoCCIAddFileURLToList(tmp,url);
-      return tmp;
-
-    found_it:
-      tmp = (char *)malloc (sizeof (char) * (strlen (tmp_dir) + 
-                                             strlen (&(oldtmp[i])) + 8));
-      if (tmp_dir[strlen(tmp_dir)-1] == '/')
-        {
-          /* Trailing slash in tmp_directory spec. */
-          sprintf (tmp, "%s%s", tmp_dir, &(oldtmp[i])+1);
-        }
-      else
-        {
-          /* No trailing slash. */
-          sprintf (tmp, "%s%s", tmp_dir, &(oldtmp[i]));
+        /* Start at the back and work our way forward. */
+        for (i = strlen(oldtmp) - 1; i >= 0; i--) {
+            if (oldtmp[i] == '/')
+                goto found_it;
         }
 
-      MoCCIAddFileURLToList(tmp,url);
-      free (oldtmp);
-      return tmp;
+        /* No luck, just punt. */
+        if (url)
+            MoCCIAddFileURLToList(tmp, url);
+        return tmp;
+
+      found_it:
+        tmp = (char *)malloc(sizeof(char) * (strlen(tmp_dir) + strlen(&(oldtmp[i])) + 8));
+        if (tmp_dir[strlen(tmp_dir) - 1] == '/') {
+            /* Trailing slash in tmp_directory spec. */
+            sprintf(tmp, "%s%s", tmp_dir, &(oldtmp[i]) + 1);
+        } else {
+            /* No trailing slash. */
+            sprintf(tmp, "%s%s", tmp_dir, &(oldtmp[i]));
+        }
+
+        MoCCIAddFileURLToList(tmp, url);
+        free(oldtmp);
+        return tmp;
     }
 }
-
 
 /* ------------------------------ dumb stuff ------------------------------ */
 
 /* Grumble grumble... */
 #if defined(ultrix) || defined(VMS) || defined(NeXT) || defined(M4310) || defined(vax)
-char *strdup (char *str)
+char *strdup(char *str)
 {
-  char *dup;
+    char *dup;
 
-  dup = (char *)malloc (strlen (str) + 1);
-  dup = strcpy (dup, str);
+    dup = (char *)malloc(strlen(str) + 1);
+    dup = strcpy(dup, str);
 
-  return dup;
+    return dup;
 }
 #endif
 
-
 /* Error from the library */
-void application_error(char *str, char *title) {
+void application_error(char *str, char *title)
+{
 
-  XmxMakeErrorDialogWait(current_win->base, app_context, str, title, "OK");
+    XmxMakeErrorDialogWait(current_win->base, app_context, str, title, "OK");
 
-  return;
+    return;
 }
-
 
 /* Feedback from the library. */
-void application_user_feedback (char *str)
+void application_user_feedback(char *str)
 {
-  extern Widget toplevel;
-  XmxMakeInfoDialog (toplevel, str, "NCSA Mosaic: Application Feedback");
-  XmxManageRemanage (Xmx_w);
+    extern Widget toplevel;
+    XmxMakeInfoDialog(toplevel, str, "NCSA Mosaic: Application Feedback");
+    XmxManageRemanage(Xmx_w);
 }
 
-void application_user_info_wait (char *str)
+void application_user_info_wait(char *str)
 {
 
-  XmxMakeInfoDialogWait(current_win->base, app_context, str, "NCSA Mosaic: Application Feedback", "OK");
+    XmxMakeInfoDialogWait(current_win->base, app_context, str, "NCSA Mosaic: Application Feedback", "OK");
 
 }
 
-char *prompt_for_string (char *questionstr)
+char *prompt_for_string(char *questionstr)
 {
 
-  return XmxModalPromptForString (current_win->base, app_context,
-                                  questionstr, "OK", "Cancel");
+    return XmxModalPromptForString(current_win->base, app_context, questionstr, "OK", "Cancel");
 }
 
-char *prompt_for_password (char *questionstr)
+char *prompt_for_password(char *questionstr)
 {
 
-  return XmxModalPromptForPassword (current_win->base, app_context,
-                                    questionstr, "OK", "Cancel");
+    return XmxModalPromptForPassword(current_win->base, app_context, questionstr, "OK", "Cancel");
 }
 
-int prompt_for_yes_or_no (char *questionstr)
+int prompt_for_yes_or_no(char *questionstr)
 {
 
-  return XmxModalYesOrNo (current_win->base, app_context,
-                          questionstr, "Yes", "No");
+    return XmxModalYesOrNo(current_win->base, app_context, questionstr, "Yes", "No");
 }
 
-char *mo_get_html_return (char **texthead)
+char *mo_get_html_return(char **texthead)
 {
-  char *txt = hack_htmlsrc ();
-  *texthead = HTMainText->htmlSrcHead;
-  return txt;
+    char *txt = hack_htmlsrc();
+    *texthead = HTMainText->htmlSrcHead;
+    return txt;
 }
-
 
 /* Simply loop through a string and convert all newlines to spaces. */
 /* We now remove leading whitespace as well */
-char *mo_convert_newlines_to_spaces (char *str)
+char *mo_convert_newlines_to_spaces(char *str)
 {
-  int i;
-  char *tptr;
+    int i;
+    char *tptr;
 
-  if (!str)
-    return NULL;
+    if (!str)
+        return NULL;
 
-  for (i = 0; i < strlen (str); i++)
-    if (str[i] == '\n')
-      str[i] = ' ';
+    for (i = 0; i < strlen(str); i++)
+        if (str[i] == '\n')
+            str[i] = ' ';
 
-  tptr = str;
-  while ((*tptr != '\0')&&(isspace((int)(*tptr))))
-	tptr++;
+    tptr = str;
+    while ((*tptr != '\0') && (isspace((int)(*tptr))))
+        tptr++;
 
-  if (tptr != str)
-  {
+    if (tptr != str) {
 /*	bcopy(tptr, str, (strlen(tptr) + 1));*/
-	memcpy(str, tptr, (strlen(tptr) + 1));
-  }
+        memcpy(str, tptr, (strlen(tptr) + 1));
+    }
 
-  return str;
+    return str;
 }
 
 /* ---------------------------- escaping code ----------------------------- */
 
 static unsigned char isAcceptable[96] =
 /*   0 1 2 3 4 5 6 7 8 9 A B C D E F */
-{    0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,	/* 2x   !"#$%&'()*+,-./	 */
-     1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,	/* 3x  0123456789:;<=>?	 */
-     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,	/* 4x  @ABCDEFGHIJKLMNO  */
-     1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,	/* 5x  PQRSTUVWXYZ[\]^_	 */
-     0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,	/* 6x  `abcdefghijklmno	 */
-     1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0 };	/* 7x  pqrstuvwxyz{\}~	DEL */
+{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0,   /* 2x   !"#$%&'()*+,-./  */
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, /* 3x  0123456789:;<=>?  */
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* 4x  @ABCDEFGHIJKLMNO  */
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, /* 5x  PQRSTUVWXYZ[\]^_  */
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* 6x  `abcdefghijklmno  */
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0
+};                              /* 7x  pqrstuvwxyz{\}~  DEL */
 
 #define MO_HEX(i) (i < 10 ? '0'+i : 'A'+ i - 10)
 
 /* The string returned from here, if any, can be free'd by caller. */
-char *mo_escape_part (char *part)
+char *mo_escape_part(char *part)
 {
-  char *q/*, *u*/;
-  char *p/*, *s, *e*/;		/* Pointers into keywords */
-  char *escaped;
+    char *q /*, *u */ ;
+    char *p /*, *s, *e */ ;     /* Pointers into keywords */
+    char *escaped;
 
-  if (!part)
-    return NULL;
+    if (!part)
+        return NULL;
 
-  escaped = (char *)malloc (strlen (part) * 3 + 1);
-  
-  for (q = escaped, p = part; *p != '\0'; p++)
-    {
-      /*
-       * This makes sure that values 128 and over don't get
-       * converted to negative values.
-       */
-      int c = (int)((unsigned char)(*p));
-      if (*p == ' ')
-        {
-          *q++ = '+';
-        }
-      else if (c >= 32 && c <= 127 && isAcceptable[c-32])
-        {
-          *q++ = *p;
-        }
-      else
-        {
-          *q++ = '%';
-          *q++ = MO_HEX(c / 16);
-          *q++ = MO_HEX(c % 16);
+    escaped = (char *)malloc(strlen(part) * 3 + 1);
+
+    for (q = escaped, p = part; *p != '\0'; p++) {
+        /*
+         * This makes sure that values 128 and over don't get
+         * converted to negative values.
+         */
+        int c = (int)((unsigned char)(*p));
+        if (*p == ' ') {
+            *q++ = '+';
+        } else if (c >= 32 && c <= 127 && isAcceptable[c - 32]) {
+            *q++ = *p;
+        } else {
+            *q++ = '%';
+            *q++ = MO_HEX(c / 16);
+            *q++ = MO_HEX(c % 16);
         }
     }
-  
-  *q=0;
-  
-  return escaped;
+
+    *q = 0;
+
+    return escaped;
 }
 
-
-static char mo_from_hex (char c)
+static char mo_from_hex(char c)
 {
-  return ((c >= '0' && c <= '9') ? (c - '0') : 
-          ((c >= 'A' && c <= 'F') ? (c - 'A' + 10) : 
-           (c - 'a' + 10)));
+    return ((c >= '0' && c <= '9') ? (c - '0') : ((c >= 'A' && c <= 'F') ? (c - 'A' + 10) : (c - 'a' + 10)));
 }
 
-char *mo_unescape_part (char *str)
+char *mo_unescape_part(char *str)
 {
-  char *p = str, *q = str;
+    char *p = str, *q = str;
 
-  while (*p) 
-    {
-      /* Plus's turn back into spaces. */
-      if (*p == '+')
-        {
-          *q++ = ' ';
-          p++;
+    while (*p) {
+        /* Plus's turn back into spaces. */
+        if (*p == '+') {
+            *q++ = ' ';
+            p++;
+        } else if (*p == '%') {
+            p++;
+            if (*p)
+                *q = mo_from_hex(*p++) * 16;
+            if (*p)
+                *q += mo_from_hex(*p++);
+            q++;
+        } else {
+            *q++ = *p++;
         }
-      else if (*p == '%') 
-        {
-          p++;
-          if (*p) 
-            *q = mo_from_hex(*p++) * 16;
-          if (*p) 
-            *q += mo_from_hex(*p++);
-          q++;
-	} 
-      else 
-        {
-          *q++ = *p++; 
-	}
     }
-  
-  *q++ = 0;
-  return str;
-}
 
+    *q++ = 0;
+    return str;
+}
 
 /* ---------------------------- Agent Spoofing ---------------------------- */
 
@@ -1281,77 +1173,72 @@ char *mo_unescape_part (char *str)
  *   called ".mosaic-spoof-agents".
  */
 
-void readAgents(void) {
+void readAgents(void)
+{
 
-FILE *fp;
-char fname[BUFSIZ],buf[512];
-char *homedir,*ptr;
+    FILE *fp;
+    char fname[BUFSIZ], buf[512];
+    char *homedir, *ptr;
 
-	if (get_home(&homedir)!=0 || !homedir) {
-		fprintf(stderr,"home: Could not get your home directory.\n");
-		return;
-	}
-	sprintf(fname,"%s/.mosaic-spoof-agents",homedir);
-	free(homedir);
+    if (get_home(&homedir) != 0 || !homedir) {
+        fprintf(stderr, "home: Could not get your home directory.\n");
+        return;
+    }
+    sprintf(fname, "%s/.mosaic-spoof-agents", homedir);
+    free(homedir);
 
-	if (!(fp=fopen(fname,"r"))) {
-		return;
-	}
+    if (!(fp = fopen(fname, "r"))) {
+        return;
+    }
 
-	while (!feof(fp)) {
-		fgets(buf,511,fp);
-		if (feof(fp)) {
-			break;
-		}
-		if (*buf && *buf!='#') {
-			buf[strlen(buf)-1]='\0';
-			for (ptr=buf; *ptr && isspace(*ptr); ptr++);
-			if (*ptr=='+') { /* This is to be the default*/
-				if (*(ptr+1)) {
-					agent[numAgents]=strdup(ptr+1);
-					selectedAgent=numAgents;
-				}
-				else {
-					continue;
-				}
-			}
-			else if (*ptr) {
-				agent[numAgents]=strdup(ptr);
-			}
-			else {
-				continue;
-			}
-			numAgents++;
-			if (numAgents==MAX_AGENTS) { /* limit reached */
-				fprintf(stderr,"WARNING: Hard limit reached for agent spoof file.\n");
-				break;
-			}
-		}
-	}
+    while (!feof(fp)) {
+        fgets(buf, 511, fp);
+        if (feof(fp)) {
+            break;
+        }
+        if (*buf && *buf != '#') {
+            buf[strlen(buf) - 1] = '\0';
+            for (ptr = buf; *ptr && isspace(*ptr); ptr++);
+            if (*ptr == '+') {  /* This is to be the default */
+                if (*(ptr + 1)) {
+                    agent[numAgents] = strdup(ptr + 1);
+                    selectedAgent = numAgents;
+                } else {
+                    continue;
+                }
+            } else if (*ptr) {
+                agent[numAgents] = strdup(ptr);
+            } else {
+                continue;
+            }
+            numAgents++;
+            if (numAgents == MAX_AGENTS) {  /* limit reached */
+                fprintf(stderr, "WARNING: Hard limit reached for agent spoof file.\n");
+                break;
+            }
+        }
+    }
 
-	fclose(fp);
+    fclose(fp);
 
-	return;
+    return;
 }
 
+void loadAgents(void)
+{
 
-void loadAgents(void) {
+    char buf[512];
 
-char buf[512];
+    agent = (char **)calloc(MAX_AGENTS + 1, sizeof(char *));
+    sprintf(buf, "%s/%s  libwww/%s",
+            HTAppName ? HTAppName : "unknown", HTAppVersion ? HTAppVersion : "0.0", HTLibraryVersion);
+    agent[0] = strdup(buf);
+    numAgents = 1;
 
-	agent=(char **)calloc(MAX_AGENTS+1,sizeof(char *));
-	sprintf(buf,"%s/%s  libwww/%s",
-		HTAppName ? HTAppName : "unknown",
-		HTAppVersion ? HTAppVersion : "0.0",
-		HTLibraryVersion);
-	agent[0]=strdup(buf);
-	numAgents=1;
+    readAgents();
 
-	readAgents();
-
-	return;
+    return;
 }
-
 
 #ifdef TIMING
 /* ----------------------------- Timing stuff ----------------------------- */
@@ -1364,174 +1251,159 @@ char buf[512];
 static struct tms tbuf;
 static int gtime;
 
-void StartClock (void) 
+void StartClock(void)
 {
-  gtime = times (&tbuf);
-  
-  return;
+    gtime = times(&tbuf);
+
+    return;
 }
 
-void StopClock ()
+void StopClock()
 {
-  int donetime;
+    int donetime;
 
-  donetime = times(&tbuf);
+    donetime = times(&tbuf);
 
 #ifndef DISABLE_TRACE
-  if (srcTrace) {
-	fprintf (stderr, "Elapsed time %d\n", donetime - gtime);
-  }
+    if (srcTrace) {
+        fprintf(stderr, "Elapsed time %d\n", donetime - gtime);
+    }
 #endif
 
-  return;
+    return;
 }
 #endif
-
 
 /* Originally in whine.c and then in techsupport.c...now it's here. - SWP */
 /* ------------------------------------------------------------------------ */
 
 static FILE *_fp = NULL;
 
-FILE *mo_start_sending_mail_message (char *to, char *subj, 
-                                     char *content_type, char *url)
+FILE *mo_start_sending_mail_message(char *to, char *subj, char *content_type, char *url)
 {
-  char cmd[2048];
-  char *tmp;
+    char cmd[2048];
+    char *tmp;
 
-  if (!to)
-    return NULL;
+    if (!to)
+        return NULL;
 
-  if(!strcmp(content_type,"url_only")){
-      content_type = "text/plain";
-  }
-#ifdef OLD
-  if (get_pref_string(eMAIL_FILTER_COMMAND))
-    {
-      sprintf (cmd, "%s | %s -t", get_pref_string(eMAIL_FILTER_COMMAND), 
-               get_pref_string(eSENDMAIL_COMMAND));
+    if (!strcmp(content_type, "url_only")) {
+        content_type = "text/plain";
     }
-  else
-    {
-      sprintf (cmd, "%s -t", get_pref_string(eSENDMAIL_COMMAND));
+#ifdef OLD
+    if (get_pref_string(eMAIL_FILTER_COMMAND)) {
+        sprintf(cmd, "%s | %s -t", get_pref_string(eMAIL_FILTER_COMMAND), get_pref_string(eSENDMAIL_COMMAND));
+    } else {
+        sprintf(cmd, "%s -t", get_pref_string(eSENDMAIL_COMMAND));
     }
 #else
-  /* Try listing address on command line. */
-  for (tmp = to; *tmp; tmp++)
-    if (*tmp == ',')
-      *tmp = ' ';
+    /* Try listing address on command line. */
+    for (tmp = to; *tmp; tmp++)
+        if (*tmp == ',')
+            *tmp = ' ';
 
-  if (get_pref_string(eMAIL_FILTER_COMMAND) && content_type &&
-      strcmp (content_type, "application/postscript"))
-    {
-      sprintf (cmd, "%s | %s %s", get_pref_string(eMAIL_FILTER_COMMAND), 
-               get_pref_string(eSENDMAIL_COMMAND), to);
-    }
-  else
-    {
-      sprintf (cmd, "%s %s", get_pref_string(eSENDMAIL_COMMAND), to);
+    if (get_pref_string(eMAIL_FILTER_COMMAND) && content_type && strcmp(content_type, "application/postscript")) {
+        sprintf(cmd, "%s | %s %s", get_pref_string(eMAIL_FILTER_COMMAND), get_pref_string(eSENDMAIL_COMMAND), to);
+    } else {
+        sprintf(cmd, "%s %s", get_pref_string(eSENDMAIL_COMMAND), to);
     }
 #endif
 
-  if ((_fp = popen (cmd, "w")) == NULL)
-    return NULL;
+    if ((_fp = popen(cmd, "w")) == NULL)
+        return NULL;
 
+    fprintf(_fp, "To: %s\n", to);
 
-  fprintf (_fp, "To: %s\n", to);
+    fprintf(_fp, "Subject: %s\n", subj);
+    fprintf(_fp, "Reply-To: %s <%s>\n", get_pref_string(eDEFAULT_AUTHOR_NAME), get_pref_string(eDEFAULT_AUTHOR_EMAIL));
+    fprintf(_fp, "Content-Type: %s\n", content_type);
+    fprintf(_fp, "Mime-Version: 1.0\n");
+    fprintf(_fp, "X-Mailer: NCSA Mosaic %s on %s\n", MO_VERSION_STRING, MO_MACHINE_TYPE);
+    if (url)
+        fprintf(_fp, "X-URL: %s\n", url);
 
-  fprintf (_fp, "Subject: %s\n", subj);
-  fprintf (_fp, "Reply-To: %s <%s>\n",get_pref_string(eDEFAULT_AUTHOR_NAME),get_pref_string(eDEFAULT_AUTHOR_EMAIL));
-  fprintf (_fp, "Content-Type: %s\n", content_type);
-  fprintf (_fp, "Mime-Version: 1.0\n");
-  fprintf (_fp, "X-Mailer: NCSA Mosaic %s on %s\n", 
-           MO_VERSION_STRING, MO_MACHINE_TYPE);
-  if (url)
-    fprintf (_fp, "X-URL: %s\n", url);
+    fprintf(_fp, "\n");
 
-  fprintf (_fp, "\n"); 
-  
-  /* Stick in BASE tag as appropriate. */
-  if (url && content_type && 
-      strcmp (content_type, "text/x-html") == 0)
-    fprintf (_fp, "<base href=\"%s\">\n", url);
+    /* Stick in BASE tag as appropriate. */
+    if (url && content_type && strcmp(content_type, "text/x-html") == 0)
+        fprintf(_fp, "<base href=\"%s\">\n", url);
 
-  return _fp;
+    return _fp;
 }
 
-mo_status mo_finish_sending_mail_message (void)
+mo_status mo_finish_sending_mail_message(void)
 {
-  if (_fp)
-    pclose (_fp);
+    if (_fp)
+        pclose(_fp);
 
-  _fp = NULL;
+    _fp = NULL;
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
 /* ------------------------------------------------------------------------ */
 
-mo_status mo_send_mail_message (char *text, char *to, char *subj, 
-                                char *content_type, char *url)
+mo_status mo_send_mail_message(char *text, char *to, char *subj, char *content_type, char *url)
 {
-  FILE *fp;
+    FILE *fp;
 
-  fp = mo_start_sending_mail_message (to, subj, content_type, url);
-  if (!fp)
-    return mo_fail;
+    fp = mo_start_sending_mail_message(to, subj, content_type, url);
+    if (!fp)
+        return mo_fail;
 
-  if(!strcmp(content_type,"url_only")){
-      fputs(url,fp);
-      fputs("\n\n",fp);
-  } else {
-      fputs (text, fp);
-  }
-  
-  mo_finish_sending_mail_message ();
+    if (!strcmp(content_type, "url_only")) {
+        fputs(url, fp);
+        fputs("\n\n", fp);
+    } else {
+        fputs(text, fp);
+    }
 
-  return mo_succeed;
+    mo_finish_sending_mail_message();
+
+    return mo_succeed;
 }
 
-
 /* ------------------------- upload stuff -------------------------- */
-char *mo_put_er_over(char *url,char **texthead) {
+char *mo_put_er_over(char *url, char **texthead)
+{
 
-char *rv;
+    char *rv;
 
-	do_put=do_post=1;
+    do_put = do_post = 1;
 
-	if (saveFileName!=NULL) {
-		free(saveFileName);
-	}
-	saveFileName=strdup(url);
-	if (HTTP_last_modified) {
-		free(HTTP_last_modified);
-		HTTP_last_modified=0;
-	}
+    if (saveFileName != NULL) {
+        free(saveFileName);
+    }
+    saveFileName = strdup(url);
+    if (HTTP_last_modified) {
+        free(HTTP_last_modified);
+        HTTP_last_modified = 0;
+    }
 
-	rv=doit(url,texthead);
+    rv = doit(url, texthead);
 
-	do_put=do_post=0;
+    do_put = do_post = 0;
 
-	return(rv);
-}  
+    return (rv);
+}
 
+int upload(mo_window *win, FILE *fp, char *fname)
+{
 
-int upload(mo_window *win,FILE *fp, char *fname) {
+    char *put_url, *xurl;
+    int res = mo_fail;
+    char *newtext = NULL, *newtexthead = NULL;
+    char *last_modified = NULL, *expires = NULL;
+    char *ref;
 
-char *put_url,*xurl;
-int res=mo_fail;
-char *newtext=NULL,*newtexthead=NULL;
-char *last_modified=NULL,*expires=NULL;
-char *ref;
+    if (!win) {
+        return (0);
+    }
 
-	if (!win) {
-		return(0);
-	}
-
-	put_url=prompt_for_string("Enter the URL you wish to upload the file as:");
-	if (!put_url) {
-		return(0);
-	}
+    put_url = prompt_for_string("Enter the URL you wish to upload the file as:");
+    if (!put_url) {
+        return (0);
+    }
 
 /*
 	if (win->current_node &&
@@ -1541,94 +1413,85 @@ char *ref;
 	}
 	else {
 */
-		ref=NULL;
+    ref = NULL;
 /*
 	}
 */
 
-	xurl=mo_url_prepend_protocol(put_url);
-	free(put_url);
-	put_url=xurl;
+    xurl = mo_url_prepend_protocol(put_url);
+    free(put_url);
+    put_url = xurl;
 
-	fseek(fp,0,SEEK_END);
-	put_file_size=ftell(fp);
-	rewind(fp);
-	put_fp=fp;
+    fseek(fp, 0, SEEK_END);
+    put_file_size = ftell(fp);
+    rewind(fp);
+    put_fp = fp;
 
-	mo_busy ();
+    mo_busy();
 
-	if (win->target_anchor) {
-		free(win->target_anchor);
-	}
+    if (win->target_anchor) {
+        free(win->target_anchor);
+    }
 /*
 	win->target_anchor=mo_url_extract_anchor(put_url);
 */
-	win->target_anchor=NULL;
+    win->target_anchor = NULL;
 
-	mo_set_current_cached_win(win);
+    mo_set_current_cached_win(win);
 
-	newtext=mo_put_er_over(put_url,
-			       &newtexthead);
+    newtext = mo_put_er_over(put_url, &newtexthead);
 
-	if (newtext) {
-		if ((!strncmp(newtext,"<H1>ERROR<H1>",10)) ||
-		    (!strncmp(newtext,"<HEAD><TITLE>404 Not Found</TITLE></HEAD>",28))) {
-			res=mo_fail;
-		}
-	}
+    if (newtext) {
+        if ((!strncmp(newtext, "<H1>ERROR<H1>", 10)) ||
+            (!strncmp(newtext, "<HEAD><TITLE>404 Not Found</TITLE></HEAD>", 28))) {
+            res = mo_fail;
+        }
+    }
 
-	if (HTTP_last_modified) {
-		last_modified=strdup(HTTP_last_modified);
-	}
-	if (HTTP_expires) {
-		expires=strdup(HTTP_expires);
-	}
+    if (HTTP_last_modified) {
+        last_modified = strdup(HTTP_last_modified);
+    }
+    if (HTTP_expires) {
+        expires = strdup(HTTP_expires);
+    }
 
-	{
-		/* Check use_this_url_instead from HTAccess.c. */
-		extern char *use_this_url_instead;
+    {
+        /* Check use_this_url_instead from HTAccess.c. */
+        extern char *use_this_url_instead;
 
-		if (use_this_url_instead) {
-			mo_here_we_are_son(put_url);
-			free(put_url);
-			put_url=use_this_url_instead;
+        if (use_this_url_instead) {
+            mo_here_we_are_son(put_url);
+            free(put_url);
+            put_url = use_this_url_instead;
 
-			/* Go get another target_anchor. */
-			if (win->target_anchor) {
-				free(win->target_anchor);
-			}
+            /* Go get another target_anchor. */
+            if (win->target_anchor) {
+                free(win->target_anchor);
+            }
 /*
 			win->target_anchor=mo_url_extract_anchor(put_url);
 */
-			win->target_anchor=NULL;
-		}
-	}
+            win->target_anchor = NULL;
+        }
+    }
 
-	if (newtext) {
-		res=mo_do_window_text(win,
-				      put_url,
-				      newtext,
-				      newtexthead,
-				      1,
-				      ref,
-				      last_modified,
-				      expires);
-		HTMLTraverseTabGroups(win->view,
-				      XmTRAVERSE_HOME);
-	}
+    if (newtext) {
+        res = mo_do_window_text(win, put_url, newtext, newtexthead, 1, ref, last_modified, expires);
+        HTMLTraverseTabGroups(win->view, XmTRAVERSE_HOME);
+    }
 
-	if (win->current_node) {
-		mo_gui_check_security_icon(win->current_node->authType);
-	}
+    if (win->current_node) {
+        mo_gui_check_security_icon(win->current_node->authType);
+    }
 
-	if (last_modified) {
-		free(last_modified);
-		last_modified=NULL;
-	}
-	if (expires) {
-		free(expires);
-		expires=NULL;
-	}
+    if (last_modified) {
+        free(last_modified);
+        last_modified = NULL;
+    }
+    if (expires) {
+        free(expires);
+        expires = NULL;
+    }
 
 /*
 	if (xurl==put_url) {
@@ -1649,128 +1512,119 @@ char *ref;
 	}
 */
 
-	if (ref) {
-		free(ref);
-		ref=NULL;
-	}
+    if (ref) {
+        free(ref);
+        ref = NULL;
+    }
 
-	mo_gui_done_with_icon ();
-	mo_not_busy ();
+    mo_gui_done_with_icon();
+    mo_not_busy();
 
-	return(res);
+    return (res);
 }
 
+mo_status mo_upload_window(mo_window *win, char *fname)
+{
 
-mo_status mo_upload_window(mo_window *win, char *fname) {
+    char *efname = (char *)malloc(sizeof(char) * (__MAX_HOME_LEN__ * 2));
+    FILE *fp;
+    int res;
 
-char *efname = (char *)malloc (sizeof (char) * (__MAX_HOME_LEN__ * 2));
-FILE *fp;
-int res;
-
-	if (pathEval(efname, fname)<0) {
+    if (pathEval(efname, fname) < 0) {
 #ifndef DISABLE_TRACE
-		if (srcTrace) {
-			fprintf(stderr,"Error in evaluating the path. (gui-dialogs.c)\n");
-		}
+        if (srcTrace) {
+            fprintf(stderr, "Error in evaluating the path. (gui-dialogs.c)\n");
+        }
 #endif
-	}
+    }
 
-	
-	if (!(fp=fopen(efname,"r"))) {
+    if (!(fp = fopen(efname, "r"))) {
 
-		char *buf, *final, tmpbuf[80];
-		int final_len;
+        char *buf, *final, tmpbuf[80];
+        int final_len;
 
-		/* don't display dialog if command issued by cci application */
-		if (cci_docommand) {
-			return mo_fail;
-		}
+        /* don't display dialog if command issued by cci application */
+        if (cci_docommand) {
+            return mo_fail;
+        }
 
-		buf=my_strerror(errno);
-		if (!buf || !*buf || !strcmp(buf,"Error 0")) {
-			sprintf(tmpbuf,"Uknown Error" );
-			buf=tmpbuf;
-		}
+        buf = my_strerror(errno);
+        if (!buf || !*buf || !strcmp(buf, "Error 0")) {
+            sprintf(tmpbuf, "Uknown Error");
+            buf = tmpbuf;
+        }
 
-		final_len=30+((!efname || !*efname?3:strlen(efname))+13)+
-			15+(strlen(buf)+3);
-		final=(char *)calloc(final_len,sizeof(char));
+        final_len = 30 + ((!efname || !*efname ? 3 : strlen(efname)) + 13) + 15 + (strlen(buf) + 3);
+        final = (char *)calloc(final_len, sizeof(char));
 
-		sprintf(final,"\nUnable to upload document:\n   %s\n\nUpload Error:\n   %s\n" ,(!efname || !*efname?" ":efname),buf);
+        sprintf(final,
+                "\nUnable to upload document:\n   %s\n\nUpload Error:\n   %s\n",
+                (!efname || !*efname ? " " : efname), buf);
 
-		application_error(final,"Upload Error");
+        application_error(final, "Upload Error");
 
-		if (final) {
-			free(final);
-			final=NULL;
-		}
+        if (final) {
+            free(final);
+            final = NULL;
+        }
 
-		free(efname);
+        free(efname);
 
-		return(mo_fail);
-	}
+        return (mo_fail);
+    }
 
-	res=upload(win,fp,efname);
-	fclose (fp);
-	free(efname);
+    res = upload(win, fp, efname);
+    fclose(fp);
+    free(efname);
 
-	return(mo_succeed);
+    return (mo_succeed);
 }
 
+static XmxCallback(upload_win_cb)
+{
 
-static XmxCallback (upload_win_cb) {
+    char *fname = (char *)malloc(sizeof(char) * 128);
+    mo_window *win = mo_fetch_window_by_id(XmxExtractUniqid((int)client_data));
 
-char *fname = (char *)malloc (sizeof (char) * 128);
-mo_window *win = mo_fetch_window_by_id(XmxExtractUniqid ((int)client_data));
+    mo_busy();
 
-	mo_busy();
+    XtUnmanageChild(win->upload_win);
 
-	XtUnmanageChild(win->upload_win);
-  
-	XmStringGetLtoR(((XmFileSelectionBoxCallbackStruct *)call_data)->value,
-			XmSTRING_DEFAULT_CHARSET,
-			&fname);
+    XmStringGetLtoR(((XmFileSelectionBoxCallbackStruct *) call_data)->value, XmSTRING_DEFAULT_CHARSET, &fname);
 
-	mo_upload_window(win,fname);
+    mo_upload_window(win, fname);
 
-	mo_not_busy();
+    mo_not_busy();
 
-	free(fname);
-  
-	return;
+    free(fname);
+
+    return;
 }
 
+mo_status mo_post_upload_window(mo_window *win)
+{
 
-mo_status mo_post_upload_window (mo_window *win) {
+    XmxSetUniqid(win->id);
 
-	XmxSetUniqid (win->id);
+    if (!win->upload_win) {
 
-	if (!win->upload_win) {
+        Widget frame, workarea, format_label;
 
-		Widget frame, workarea, format_label;
+        win->upload_win =
+            XmxMakeFileSBDialog(win->base,
+                                "NCSA Mosaic: Upload Document", "Name of document to upload:", upload_win_cb, 0);
 
-		win->upload_win=
-			XmxMakeFileSBDialog(win->base,
-					    "NCSA Mosaic: Upload Document",
-					    "Name of document to upload:",
-					    upload_win_cb,
-					    0);
+        /* This makes a frame as a work area for the dialog box. */
+        XmxSetArg(XmNmarginWidth, 5);
+        XmxSetArg(XmNmarginHeight, 5);
+        frame = XmxMakeFrame(win->upload_win, XmxShadowEtchedIn);
+        workarea = XmxMakeForm(frame);
 
-		/* This makes a frame as a work area for the dialog box. */
-		XmxSetArg(XmNmarginWidth,5);
-		XmxSetArg(XmNmarginHeight,5);
-		frame=XmxMakeFrame(win->upload_win,
-				   XmxShadowEtchedIn);
-		workarea=XmxMakeForm(frame);
+    } else {
+        XmFileSelectionDoSearch(win->upload_win, NULL);
+    }
 
-	}
-	else {
-		XmFileSelectionDoSearch(win->upload_win,
-					NULL);
-	}
-  
-	XmxManageRemanage (win->upload_win);
+    XmxManageRemanage(win->upload_win);
 
-	return mo_succeed;
+    return mo_succeed;
 }
-

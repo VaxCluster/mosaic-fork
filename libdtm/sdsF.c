@@ -27,12 +27,8 @@
 
 #ifdef RCSLOG
 
- $Log: sdsF.c,v $
- Revision 1.1.1.1  1995/01/11 00:03:03  alanb
- New CVS source tree, Mosaic 2.5 beta 4
-
- * Revision 2.5  1994/12/29  23:40:25  alanb
- * I'm committing with a new symbolic revision number.
+$Log: sdsF.c, v $ Revision 1.1 .1 .1 1995 / 01 / 11 00: 03: 03 alanb New CVS source tree, Mosaic 2.5 beta 4 * Revision 2.5 1994 / 12 / 29 23: 40:25 alanb
+    * I 'm committing with a new symbolic revision number.
  *
  * Revision 1.1.1.1  1994/12/28  21:37:34  alanb
  *
@@ -118,13 +114,13 @@ void SDSST(s, t)
   int	i;
   char	*tptr = _fcdtocp(t);
 
-  strcat(strcat(_fcdtocp(s), DTMtitle), " '");
+  strcat(strcat(_fcdtocp(s), DTMtitle), " ' ");
 
   for (i=0; i< _fcdlen(t); i+=1)
     if (*tptr == ' ' && *(tptr+1) == ' ')
       break;
 
-  strcat(strncat(_fcdtocp(s), _fcdtocp(t), i), "' ");
+  strcat(strncat(_fcdtocp(s), _fcdtocp(t), i), " ' ");
 }
 
 
@@ -222,7 +218,8 @@ long SDSGMM(s, min, max)
 
   *min = atof(h);
 
-  h = strchr(h, ' ') + 1;
+  h = strchr(h, '
+    ') + 1;
   *max = atof(h);
 
   return _btol(1);
@@ -241,3 +238,6 @@ long SDSNE(rank, dims)
 
   return size;
 }
+
+
+

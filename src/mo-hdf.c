@@ -60,29 +60,23 @@
 
 #ifdef HAVE_HDF
 
-static char *pull_guts_from_hdfref (char *target)
+static char *pull_guts_from_hdfref(char *target)
 {
-  if (target)
-    {
-      /* If the first seven characters don't match "hdfref;", then we know
-         it's not a target. */
-      if (strncmp (target, "hdfref;", 7))
-        {
-          /* It's not an hdfref; we don't know what the hell it is. */
-          target = NULL;
+    if (target) {
+        /* If the first seven characters don't match "hdfref;", then we know
+           it's not a target. */
+        if (strncmp(target, "hdfref;", 7)) {
+            /* It's not an hdfref; we don't know what the hell it is. */
+            target = NULL;
+        } else {
+            /* OK, it's an hdfref.  Or, more to the point, &(target[7]) is. */
+            target = &(target[7]);
         }
-      else
-        {
-          /* OK, it's an hdfref.  Or, more to the point, &(target[7]) is. */
-          target = &(target[7]);
-        }
-      return target;
+        return target;
     }
 
-  return NULL;
+    return NULL;
 }
-  
-
 
 /****************************************************************************
  * name:    mo_hdf_fetch_local_filename
@@ -95,14 +89,13 @@ static char *pull_guts_from_hdfref (char *target)
  * remarks: 
  *   
  ****************************************************************************/
-char *mo_hdf_fetch_local_filename (char *url)
+char *mo_hdf_fetch_local_filename(char *url)
 {
-  char *cache_url = mo_url_canonicalize (url, "");
-  char *rv = (char *)mo_fetch_cached_local_name (cache_url);
-  free (cache_url);
-  return rv;
+    char *cache_url = mo_url_canonicalize(url, "");
+    char *rv = (char *)mo_fetch_cached_local_name(cache_url);
+    free(cache_url);
+    return rv;
 }
-
 
 /****************************************************************************
  * name:    mo_decode_internal_reference
@@ -124,57 +117,52 @@ char *mo_hdf_fetch_local_filename (char *url)
  *   So no matter what, nuke any existing file and cache the current
  *   file.
  ****************************************************************************/
-char *mo_decode_internal_reference (char *url, char *newtext, char *target)
+char *mo_decode_internal_reference(char *url, char *newtext, char *target)
 {
-  char *text, *fname;
-  int i;
+    char *text, *fname;
+    int i;
 
-  /* We always reload here, since we already sucked it over the network.
-     However, we want to clean up after ourselves if this is in fact a reload,
-     i.e., another local copy of this URL already exists. */
-  fname = mo_hdf_fetch_local_filename (url);
-  if (fname)
-    {
-      /* Nuke an existing file, since we just got a new one. */
-      /*
-      char *cmd = (char *)malloc ((strlen (fname) + 32) * sizeof (char));
-      sprintf (cmd, "/bin/rm -f %s &", fname);
-      system (cmd);
-      free (cmd);
-      */
-      unlink(fname); 
+    /* We always reload here, since we already sucked it over the network.
+       However, we want to clean up after ourselves if this is in fact a reload,
+       i.e., another local copy of this URL already exists. */
+    fname = mo_hdf_fetch_local_filename(url);
+    if (fname) {
+        /* Nuke an existing file, since we just got a new one. */
+        /*
+           char *cmd = (char *)malloc ((strlen (fname) + 32) * sizeof (char));
+           sprintf (cmd, "/bin/rm -f %s &", fname);
+           system (cmd);
+           free (cmd);
+         */
+        unlink(fname);
     }
 
-  /* Now go get the new filename. */
-  fname = (char *)malloc (sizeof (char) * (strlen (newtext) - 20));
-  sscanf (newtext, "<mosaic-internal-reference \"%s", fname);
+    /* Now go get the new filename. */
+    fname = (char *)malloc(sizeof(char) * (strlen(newtext) - 20));
+    sscanf(newtext, "<mosaic-internal-reference \"%s", fname);
 
-  /* We certainly don't need newtext anymore. */
-  free (newtext);
+    /* We certainly don't need newtext anymore. */
+    free(newtext);
 
-  for (i = 0; i < strlen (fname); i++)
-    if (fname[i] == '\"')
-      fname[i] = '\0';
-  {
-    char *cache_url = mo_url_canonicalize (url, "");
-    mo_cache_data (cache_url, fname, 1);
-    free (cache_url);
-  }
-
-  target = pull_guts_from_hdfref (target);
-
-  if (!target)
+    for (i = 0; i < strlen(fname); i++)
+        if (fname[i] == '\"')
+            fname[i] = '\0';
     {
-      text = (char *)hdfGrokFile (fname, url);
-    }
-  else
-    {
-      text = (char *)hdfGrokReference (fname, target, url);
+        char *cache_url = mo_url_canonicalize(url, "");
+        mo_cache_data(cache_url, fname, 1);
+        free(cache_url);
     }
 
-  return text;
+    target = pull_guts_from_hdfref(target);
+
+    if (!target) {
+        text = (char *)hdfGrokFile(fname, url);
+    } else {
+        text = (char *)hdfGrokReference(fname, target, url);
+    }
+
+    return text;
 }
-  
 
 /****************************************************************************
  * name:    mo_decode_hdfref
@@ -192,70 +180,58 @@ char *mo_decode_internal_reference (char *url, char *newtext, char *target)
  *   filename for all internal references.
  *   --> We assume the file is already stored locally. ???
  ****************************************************************************/
-char *mo_decode_hdfref (char *url, char *target)
+char *mo_decode_hdfref(char *url, char *target)
 {
-  char *text, *fname;
-  struct stat buf;
-  int i;
+    char *text, *fname;
+    struct stat buf;
+    int i;
 
-  fname = mo_hdf_fetch_local_filename (url);
-  if (!fname || stat (fname, &buf))
-    {
-      /* Go fetch the file anew. */
-      fname = mo_tmpnam (url);
-      if (mo_pull_er_over_virgin (url, fname) == mo_fail)
-        {
-          return strdup ("Whoops, something went wrong -- back up and try again.");
-        }
-      else
-        {
-          char *cache_url = mo_url_canonicalize (url, "");
-          mo_cache_data (cache_url, fname, 1);
-          free (cache_url);
+    fname = mo_hdf_fetch_local_filename(url);
+    if (!fname || stat(fname, &buf)) {
+        /* Go fetch the file anew. */
+        fname = mo_tmpnam(url);
+        if (mo_pull_er_over_virgin(url, fname) == mo_fail) {
+            return strdup("Whoops, something went wrong -- back up and try again.");
+        } else {
+            char *cache_url = mo_url_canonicalize(url, "");
+            mo_cache_data(cache_url, fname, 1);
+            free(cache_url);
         }
     }
 
-  target = pull_guts_from_hdfref (target);
+    target = pull_guts_from_hdfref(target);
 
-  if (!target)
-    {
-      return strdup ("Whoops, something went wrong -- badly wrong.");
-    }
-  else
-    {
-      text = (char *)hdfGrokReference (fname, target, url);
+    if (!target) {
+        return strdup("Whoops, something went wrong -- badly wrong.");
+    } else {
+        text = (char *)hdfGrokReference(fname, target, url);
     }
 
-  return text;
+    return text;
 }
-
 
 #ifdef HAVE_DTM
-mo_status mo_do_hdf_dtm_thang (char *url, char *hdfdtmref)
+mo_status mo_do_hdf_dtm_thang(char *url, char *hdfdtmref)
 {
-  char *fname = mo_hdf_fetch_local_filename (url);
-  struct stat buf;
+    char *fname = mo_hdf_fetch_local_filename(url);
+    struct stat buf;
 
-  if (!fname || stat (fname, &buf))
-    {
-      /* Go fetch the file anew. */
-      fname = mo_tmpnam (url);
-      if (mo_pull_er_over_virgin (url, fname) == mo_fail)
-        {
-          return mo_fail;
-        }
-      else
-        {
-          char *cache_url = mo_url_canonicalize (url, "");
-          mo_cache_data (cache_url, fname, 1);
-          free (cache_url);
+    if (!fname || stat(fname, &buf)) {
+        /* Go fetch the file anew. */
+        fname = mo_tmpnam(url);
+        if (mo_pull_er_over_virgin(url, fname) == mo_fail) {
+            return mo_fail;
+        } else {
+            char *cache_url = mo_url_canonicalize(url, "");
+            mo_cache_data(cache_url, fname, 1);
+            free(cache_url);
         }
     }
-  
-  hdfDtmThang (fname, hdfdtmref);
 
-  return mo_succeed;
+    hdfDtmThang(fname, hdfdtmref);
+
+    return mo_succeed;
 }
-#endif /* HAVE_DTM */
+#endif                          /* HAVE_DTM */
 
-#endif /* HAVE_HDF */
+#endif                          /* HAVE_HDF */

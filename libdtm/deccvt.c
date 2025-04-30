@@ -24,16 +24,10 @@
 **
 **********************************************************************/
 
-
-
 #ifdef RCSLOG
 
- $Log: deccvt.c,v $
- Revision 1.1.1.1  1995/01/11 00:02:58  alanb
- New CVS source tree, Mosaic 2.5 beta 4
-
- * Revision 2.5  1994/12/29  23:39:34  alanb
- * I'm committing with a new symbolic revision number.
+$Log: deccvt.c, v $ Revision 1.1 .1 .1 1995 / 01 / 11 00: 02: 58 alanb New CVS source tree, Mosaic 2.5 beta 4 * Revision 2.5 1994 / 12 / 29 23: 39:34 alanb
+    * I 'm committing with a new symbolic revision number.
  *
  * Revision 1.1.1.1  1994/12/28  21:37:30  alanb
  *
@@ -56,7 +50,8 @@
  * Initial revision
  *
  * Revision 1.2  1990/11/08  16:48:12  jefft
- * Fixed dtm_triplet and dtm_complex conversion routines.  'size' is set
+ * Fixed dtm_triplet and dtm_complex conversion routines.  ' size
+    ' is set
  * first instead of only on return.
  *
  * Revision 1.1  90/11/08  16:40:06  jefft
@@ -221,3 +216,6 @@ int	(*DTMconvertRtns[])() = {
                 dtm_complex,
 		dtm_triplet
 		};
+
+
+

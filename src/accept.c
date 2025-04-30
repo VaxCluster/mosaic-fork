@@ -102,68 +102,64 @@ ListenAddress NetServerInitSocket(portNumber)
 /* return -1 on error */
 int portNumber;
 {
-ListenAddress socketFD;
-struct sockaddr_in serverAddress;
-struct protoent *protocolEntry;
+    ListenAddress socketFD;
+    struct sockaddr_in serverAddress;
+    struct protoent *protocolEntry;
 
-	protocolEntry = getprotobyname("tcp");
-	if (protocolEntry) {
-		socketFD = socket(AF_INET, SOCK_STREAM,protocolEntry->p_proto);
-		}
-	else {
-		socketFD = socket(AF_INET, SOCK_STREAM,0);
-		}
-	
-	if (socketFD < 0) {
+    protocolEntry = getprotobyname("tcp");
+    if (protocolEntry) {
+        socketFD = socket(AF_INET, SOCK_STREAM, protocolEntry->p_proto);
+    } else {
+        socketFD = socket(AF_INET, SOCK_STREAM, 0);
+    }
+
+    if (socketFD < 0) {
 
 #ifndef DISABLE_TRACE
-		if (srcTrace) {
-			fprintf(stderr,"Can't create socket.\n");
-		}
+        if (srcTrace) {
+            fprintf(stderr, "Can't create socket.\n");
+        }
 #endif
 
-		return(-1);
-		}
+        return (-1);
+    }
 
 /*        bzero((char *) &serverAddress, sizeof(serverAddress));*/
-	memset((char *) &serverAddress, 0, sizeof(serverAddress));
-	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-	serverAddress.sin_port = htons(portNumber);
+    memset((char *)&serverAddress, 0, sizeof(serverAddress));
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddress.sin_port = htons(portNumber);
 
-	if (bind(socketFD, (struct sockaddr *) &serverAddress, 
-		sizeof(serverAddress))<0){
+    if (bind(socketFD, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) {
 #ifndef DISABLE_TRACE
-			if (srcTrace) {
-				fprintf(stderr,"Can't bind to address.\n");
-			}
+        if (srcTrace) {
+            fprintf(stderr, "Can't bind to address.\n");
+        }
 #endif
 
-		return(-1);
-		}
-
+        return (-1);
+    }
 #ifdef SCREWY_BLOCKING
-            /* set socket to non-blocking for linux */
-        fcntl(socketFD,FNDELAY,0);
+    /* set socket to non-blocking for linux */
+    fcntl(socketFD, FNDELAY, 0);
 #endif
-        
-	if (listen(socketFD,5) == -1) {
+
+    if (listen(socketFD, 5) == -1) {
 #ifndef DISABLE_TRACE
-		if (srcTrace) {
-			fprintf(stderr,"Can't listen.\n");
-		}
+        if (srcTrace) {
+            fprintf(stderr, "Can't listen.\n");
+        }
 #endif
 
-		return(-1);
-		}
+        return (-1);
+    }
 #ifndef SCREWY_BLOCKING
-            /* set socket to non-blocking */
-	ioctl(socketFD,FIONBIO,0);
+    /* set socket to non-blocking */
+    ioctl(socketFD, FIONBIO, 0);
 #endif
-        
-	return(socketFD);
-}
 
+    return (socketFD);
+}
 
 PortDescriptor *NetServerAccept(socketFD)
 /* accept a connection off of a base socket */
@@ -171,119 +167,105 @@ PortDescriptor *NetServerAccept(socketFD)
 /* return NULL if no connection else return PortDescriptor*  */
 ListenAddress socketFD;
 {
-int newSocketFD;
-struct sockaddr_in clientAddress;
-int clientAddressLength;
-PortDescriptor *c;
+    int newSocketFD;
+    struct sockaddr_in clientAddress;
+    int clientAddressLength;
+    PortDescriptor *c;
 
+    /* it's assumed that the socketFD has already been set to non block */
+    clientAddressLength = sizeof(clientAddress);
+    newSocketFD = accept(socketFD, (struct sockaddr *)&clientAddress, &clientAddressLength);
+    if (newSocketFD < 0) {
+        return (NULL);
+    }
 
+    /* we have connection */
+    if (!(c = (PortDescriptor *) MALLOC(sizeof(PortDescriptor)))) {
+        return (0);
+    }
+    c->socketFD = newSocketFD;
+    c->numInBuffer = 0;
 
-	/* it's assumed that the socketFD has already been set to non block*/
-	clientAddressLength = sizeof(clientAddress);
-	newSocketFD = accept(socketFD,(struct sockaddr *) &clientAddress,
-				&clientAddressLength);
-	if (newSocketFD < 0) {
-		return(NULL);
-		}
-
-	/* we have connection */
-	if (!(c =(PortDescriptor *)MALLOC(sizeof(PortDescriptor)))){
-		return(0);
-		}
-	c->socketFD = newSocketFD;
-	c->numInBuffer = 0;
-
-	return(c);
+    return (c);
 }
 
-
-int NetRead(c,buffer,bufferSize)
+int NetRead(c, buffer, bufferSize)
 /* read input from port, return number of bytes read */
-
 PortDescriptor *c;
 char *buffer;
 int bufferSize;
 {
-int length;
+    int length;
 
-	length = read(c->socketFD, buffer, bufferSize);
-	return(length);
+    length = read(c->socketFD, buffer, bufferSize);
+    return (length);
 
 }
 
-
-
-int NetServerWrite(c,buffer,bufferSize)
+int NetServerWrite(c, buffer, bufferSize)
 /* send buffer, return number of bytes sent */
 PortDescriptor *c;
 char *buffer;
 int bufferSize;
 {
-int length;
+    int length;
 
-	length = write(c->socketFD,buffer,bufferSize);
+    length = write(c->socketFD, buffer, bufferSize);
 
-	return(length);
+    return (length);
 }
-
 
 int NetCloseConnection(c)
 /* close the connection */
 PortDescriptor *c;
 {
-	close(c->socketFD);
+    close(c->socketFD);
 }
 
 int NetCloseAcceptPort(s)
 int s;
 {
-	close(s);
+    close(s);
 }
-
-
 
 int NetIsThereInput(p)
 /* Do a non block check on socket for input and return 1 for yes, 0 for no */
 PortDescriptor *p;
 {
-static struct  timeval timeout = { 0L , 0L };
+    static struct timeval timeout = { 0L, 0L };
 /*int val;*/
-fd_set readfds;
+    fd_set readfds;
 
+    FD_ZERO(&readfds);
+    FD_SET(p->socketFD, &readfds);
+    if (0 < select(32, &readfds, 0, 0, &timeout)) {
+        return (1);
+    } else {
+        return (0);
+    }
 
-	FD_ZERO(&readfds);
-	FD_SET(p->socketFD,&readfds);
-	if (0 < select(32, &readfds, 0, 0, &timeout)){
-		return(1);
-		}
-	else {
-		return(0);
-		}
-	
 }
 
 int NetIsThereAConnection(socketFD)
 /* Do a non block check on socket for input and return 1 for yes, 0 for no */
 int socketFD;
 {
-static struct  timeval timeout = { 0L , 0L };
+    static struct timeval timeout = { 0L, 0L };
 /*int val;*/
-fd_set readfds;
+    fd_set readfds;
 
-
-	FD_ZERO(&readfds);
-	FD_SET(socketFD,&readfds);
-	if (0 < select(32, &readfds, 0, 0, &timeout)){
-		return(1);
-		}
-	else {
-		return(0);
-		}
+    FD_ZERO(&readfds);
+    FD_SET(socketFD, &readfds);
+    if (0 < select(32, &readfds, 0, 0, &timeout)) {
+        return (1);
+    } else {
+        return (0);
+    }
 }
+
 int NetGetSocketDescriptor(s)
 /* extract socket file descriptor from the Port structure */
 PortDescriptor *s;
 {
-        return(s->socketFD);
+    return (s->socketFD);
 }
-

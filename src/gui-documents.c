@@ -63,8 +63,7 @@
 #include "cci.h"
 #include "cciBindings.h"
 
-/*SWP*/
-extern char pre_title[80];
+ /*SWP*/ extern char pre_title[80];
 extern int cci_event;
 extern char *cached_url;
 extern int binary_transfer;
@@ -94,25 +93,20 @@ extern char *HTTP_expires;
 /* add more sense and sensibility to rbm */
 void mo_popup_set_something();
 
-static Boolean check_imagedelay (char *url);
-static mo_status mo_snarf_scrollbar_values (mo_window *win);
-static mo_status mo_reset_document_headers (mo_window *win);
-static void mo_back_possible (mo_window *win);
-static void mo_forward_possible (mo_window *win);
-static void mo_annotate_edit_possible (mo_window *win);
-static void mo_annotate_edit_impossible (mo_window *win);
-static void mo_set_text (Widget w, char *txt, char *ans, int id, 
-                         char *target_anchor, void *cached_stuff);
-static mo_status mo_post_load_window_text (mo_window *win, char *url, 
-                                    char *content_type, char *post_data, 
-                                    char *ref);
+static Boolean check_imagedelay(char *url);
+static mo_status mo_snarf_scrollbar_values(mo_window * win);
+static mo_status mo_reset_document_headers(mo_window * win);
+static void mo_back_possible(mo_window * win);
+static void mo_forward_possible(mo_window * win);
+static void mo_annotate_edit_possible(mo_window * win);
+static void mo_annotate_edit_impossible(mo_window * win);
+static void mo_set_text(Widget w, char *txt, char *ans, int id, char *target_anchor, void *cached_stuff);
+static mo_status mo_post_load_window_text(mo_window * win, char *url, char *content_type, char *post_data, char *ref);
 
 /* for selective image loading */
 extern char **imagedelay_sites;
 extern Boolean currently_delaying_images;
 /*******************************/
-
-
 
 /****************************************************************************
  * name:    check_imagedelay
@@ -124,23 +118,22 @@ extern Boolean currently_delaying_images;
  *   0 if there is not a match
  * 
  ****************************************************************************/
-static Boolean check_imagedelay (char *url) {
+static Boolean check_imagedelay(char *url)
+{
 
     long i;
 
-    
-    if(imagedelay_sites != NULL) {
-        for(i = 0; imagedelay_sites[i]; i++) {
-            if(strstr(url, imagedelay_sites[i])) {
+    if (imagedelay_sites != NULL) {
+        for (i = 0; imagedelay_sites[i]; i++) {
+            if (strstr(url, imagedelay_sites[i])) {
                 return 1;
             }
         }
     }
-    
-    return 0;
-    
-}
 
+    return 0;
+
+}
 
 /****************************************************************************
  * name:    mo_snarf_scrollbar_values
@@ -154,167 +147,153 @@ static Boolean check_imagedelay (char *url) {
  * remarks: 
  *   Snarfs current docid position in the HTML widget.
  ****************************************************************************/
-static mo_status mo_snarf_scrollbar_values (mo_window *win)
+static mo_status mo_snarf_scrollbar_values(mo_window *win)
 {
-  /* Make sure we have a node. */
-  if (!win->current_node)
-    return mo_fail;
+    /* Make sure we have a node. */
+    if (!win->current_node)
+        return mo_fail;
 
-  win->current_node->docid = HTMLPositionToId(win->scrolled_win, 0, 3);
+    win->current_node->docid = HTMLPositionToId(win->scrolled_win, 0, 3);
 
-  /* Do the cached stuff thing. */
-  win->current_node->cached_stuff = HTMLGetWidgetInfo (win->scrolled_win);
+    /* Do the cached stuff thing. */
+    win->current_node->cached_stuff = HTMLGetWidgetInfo(win->scrolled_win);
 
-  return mo_succeed;
+    return mo_succeed;
 }
-
 
 /* ---------------------- mo_reset_document_headers ----------------------- */
 
-static mo_status mo_reset_document_headers (mo_window *win)
+static mo_status mo_reset_document_headers(mo_window *win)
 {
 
-char *buf=NULL;
+    char *buf = NULL;
 
-  if (win->current_node)
-    {
-	XmxTextSetString (win->title_text, win->current_node->title);
-      XmxTextSetString (win->url_text, win->current_node->url);
+    if (win->current_node) {
+        XmxTextSetString(win->title_text, win->current_node->title);
+        XmxTextSetString(win->url_text, win->current_node->url);
     }
 
-  /*SWP -- 9/7/95 -- Make the menubar be the title space*/
-  if (get_pref_boolean(eTITLEISWINDOWTITLE) || get_pref_boolean(eUSEICONBAR)) {
-	if (win && win->base && win->current_node && win->current_node->title && *(win->current_node->title)) {
-		buf=(char *)malloc(strlen(pre_title)+strlen(win->current_node->title)+15);
-		if (!buf) {
-			perror("Title Buffer");
-			return(mo_fail);
-		}
-		sprintf(buf,"%s [%s",pre_title,win->current_node->title);
-		/*annoying junk at end*/
-		buf[strlen(buf)]='\0';
-		strcat(buf,"]");
-		buf[strlen(buf)]='\0';
-		XtVaSetValues(win->base,
-			     XmNtitle,buf,
-			     NULL);
-		free(buf);
-	}
-	else if (win && win->base) {
-		buf=(char *)malloc(strlen(pre_title)+15);
-		if (!buf) {
-			perror("Title Buffer");
-			return(mo_fail);
-		}
-		sprintf(buf,"%s: [%s]",pre_title,"No Title" );
-		buf[strlen(buf)]='\0';
-		XtVaSetValues(win->base,
-			     XmNtitle,buf,
-			     NULL);
-		free(buf);
-	}
-  }
+    /*SWP -- 9/7/95 -- Make the menubar be the title space */
+    if (get_pref_boolean(eTITLEISWINDOWTITLE)
+        || get_pref_boolean(eUSEICONBAR)) {
+        if (win && win->base && win->current_node && win->current_node->title && *(win->current_node->title)) {
+            buf = (char *)malloc(strlen(pre_title) + strlen(win->current_node->title) + 15);
+            if (!buf) {
+                perror("Title Buffer");
+                return (mo_fail);
+            }
+            sprintf(buf, "%s [%s", pre_title, win->current_node->title);
+            /*annoying junk at end */
+            buf[strlen(buf)] = '\0';
+            strcat(buf, "]");
+            buf[strlen(buf)] = '\0';
+            XtVaSetValues(win->base, XmNtitle, buf, NULL);
+            free(buf);
+        } else if (win && win->base) {
+            buf = (char *)malloc(strlen(pre_title) + 15);
+            if (!buf) {
+                perror("Title Buffer");
+                return (mo_fail);
+            }
+            sprintf(buf, "%s: [%s]", pre_title, "No Title");
+            buf[strlen(buf)] = '\0';
+            XtVaSetValues(win->base, XmNtitle, buf, NULL);
+            free(buf);
+        }
+    }
 
-
-  return mo_succeed;
+    return mo_succeed;
 }
 
 /* --------------------------- mo_back_possible --------------------------- */
 
 /* This could be cached, but since it shouldn't take too long... */
-static void mo_back_possible (mo_window *win)
+static void mo_back_possible(mo_window *win)
 {
 
-  if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
-      mo_tool_state(&(win->tools[BTN_PREV]),XmxSensitive,BTN_PREV);
-      XmxRSetSensitive (win->menubar, mo_back, XmxSensitive);
-  }
-  mo_popup_set_something("Back", XmxSensitive, NULL);
-  return;
+    if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
+        mo_tool_state(&(win->tools[BTN_PREV]), XmxSensitive, BTN_PREV);
+        XmxRSetSensitive(win->menubar, mo_back, XmxSensitive);
+    }
+    mo_popup_set_something("Back", XmxSensitive, NULL);
+    return;
 }
-
 
 /****************************************************************************
  * name:    mo_back_impossible
  * purpose: Can't go back (nothing in the history list).
  ****************************************************************************/
-mo_status mo_back_impossible (mo_window *win)
+mo_status mo_back_impossible(mo_window *win)
 {
 
-  if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
-	XmxRSetSensitive (win->menubar, mo_back, XmxNotSensitive);
-        mo_tool_state(&(win->tools[BTN_PREV]),XmxNotSensitive,BTN_PREV);
-  }
-  mo_popup_set_something("Back", XmxNotSensitive, NULL);
-  return mo_succeed;
+    if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
+        XmxRSetSensitive(win->menubar, mo_back, XmxNotSensitive);
+        mo_tool_state(&(win->tools[BTN_PREV]), XmxNotSensitive, BTN_PREV);
+    }
+    mo_popup_set_something("Back", XmxNotSensitive, NULL);
+    return mo_succeed;
 }
 
-static void mo_forward_possible (mo_window *win)
+static void mo_forward_possible(mo_window *win)
 {
-  if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
-      mo_tool_state(&(win->tools[BTN_NEXT]),XmxSensitive,BTN_NEXT);
-      XmxRSetSensitive (win->menubar, mo_forward, XmxSensitive);
-  }
-	
-  mo_popup_set_something("Forward", XmxSensitive, NULL);
+    if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
+        mo_tool_state(&(win->tools[BTN_NEXT]), XmxSensitive, BTN_NEXT);
+        XmxRSetSensitive(win->menubar, mo_forward, XmxSensitive);
+    }
 
-  return;
+    mo_popup_set_something("Forward", XmxSensitive, NULL);
+
+    return;
 }
-
 
 /****************************************************************************
  * name:    mo_forward_impossible
  * purpose: Can't go forward (nothing in the history list).
  ****************************************************************************/
-mo_status mo_forward_impossible (mo_window *win)
+mo_status mo_forward_impossible(mo_window *win)
 {
-  if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
-      mo_tool_state(&(win->tools[BTN_NEXT]),XmxNotSensitive,BTN_NEXT);
-      XmxRSetSensitive (win->menubar, mo_forward, XmxNotSensitive);
-  }
-    
+    if (get_pref_boolean(eUSETEXTBUTTONBAR)) {
+        mo_tool_state(&(win->tools[BTN_NEXT]), XmxNotSensitive, BTN_NEXT);
+        XmxRSetSensitive(win->menubar, mo_forward, XmxNotSensitive);
+    }
+
     mo_popup_set_something("Forward", XmxNotSensitive, NULL);
     return mo_succeed;
 }
 
 /* ---------------------- mo_annotate_edit_possible ----------------------- */
 
-static void mo_annotate_edit_possible (mo_window *win)
+static void mo_annotate_edit_possible(mo_window *win)
 {
-  XmxRSetSensitive (win->menubar, mo_annotate_edit, XmxSensitive);
-  XmxRSetSensitive (win->menubar, mo_annotate_delete, XmxSensitive);
-  return;
+    XmxRSetSensitive(win->menubar, mo_annotate_edit, XmxSensitive);
+    XmxRSetSensitive(win->menubar, mo_annotate_delete, XmxSensitive);
+    return;
 }
 
-static void mo_annotate_edit_impossible (mo_window *win)
+static void mo_annotate_edit_impossible(mo_window *win)
 {
-  XmxRSetSensitive (win->menubar, mo_annotate_edit, XmxNotSensitive);
-  XmxRSetSensitive (win->menubar, mo_annotate_delete, XmxNotSensitive);
-  return;
+    XmxRSetSensitive(win->menubar, mo_annotate_edit, XmxNotSensitive);
+    XmxRSetSensitive(win->menubar, mo_annotate_delete, XmxNotSensitive);
+    return;
 }
-
 
 /* ------------------------------------------------------------------------ */
 
-static void mo_set_text (Widget w, char *txt, char *ans, int id, 
-                         char *target_anchor, void *cached_stuff)
+static void mo_set_text(Widget w, char *txt, char *ans, int id, char *target_anchor, void *cached_stuff)
 {
-  /* Any data transfer that takes place in here must be inlined
-     image loading. */
-  loading_inlined_images = 1;
-  interrupted = 0;
-  mo_set_image_cache_nuke_threshold ();
-  if (get_pref_boolean(eANNOTATIONS_ON_TOP))
-    HTMLSetText (w, txt, ans ? ans : "\0", "\0", id, target_anchor, 
-                 cached_stuff);
-  else
-    HTMLSetText (w, txt, "\0", ans ? ans : "\0", id, target_anchor, 
-                 cached_stuff);
-  loading_inlined_images = 0;
-  interrupted = 0;
-  mo_gui_done_with_icon ();
+    /* Any data transfer that takes place in here must be inlined
+       image loading. */
+    loading_inlined_images = 1;
+    interrupted = 0;
+    mo_set_image_cache_nuke_threshold();
+    if (get_pref_boolean(eANNOTATIONS_ON_TOP))
+        HTMLSetText(w, txt, ans ? ans : "\0", "\0", id, target_anchor, cached_stuff);
+    else
+        HTMLSetText(w, txt, "\0", ans ? ans : "\0", id, target_anchor, cached_stuff);
+    loading_inlined_images = 0;
+    interrupted = 0;
+    mo_gui_done_with_icon();
 }
-
 
 /****************************************************************************
  * name:    mo_do_window_text (PRIVATE)
@@ -339,20 +318,17 @@ static void mo_set_text (Widget w, char *txt, char *ans, int id,
  *   rethought and broken down.
  ****************************************************************************/
 /*static */
-mo_status mo_do_window_text (mo_window *win, char *url, char *txt,
-                             char *txthead,
-                             int register_visit, char *ref,
-                             char *last_modified,
-                             char *expires)
+mo_status mo_do_window_text(mo_window *win, char *url, char *txt,
+                            char *txthead, int register_visit, char *ref, char *last_modified, char *expires)
 {
     char /**line,*/ *ans;
-    Boolean did_we_image_delay=0;
+    Boolean did_we_image_delay = 0;
 
-        /*reset the global for imagekill */
+    /*reset the global for imagekill */
     currently_delaying_images = 0;
 
-    if(win->delay_image_loads == 0) {
-        if(check_imagedelay(url)) {
+    if (win->delay_image_loads == 0) {
+        if (check_imagedelay(url)) {
             win->delay_image_loads = 1;
             currently_delaying_images = 1;
             did_we_image_delay = 1;
@@ -360,234 +336,202 @@ mo_status mo_do_window_text (mo_window *win, char *url, char *txt,
     }
 /************************************/
 /* send document over cci if needed */
- if (txt != NULL)
- 	MoCCISendBrowserViewOutput(url, "text/html", txt, strlen(txt));
+    if (txt != NULL)
+        MoCCISendBrowserViewOutput(url, "text/html", txt, strlen(txt));
 /************************************/
 
-          /* TRACK APPLICATION MODE */
-      {
-          int newmode = moMODE_PLAIN;
-          
-          if(!strncmp(url,"ftp:",4)) newmode = moMODE_FTP;
-          if(!strncmp(url,"news:",4)) {
-              int p,n,pt,nt,f;
-              news_status(url,&pt,&nt,&p,&n,&f);
-
-              mo_tool_state(&(win->tools[BTN_PTHR]),
-                              pt?XmxSensitive:XmxNotSensitive,BTN_PTHR);
-	      XmxRSetSensitive (win->menubar, mo_news_prevt,
-				pt?XmxSensitive:XmxNotSensitive);
-
-              mo_tool_state(&(win->tools[BTN_NTHR]),
-                              nt?XmxSensitive:XmxNotSensitive,BTN_NTHR);
-	      XmxRSetSensitive (win->menubar, mo_news_nextt, 
-				nt?XmxSensitive:XmxNotSensitive);
-
-              mo_tool_state(&(win->tools[BTN_PART]),
-                              p?XmxSensitive:XmxNotSensitive,BTN_PART);
-	      XmxRSetSensitive (win->menubar, mo_news_prev, 
-				p?XmxSensitive:XmxNotSensitive);
-
-	      mo_tool_state(&(win->tools[BTN_NART]),
-                              n?XmxSensitive:XmxNotSensitive,BTN_NART);
-	      XmxRSetSensitive (win->menubar, mo_news_next, 
-				n?XmxSensitive:XmxNotSensitive);
-
-              mo_tool_state(&(win->tools[BTN_POST]),XmxSensitive,BTN_POST);
-
-              mo_tool_state(&(win->tools[BTN_FOLLOW]),
-                              f?XmxSensitive:XmxNotSensitive,BTN_FOLLOW);
-	      XmxRSetSensitive (win->menubar, mo_news_follow, 
-				f?XmxSensitive:XmxNotSensitive);
-	      /* set the popup too */
-	      mo_popup_set_something("Previous Thread", 
-				     pt?XmxSensitive:XmxNotSensitive, NULL);
-	      mo_popup_set_something("Next Thread",
-				     nt?XmxSensitive:XmxNotSensitive, NULL);
-	      mo_popup_set_something("Previous Article", 
-				     p?XmxSensitive:XmxNotSensitive, NULL);	      
-	      mo_popup_set_something("Next Article", 
-				     n?XmxSensitive:XmxNotSensitive, NULL);
-	      mo_popup_set_something("Followup",
-				     f?XmxSensitive:XmxNotSensitive, NULL);
-              newmode = moMODE_NEWS;
-          }              
-          if(newmode != win->mode) {
-              win->mode = newmode;
-              mo_switch_mode(win);
-          }
-      }
-
-
-  mo_set_current_cached_win (win);
-
-  if (get_pref_boolean(eTRACK_POINTER_MOTION))
+    /* TRACK APPLICATION MODE */
     {
-      XmString xmstr = XmStringCreateLtoR (" ", XmSTRING_DEFAULT_CHARSET);
-      XtVaSetValues
-        (win->tracker_label,
-         XmNlabelString, (XtArgVal)xmstr,
-         NULL);
-      XmStringFree (xmstr);
+        int newmode = moMODE_PLAIN;
+
+        if (!strncmp(url, "ftp:", 4))
+            newmode = moMODE_FTP;
+        if (!strncmp(url, "news:", 4)) {
+            int p, n, pt, nt, f;
+            news_status(url, &pt, &nt, &p, &n, &f);
+
+            mo_tool_state(&(win->tools[BTN_PTHR]), pt ? XmxSensitive : XmxNotSensitive, BTN_PTHR);
+            XmxRSetSensitive(win->menubar, mo_news_prevt, pt ? XmxSensitive : XmxNotSensitive);
+
+            mo_tool_state(&(win->tools[BTN_NTHR]), nt ? XmxSensitive : XmxNotSensitive, BTN_NTHR);
+            XmxRSetSensitive(win->menubar, mo_news_nextt, nt ? XmxSensitive : XmxNotSensitive);
+
+            mo_tool_state(&(win->tools[BTN_PART]), p ? XmxSensitive : XmxNotSensitive, BTN_PART);
+            XmxRSetSensitive(win->menubar, mo_news_prev, p ? XmxSensitive : XmxNotSensitive);
+
+            mo_tool_state(&(win->tools[BTN_NART]), n ? XmxSensitive : XmxNotSensitive, BTN_NART);
+            XmxRSetSensitive(win->menubar, mo_news_next, n ? XmxSensitive : XmxNotSensitive);
+
+            mo_tool_state(&(win->tools[BTN_POST]), XmxSensitive, BTN_POST);
+
+            mo_tool_state(&(win->tools[BTN_FOLLOW]), f ? XmxSensitive : XmxNotSensitive, BTN_FOLLOW);
+            XmxRSetSensitive(win->menubar, mo_news_follow, f ? XmxSensitive : XmxNotSensitive);
+            /* set the popup too */
+            mo_popup_set_something("Previous Thread", pt ? XmxSensitive : XmxNotSensitive, NULL);
+            mo_popup_set_something("Next Thread", nt ? XmxSensitive : XmxNotSensitive, NULL);
+            mo_popup_set_something("Previous Article", p ? XmxSensitive : XmxNotSensitive, NULL);
+            mo_popup_set_something("Next Article", n ? XmxSensitive : XmxNotSensitive, NULL);
+            mo_popup_set_something("Followup", f ? XmxSensitive : XmxNotSensitive, NULL);
+            newmode = moMODE_NEWS;
+        }
+        if (newmode != win->mode) {
+            win->mode = newmode;
+            mo_switch_mode(win);
+        }
     }
-      
-  /* If !register_visit, we're just screwing around with current_node
-     already, so don't bother snarfing scrollbar values. */
-  if (register_visit)
-    mo_snarf_scrollbar_values (win);
 
-  /* cached_url HAS to be set here, since Resolve counts on it. */
-  cached_url = mo_url_canonicalize (url, "");
-  win->cached_url = cached_url;
+    mo_set_current_cached_win(win);
 
-  mo_here_we_are_son (url);
-  
-  {
-    /* Since mo_fetch_annotation_links uses the communications code,
-       we need to play games with binary_transfer. */
-    int tmp = binary_transfer;
-    binary_transfer = 0;
-    ans = mo_fetch_annotation_links (url, get_pref_boolean(eANNOTATIONS_ON_TOP));
+    if (get_pref_boolean(eTRACK_POINTER_MOTION)) {
+        XmString xmstr = XmStringCreateLtoR(" ", XmSTRING_DEFAULT_CHARSET);
+        XtVaSetValues(win->tracker_label, XmNlabelString, (XtArgVal) xmstr, NULL);
+        XmStringFree(xmstr);
+    }
 
-    binary_transfer = tmp;
-  }
+    /* If !register_visit, we're just screwing around with current_node
+       already, so don't bother snarfing scrollbar values. */
+    if (register_visit)
+        mo_snarf_scrollbar_values(win);
 
-  /* If there is a BASE tag in the document that contains a "real"
-     URL, this will be non-NULL by the time we exit and base_callback
-     will have been called. */
-  url_base_override = NULL;
+    /* cached_url HAS to be set here, since Resolve counts on it. */
+    cached_url = mo_url_canonicalize(url, "");
+    win->cached_url = cached_url;
 
-  {
-    int id = 0, freeta = 0;
-    void *cached_stuff = NULL;
-    char *target_anchor = win->target_anchor;
+    mo_here_we_are_son(url);
 
-    if ((!register_visit) && win->current_node)
-      {
-        id = win->current_node->docid;
-        cached_stuff = win->current_node->cached_stuff;
-      }
+    {
+        /* Since mo_fetch_annotation_links uses the communications code,
+           we need to play games with binary_transfer. */
+        int tmp = binary_transfer;
+        binary_transfer = 0;
+        ans = mo_fetch_annotation_links(url, get_pref_boolean(eANNOTATIONS_ON_TOP));
 
-    /* If the window doesn't have a target anchor already,
-       see if there's one in this node's URL. */
-    if ((!target_anchor || !(*target_anchor)) && win->current_node)
-      {
-        target_anchor = mo_url_extract_anchor (win->current_node->url);
-        freeta = 1;
-      }
+        binary_transfer = tmp;
+    }
 
-    if (!txt || !txthead)
-      {
-        /* Just make it look OK...  band-aid city. */
-        txt = strdup ("\0");
-        txthead = txt;
-      }
+    /* If there is a BASE tag in the document that contains a "real"
+       URL, this will be non-NULL by the time we exit and base_callback
+       will have been called. */
+    url_base_override = NULL;
 
-    mo_set_text (win->scrolled_win, txt, ans, id, target_anchor,
-                 cached_stuff);
+    {
+        int id = 0, freeta = 0;
+        void *cached_stuff = NULL;
+        char *target_anchor = win->target_anchor;
+
+        if ((!register_visit) && win->current_node) {
+            id = win->current_node->docid;
+            cached_stuff = win->current_node->cached_stuff;
+        }
+
+        /* If the window doesn't have a target anchor already,
+           see if there's one in this node's URL. */
+        if ((!target_anchor || !(*target_anchor)) && win->current_node) {
+            target_anchor = mo_url_extract_anchor(win->current_node->url);
+            freeta = 1;
+        }
+
+        if (!txt || !txthead) {
+            /* Just make it look OK...  band-aid city. */
+            txt = strdup("\0");
+            txthead = txt;
+        }
+
+        mo_set_text(win->scrolled_win, txt, ans, id, target_anchor, cached_stuff);
 
         /* vvv HREF ListBox Stuff -- BJS 10/2/95 */
-    if(win->links_win) mo_update_links_window(win);
-    
-    
-    if (win->target_anchor)
-      free (win->target_anchor);
+        if (win->links_win)
+            mo_update_links_window(win);
 
-    win->target_anchor = NULL;
+        if (win->target_anchor)
+            free(win->target_anchor);
 
-    if (freeta)
-      free (target_anchor);
-  }
+        win->target_anchor = NULL;
 
-  if (url_base_override)
-    {
-      /* Get the override URL -- this should be all we need to do here. */
-      url = url_base_override;
-      mo_here_we_are_son (url);
+        if (freeta)
+            free(target_anchor);
     }
 
-  /* Every time we view the document, we reset the search_start
-     struct so searches will start at the beginning of the document. */
-  ((ElementRef *)win->search_start)->id = 0;
-  win->src_search_pos=0;
+    if (url_base_override) {
+        /* Get the override URL -- this should be all we need to do here. */
+        url = url_base_override;
+        mo_here_we_are_son(url);
+    }
 
-  /* CURRENT_NODE ISN'T SET UNTIL HERE (assuming register_visit is 1). */
-  /* Now that WbNtext has been set, we can pull out WbNtitle. */
-  /* First, check and see if we have a URL.  If not, we probably
-     are only jumping around inside a document. */
-  if (url && *url)
-    {
-      if (register_visit)
-        mo_record_visit (win, url, txt, txthead, ref, last_modified, expires);
-      else
-        {
-          /* At the very least we want to pull out the new title,
-             if one exists. */
-          if (win->current_node)
-            {
-              if (win->current_node->title)
-                free (win->current_node->title);
-              win->current_node->title = mo_grok_title (win, url, ref);
+    /* Every time we view the document, we reset the search_start
+       struct so searches will start at the beginning of the document. */
+    ((ElementRef *) win->search_start)->id = 0;
+    win->src_search_pos = 0;
+
+    /* CURRENT_NODE ISN'T SET UNTIL HERE (assuming register_visit is 1). */
+    /* Now that WbNtext has been set, we can pull out WbNtitle. */
+    /* First, check and see if we have a URL.  If not, we probably
+       are only jumping around inside a document. */
+    if (url && *url) {
+        if (register_visit)
+            mo_record_visit(win, url, txt, txthead, ref, last_modified, expires);
+        else {
+            /* At the very least we want to pull out the new title,
+               if one exists. */
+            if (win->current_node) {
+                if (win->current_node->title)
+                    free(win->current_node->title);
+                win->current_node->title = mo_grok_title(win, url, ref);
             }
         }
     }
 
-  mo_reset_document_headers (win);
+    mo_reset_document_headers(win);
 
-  if (win->history_list && win->current_node)
-    {
-      XmListSelectPos (win->history_list, win->current_node->position, False);
-      XmListSetBottomPos (win->history_list, win->current_node->position);
+    if (win->history_list && win->current_node) {
+        XmListSelectPos(win->history_list, win->current_node->position, False);
+        XmListSetBottomPos(win->history_list, win->current_node->position);
     }
 
-  /* Update source text if necessary. */
-  if (win->source_text && XtIsManaged(win->source_text) &&
-      win->current_node)
-    {
-      XmxTextSetString (win->source_text, win->current_node->text);
-      XmxTextSetString (win->source_url_text, win->current_node->url);
-      XmxTextSetString (win->source_date_text, (win->current_node->last_modified?win->current_node->last_modified:"Unknown"));
+    /* Update source text if necessary. */
+    if (win->source_text && XtIsManaged(win->source_text) && win->current_node) {
+        XmxTextSetString(win->source_text, win->current_node->text);
+        XmxTextSetString(win->source_url_text, win->current_node->url);
+        XmxTextSetString(win->source_date_text,
+                         (win->current_node->last_modified ? win->current_node->last_modified : "Unknown"));
     }
 
-  if (win->current_node && win->current_node->previous != NULL)
-    mo_back_possible (win);
-  else
-    mo_back_impossible (win);
-  
-  if (win->current_node && win->current_node->next != NULL)
-    mo_forward_possible (win);
-  else
-    mo_forward_impossible (win);
+    if (win->current_node && win->current_node->previous != NULL)
+        mo_back_possible(win);
+    else
+        mo_back_impossible(win);
 
-  if (win->current_node && 
-      mo_is_editable_annotation (win, win->current_node->text))
-    mo_annotate_edit_possible (win);
-  else
-    mo_annotate_edit_impossible (win);
+    if (win->current_node && win->current_node->next != NULL)
+        mo_forward_possible(win);
+    else
+        mo_forward_impossible(win);
 
-  mo_gui_check_security_icon(win->current_node->authType);
+    if (win->current_node && mo_is_editable_annotation(win, win->current_node->text))
+        mo_annotate_edit_possible(win);
+    else
+        mo_annotate_edit_impossible(win);
 
-  /* every time we load a new page set the focus to hotkeys. we do
-     this because we may have gotten here via forms and since we
-     don't kill any widgets, some unmanaged widget out there could
-     have the focus */
-  if(!get_pref_boolean(eFOCUS_FOLLOWS_MOUSE) && win->have_focus)
-    {
-      XtSetKeyboardFocus(win->base, win->view);
-      /* make traversal start at top of document should there be forms */
+    mo_gui_check_security_icon(win->current_node->authType);
+
+    /* every time we load a new page set the focus to hotkeys. we do
+       this because we may have gotten here via forms and since we
+       don't kill any widgets, some unmanaged widget out there could
+       have the focus */
+    if (!get_pref_boolean(eFOCUS_FOLLOWS_MOUSE) && win->have_focus) {
+        XtSetKeyboardFocus(win->base, win->view);
+        /* make traversal start at top of document should there be forms */
     }
-  HTMLTraverseTabGroups(win->view, XmTRAVERSE_HOME);
+    HTMLTraverseTabGroups(win->view, XmTRAVERSE_HOME);
 
-  mo_not_busy ();
+    mo_not_busy();
 
-  if(did_we_image_delay) {
+    if (did_we_image_delay) {
         win->delay_image_loads = 0;
-        did_we_image_delay=0;
+        did_we_image_delay = 0;
     }
-  
-  return mo_succeed;
-}
 
+    return mo_succeed;
+}
 
 /****************************************************************************
  * name:    mo_set_win_current_node
@@ -603,50 +547,45 @@ mo_status mo_do_window_text (mo_window *win, char *url, char *txt,
  *   This routine is meant to be used to move forward, backward,
  *   and to arbitrarily locations in the history list.
  ****************************************************************************/
-mo_status mo_set_win_current_node (mo_window *win, mo_node *node)
+mo_status mo_set_win_current_node(mo_window *win, mo_node *node)
 {
-  void *to_free = NULL;
-  mo_status r;
-  Widget pix_free;
-      
-  mo_snarf_scrollbar_values (win);
+    void *to_free = NULL;
+    mo_status r;
+    Widget pix_free;
 
-  pix_free = win->scrolled_win;
+    mo_snarf_scrollbar_values(win);
 
-  if (win->current_node && win->reloading)
-    {
-      to_free = win->current_node->cached_stuff;
+    pix_free = win->scrolled_win;
 
-      win->current_node->cached_stuff = NULL;
+    if (win->current_node && win->reloading) {
+        to_free = win->current_node->cached_stuff;
+
+        win->current_node->cached_stuff = NULL;
     }
 
-  win->current_node = node;
+    win->current_node = node;
 
-  mo_busy ();
-  mo_set_current_cached_win (win);
+    mo_busy();
+    mo_set_current_cached_win(win);
 
   /********* Send Anchor history to CCI if CCI wants it */
-  MoCCISendAnchorToCCI(win->current_node->url, 0);
+    MoCCISendAnchorToCCI(win->current_node->url, 0);
   /*****************************************************/
 
-  r = mo_do_window_text (win, win->current_node->url, 
-                         win->current_node->text, 
-                         win->current_node->texthead,
-                         FALSE, win->current_node->ref,
-			 win->current_node->last_modified,
-			 win->current_node->expires);
+    r = mo_do_window_text(win, win->current_node->url,
+                          win->current_node->text,
+                          win->current_node->texthead,
+                          FALSE, win->current_node->ref, win->current_node->last_modified, win->current_node->expires);
 
-  if (win->reloading)
-    {
-      if (to_free)
-        HTMLFreeWidgetInfo (to_free);
+    if (win->reloading) {
+        if (to_free)
+            HTMLFreeWidgetInfo(to_free);
 
-      win->reloading = 0;
+        win->reloading = 0;
     }
 
-  return r;
+    return r;
 }
-
 
 /****************************************************************************
  * name:    mo_reload_window_text
@@ -660,102 +599,88 @@ mo_status mo_set_win_current_node (mo_window *win, mo_node *node)
  *   This frees the current window's texthead.  This calls mo_pull_er_over
  *   directly, and needs to be smarter about handling HDF, etc.
  ****************************************************************************/
-mo_status mo_reload_window_text (mo_window *win, int reload_images_also)
+mo_status mo_reload_window_text(mo_window *win, int reload_images_also)
 {
-    static Boolean did_we_image_delay=0;
-    
-  mo_busy ();
+    static Boolean did_we_image_delay = 0;
 
-  mo_set_current_cached_win (win);
+    mo_busy();
 
-  /* Uh oh, this is trouble... */
-  if (!win->current_node)
-    return mo_load_window_text 
-      (win, startup_document ? startup_document : home_document, NULL);
+    mo_set_current_cached_win(win);
 
-  /* Free all images in the current document. */
-  if (get_pref_boolean(eRELOAD_RELOADS_IMAGES) || reload_images_also)
-    mo_zap_cached_images_here (win);
+    /* Uh oh, this is trouble... */
+    if (!win->current_node)
+        return mo_load_window_text(win, startup_document ? startup_document : home_document, NULL);
 
-  /* Free the current document's text. */
-  /* REALLY we shouldn't do this until we've verified we have new text that's
-     actually good here -- for instance, if we have a document on display,
-     then go to binary transfer mode, then do reload, we should pick up the
-     access override here and keep the old copy up on screen. */
-  if (win->current_node->texthead != NULL)
-    {
-      free (win->current_node->texthead);
-      win->current_node->texthead = NULL;
+    /* Free all images in the current document. */
+    if (get_pref_boolean(eRELOAD_RELOADS_IMAGES) || reload_images_also)
+        mo_zap_cached_images_here(win);
+
+    /* Free the current document's text. */
+    /* REALLY we shouldn't do this until we've verified we have new text that's
+       actually good here -- for instance, if we have a document on display,
+       then go to binary transfer mode, then do reload, we should pick up the
+       access override here and keep the old copy up on screen. */
+    if (win->current_node->texthead != NULL) {
+        free(win->current_node->texthead);
+        win->current_node->texthead = NULL;
     }
 
-  /* Set binary_transfer as per current window. */
-  binary_transfer = win->binary_transfer;
-  mo_set_current_cached_win (win);
-  interrupted = 0;
+    /* Set binary_transfer as per current window. */
+    binary_transfer = win->binary_transfer;
+    mo_set_current_cached_win(win);
+    interrupted = 0;
 
-  if (get_pref_boolean(eRELOAD_PRAGMA_NO_CACHE)) {
-    reloading=1;
-  }
+    if (get_pref_boolean(eRELOAD_PRAGMA_NO_CACHE)) {
+        reloading = 1;
+    }
 
-  win->current_node->text = mo_pull_er_over (win->current_node->url, 
-                                             &win->current_node->texthead);
+    win->current_node->text = mo_pull_er_over(win->current_node->url, &win->current_node->texthead);
 
+    /* AF */
+    if (HTTP_last_modified) {
+        win->current_node->last_modified = strdup(HTTP_last_modified);
+    }
+    if (HTTP_expires) {
+        win->current_node->expires = strdup(HTTP_expires);
+    }
 
-  /* AF */
-  if (HTTP_last_modified)
-  {
-    win->current_node->last_modified = strdup(HTTP_last_modified);
-  }
-  if (HTTP_expires)
-  {
-    win->current_node->expires = strdup(HTTP_expires);
-  }
+    reloading = 0;
 
-  reloading=0;
-
-  {
-    /* Check use_this_url_instead from HTAccess.c. */
-    /* IS THIS GOOD ENOUGH FOR THIS CASE??? */
-    extern char *use_this_url_instead;
-    if (use_this_url_instead)
-      {
-        win->current_node->url = use_this_url_instead;
-      }
-  }
+    {
+        /* Check use_this_url_instead from HTAccess.c. */
+        /* IS THIS GOOD ENOUGH FOR THIS CASE??? */
+        extern char *use_this_url_instead;
+        if (use_this_url_instead) {
+            win->current_node->url = use_this_url_instead;
+        }
+    }
 #ifdef HAVE_HDF
-  if (win->current_node->text && 
-      strncmp (win->current_node->text, "<mosaic-internal-reference", 26) == 0)
-    {
-      char *text = mo_decode_internal_reference 
-        (win->current_node->url, win->current_node->text,
-         mo_url_extract_anchor (win->current_node->url));
-      win->current_node->text = text;
-      win->current_node->texthead = text;
+    if (win->current_node->text && strncmp(win->current_node->text, "<mosaic-internal-reference", 26) == 0) {
+        char *text = mo_decode_internal_reference(win->current_node->url, win->current_node->text,
+                                                  mo_url_extract_anchor(win->current_node->url));
+        win->current_node->text = text;
+        win->current_node->texthead = text;
     }
-#endif 
-  
-  /* Clear out the cached stuff, if any exists. */
-  win->reloading = 1;
+#endif
 
-  mo_set_win_current_node (win, win->current_node);
+    /* Clear out the cached stuff, if any exists. */
+    win->reloading = 1;
 
-  win->reloading = 0;
+    mo_set_win_current_node(win, win->current_node);
 
-  /* If news: URL, then we need to auto-scroll to the >>> marker if it
-	is here. We use a hacked version of the searching function here
-	which will need to be updated when we rewrite. --SWP 
-   */
+    win->reloading = 0;
 
-  if (win->current_node &&
-      win->current_node->url &&
-      !strncmp(win->current_node->url,"news:",5)) {
-	mo_search_window(win,">>>",0,1,1);
-  }
+    /* If news: URL, then we need to auto-scroll to the >>> marker if it
+       is here. We use a hacked version of the searching function here
+       which will need to be updated when we rewrite. --SWP 
+     */
 
-  return mo_succeed;
+    if (win->current_node && win->current_node->url && !strncmp(win->current_node->url, "news:", 5)) {
+        mo_search_window(win, ">>>", 0, 1, 1);
+    }
+
+    return mo_succeed;
 }
-
-
 
 /****************************************************************************
  * name:    mo_refresh_window_text
@@ -766,30 +691,28 @@ mo_status mo_reload_window_text (mo_window *win, int reload_images_also)
  *   mo_succeed
  * remarks: 
  ****************************************************************************/
-mo_status mo_refresh_window_text (mo_window *win)
+mo_status mo_refresh_window_text(mo_window *win)
 {
-  mo_busy ();
+    mo_busy();
 
-  mo_set_current_cached_win (win);
+    mo_set_current_cached_win(win);
 
-  if (!win->current_node)
-    {
-      mo_not_busy ();
-      return mo_fail;
+    if (!win->current_node) {
+        mo_not_busy();
+        return mo_fail;
     }
 
-  /* Clear out the cached stuff, if any exists. */
-  win->reloading = 1;
+    /* Clear out the cached stuff, if any exists. */
+    win->reloading = 1;
 
-  mo_set_win_current_node (win, win->current_node);
+    mo_set_win_current_node(win, win->current_node);
 
-  mo_gui_check_security_icon(win->current_node->authType);
+    mo_gui_check_security_icon(win->current_node->authType);
 
-  mo_not_busy ();
+    mo_not_busy();
 
-  return mo_succeed;
+    return mo_succeed;
 }
-
 
 /****************************************************************************
  * name:    mo_load_window_text
@@ -805,444 +728,369 @@ mo_status mo_refresh_window_text (mo_window *win)
  * remarks: 
  *   This is getting ugly.
  ****************************************************************************/
-mo_status mo_load_window_text (mo_window *win, char *url, char *ref)
+mo_status mo_load_window_text(mo_window *win, char *url, char *ref)
 {
     char *newtext = NULL, *newtexthead = NULL;
     char *last_modified = 0;
     char *expires = 0;
     mo_status return_stat = mo_succeed;
-    static Boolean did_we_image_delay=0;
+    static Boolean did_we_image_delay = 0;
 
-    mo_busy ();
+    mo_busy();
 
-    win->target_anchor = mo_url_extract_anchor (url);
+    win->target_anchor = mo_url_extract_anchor(url);
 
-    if((newtext = mo_special_urls(url))){
-        if(newtext[0]=='0') {
+    if ((newtext = mo_special_urls(url))) {
+        if (newtext[0] == '0') {
             url = &newtext[1];
             newtext = NULL;
         } else {
             newtexthead = newtext;
             goto special_urls;
-        }   
+        }
     }
-    
-  /* If we're just referencing an anchor inside a document,
-     do the right thing. */
-    if (url && *url == '#')
-    {
-      /* Now we make a copy of the current text and make sure we ask
-         for a new mo_node and entry in the history list. */
-      /* IF we're not dealing with an internal reference. */
-        if (strncmp (url, "#hdfref;", 8) &&
-            strncmp (url, "#hdfdtm;", 8))
-        {
-            if (win->current_node)
-            {
-                newtext = strdup (win->current_node->text);
+
+    /* If we're just referencing an anchor inside a document,
+       do the right thing. */
+    if (url && *url == '#') {
+        /* Now we make a copy of the current text and make sure we ask
+           for a new mo_node and entry in the history list. */
+        /* IF we're not dealing with an internal reference. */
+        if (strncmp(url, "#hdfref;", 8) && strncmp(url, "#hdfdtm;", 8)) {
+            if (win->current_node) {
+                newtext = strdup(win->current_node->text);
                 newtexthead = newtext;
-            }
-            else
-            {
-                newtext = strdup ("lose");
+            } else {
+                newtext = strdup("lose");
                 newtexthead = newtext;
             }
         }
-        url = mo_url_canonicalize_keep_anchor 
-            (url, win->current_node ? win->current_node->url : "");
+        url = mo_url_canonicalize_keep_anchor(url, win->current_node ? win->current_node->url : "");
       /********* Send Anchor history to CCI if CCI wants it */
         MoCCISendAnchorToCCI(url, 1);
       /*****************************************************/
-    }
-    else
-    {
-      /* Get a full address for this URL. */
-      /* Under some circumstances we may not have a current node yet
-         and may wish to just run with it... so check for that. */
-        if (win->current_node && win->current_node->url)
-        {
-            url = mo_url_canonicalize_keep_anchor
-                (url, win->current_node->url);
+    } else {
+        /* Get a full address for this URL. */
+        /* Under some circumstances we may not have a current node yet
+           and may wish to just run with it... so check for that. */
+        if (win->current_node && win->current_node->url) {
+            url = mo_url_canonicalize_keep_anchor(url, win->current_node->url);
         }
-      /* Set binary_transfer as per current window. */
+        /* Set binary_transfer as per current window. */
         binary_transfer = win->binary_transfer;
-        mo_set_current_cached_win (win);
+        mo_set_current_cached_win(win);
 
         {
-            char *canon = mo_url_canonicalize (url, "");
+            char *canon = mo_url_canonicalize(url, "");
             interrupted = 0;
 
+            /* ADC ZZZZ   ugly hack below:  */
 
-    /* ADC ZZZZ   ugly hack below:  */
- 
-        CCIprotocol_handler_found = 0;
- 
-        /********* Send Anchor history to CCI if CCI wants to handle it */
-        MoCCISendAnchorToCCI(url,3);
-        /*****************************************************/
- 
-        if (CCIprotocol_handler_found)
-            return return_stat;         /* success */
- 
+            CCIprotocol_handler_found = 0;
 
+    /********* Send Anchor history to CCI if CCI wants to handle it */
+            MoCCISendAnchorToCCI(url, 3);
+    /*****************************************************/
 
-	/********* Send Anchor history to CCI if CCI wants it */
-            MoCCISendAnchorToCCI(url,1);
-	/*****************************************************/
-            newtext = mo_pull_er_over (canon, &newtexthead);
+            if (CCIprotocol_handler_found)
+                return return_stat; /* success */
 
-    /* 
-	 * added so MCCIRequestGetURL could return failed when
-	 * url fails
-	 */
+    /********* Send Anchor history to CCI if CCI wants it */
+            MoCCISendAnchorToCCI(url, 1);
+    /*****************************************************/
+            newtext = mo_pull_er_over(canon, &newtexthead);
+
+            /* 
+             * added so MCCIRequestGetURL could return failed when
+             * url fails
+             */
             if (newtext)
-                if ( (!strncmp(newtext, "<H1>ERROR<H1>", 10)) ||
-                     (!strncmp(newtext, 
-                               "<HEAD><TITLE>404 Not Found</TITLE></HEAD>",
-                               28)))
+                if ((!strncmp(newtext, "<H1>ERROR<H1>", 10)) ||
+                    (!strncmp(newtext, "<HEAD><TITLE>404 Not Found</TITLE></HEAD>", 28)))
                     return_stat = mo_fail;
 
-	/* Yes this is a really big hack (ETG) */
-            if (win->target_anchor && *(win->target_anchor)) 
+            /* Yes this is a really big hack (ETG) */
+            if (win->target_anchor && *(win->target_anchor))
                 MoCCIAddAnchorToURL(canon, url);
 
-        /* AF */
+            /* AF */
             if (HTTP_last_modified) {
                 last_modified = strdup(HTTP_last_modified);
             }
             if (HTTP_expires) {
-                expires       = strdup(HTTP_expires);
+                expires = strdup(HTTP_expires);
             }
-            free (canon);
+            free(canon);
         }
 
         {
-        /* Check use_this_url_instead from HTAccess.c. */
+            /* Check use_this_url_instead from HTAccess.c. */
             extern char *use_this_url_instead;
-            if (use_this_url_instead)
-            {
-                mo_here_we_are_son (url);
+            if (use_this_url_instead) {
+                mo_here_we_are_son(url);
                 url = use_this_url_instead;
-            
-            /* Go get another target_anchor. */
+
+                /* Go get another target_anchor. */
                 if (win->target_anchor)
-                    free (win->target_anchor);
-                win->target_anchor = mo_url_extract_anchor (url);
+                    free(win->target_anchor);
+                win->target_anchor = mo_url_extract_anchor(url);
             }
         }
     }
 
 #ifdef HAVE_HDF
-  /* If a target anchor exists, and if it's an HDF reference, then
-     go decode the HDF reference and call mo_do_window_text on the
-     resulting text. */
-    if (win->target_anchor &&
-        strncmp (win->target_anchor, "hdfref;", 7) == 0 &&
-        strlen (win->target_anchor) > 8)
-    {
+    /* If a target anchor exists, and if it's an HDF reference, then
+       go decode the HDF reference and call mo_do_window_text on the
+       resulting text. */
+    if (win->target_anchor && strncmp(win->target_anchor, "hdfref;", 7) == 0 && strlen(win->target_anchor) > 8) {
         char *text;
-        text = (char *)mo_decode_hdfref (url, win->target_anchor);
+        text = (char *)mo_decode_hdfref(url, win->target_anchor);
         {
-        /* Check use_this_url_instead from HTAccess.c. */
+            /* Check use_this_url_instead from HTAccess.c. */
             extern char *use_this_url_instead;
-            if (use_this_url_instead)
-            {
-                mo_here_we_are_son (url);
+            if (use_this_url_instead) {
+                mo_here_we_are_son(url);
                 url = use_this_url_instead;
                 mo_load_window_text(win, url, ref);
                 return;
             }
         }
-        mo_do_window_text (win, url, text, text, 1, ref,
-                           win->current_node->last_modified,
-                           win->current_node->expires);
+        mo_do_window_text(win, url, text, text, 1, ref, win->current_node->last_modified, win->current_node->expires);
     }
-  /* An hdfdtm reference means that we should blast the referenced
-     HDF data object over the output DTM port to Collage.  Currently
-     this can only be an image; in the future we'll do SDS's, etc. */
-    else if (win->target_anchor &&
-             strncmp (win->target_anchor, "hdfdtm;", 7) == 0 &&
-             strlen (win->target_anchor) > 8)
-    {
+    /* An hdfdtm reference means that we should blast the referenced
+       HDF data object over the output DTM port to Collage.  Currently
+       this can only be an image; in the future we'll do SDS's, etc. */
+    else if (win->target_anchor && strncmp(win->target_anchor, "hdfdtm;", 7) == 0 && strlen(win->target_anchor) > 8) {
 #ifdef HAVE_DTM
-      /* We specifically want to make sure that the anchor is allowed
-         to stay in the URL, so we don't canonicalize to strip it out. */
-        mo_do_hdf_dtm_thang (url, &(win->target_anchor[7]));
+        /* We specifically want to make sure that the anchor is allowed
+           to stay in the URL, so we don't canonicalize to strip it out. */
+        mo_do_hdf_dtm_thang(url, &(win->target_anchor[7]));
 #endif
 
         if (win->target_anchor)
-            free (win->target_anchor);
+            free(win->target_anchor);
         win->target_anchor = NULL;
-        
-        mo_gui_done_with_icon ();
-        mo_not_busy ();
+
+        mo_gui_done_with_icon();
+        mo_not_busy();
     }
-  /* Assuming we have HDF, the only thing mosaic-internal-reference
-     currently can be is pointer to an HDF file. */
-    else if (newtext &&
-             strncmp (newtext, "<mosaic-internal-reference", 26) == 0)
-    {
+    /* Assuming we have HDF, the only thing mosaic-internal-reference
+       currently can be is pointer to an HDF file. */
+    else if (newtext && strncmp(newtext, "<mosaic-internal-reference", 26) == 0) {
         char *text;
-        text = mo_decode_internal_reference (url, newtext, win->target_anchor);
-        mo_do_window_text (win, url, text, text, 1, ref,
-                           win->current_node->last_modified,
-                           win->current_node->expires);
-    }
-    else
+        text = mo_decode_internal_reference(url, newtext, win->target_anchor);
+        mo_do_window_text(win, url, text, text, 1, ref, win->current_node->last_modified, win->current_node->expires);
+    } else
 #endif
-      
-      
-  /* Now, if it's a telnet session, there should be no need
-     to do anything else.  Also check for override in text itself. */
-        if (strncmp (url, "telnet:", 7) == 0 ||
-            strncmp (url, "tn3270:", 7) == 0 ||
-            strncmp (url, "rlogin:", 7) == 0 ||
-            (newtext && strncmp (newtext, "<mosaic-access-override>", 24) == 0))
-        {
-            /* We don't need this anymore. */
-            free (newtext);
 
-                /* We still want a global history entry but NOT a 
-                   window history entry. */
-            mo_here_we_are_son (url);
-                /* ... and we want to redisplay the current window to
-                   get the effect of the history entry today, not tomorrow. */
-            mo_redisplay_window (win);
-                /* We're not busy anymore... */
-            mo_gui_done_with_icon ();
-            mo_not_busy ();
-        }
-        else if (newtext)
-        {
-        
-                /* Not a telnet session and not an override, but text present
-                   (the "usual" case): */
+        /* Now, if it's a telnet session, there should be no need
+           to do anything else.  Also check for override in text itself. */
+    if (strncmp(url, "telnet:", 7) == 0 ||
+            strncmp(url, "tn3270:", 7) == 0 ||
+            strncmp(url, "rlogin:", 7) == 0 || (newtext && strncmp(newtext, "<mosaic-access-override>", 24) == 0)) {
+        /* We don't need this anymore. */
+        free(newtext);
 
-                /* first check if we are using cci Get, if so, don't display
-                   the error message */
+        /* We still want a global history entry but NOT a 
+           window history entry. */
+        mo_here_we_are_son(url);
+        /* ... and we want to redisplay the current window to
+           get the effect of the history entry today, not tomorrow. */
+        mo_redisplay_window(win);
+        /* We're not busy anymore... */
+        mo_gui_done_with_icon();
+        mo_not_busy();
+    } else if (newtext) {
 
-            if (cci_get && (return_stat == mo_fail) ) 
-            {
+        /* Not a telnet session and not an override, but text present
+           (the "usual" case): */
+
+        /* first check if we are using cci Get, if so, don't display
+           the error message */
+
+        if (cci_get && (return_stat == mo_fail)) {
 #ifndef DISABLE_TRACE
-                if (srcTrace) {
-                    fprintf(stderr,"MCCI GET has passed in a wrong url\n");
-                }
+            if (srcTrace) {
+                fprintf(stderr, "MCCI GET has passed in a wrong url\n");
+            }
 #endif
-                mo_not_busy();
-            }
-            else
-            {
-              special_urls:
-                    /* Set the window text. */
-                mo_do_window_text (win, url, newtext, newtexthead, (do_meta==1?0:2), 
-                                   ref, last_modified, expires);
-            }
+            mo_not_busy();
+        } else {
+          special_urls:
+            /* Set the window text. */
+            mo_do_window_text(win, url, newtext, newtexthead, (do_meta == 1 ? 0 : 2), ref, last_modified, expires);
         }
-        else
-        {
-                /* No text at all. */
-            mo_gui_done_with_icon ();
-            mo_not_busy ();
-        }
+    } else {
+        /* No text at all. */
+        mo_gui_done_with_icon();
+        mo_not_busy();
+    }
 
 /********* Send Anchor history to CCI if CCI wants it */
-    MoCCISendAnchorToCCI(url,2);
+    MoCCISendAnchorToCCI(url, 2);
 /*********************************************/
 
     /* first check if we are using cci Get, if so, don't display
-	 the error message */
-    if (cci_get && (return_stat == mo_fail) ) 
-    {
+       the error message */
+    if (cci_get && (return_stat == mo_fail)) {
 #ifndef DISABLE_TRACE
-	if (srcTrace) {
-		fprintf(stderr,"MCCI GET has passed in a wrong url\n");
-	}
-#endif
-    }
-    else
-        if (win && win->current_node) {
-            mo_gui_check_security_icon(win->current_node->authType);
+        if (srcTrace) {
+            fprintf(stderr, "MCCI GET has passed in a wrong url\n");
         }
+#endif
+    } else if (win && win->current_node) {
+        mo_gui_check_security_icon(win->current_node->authType);
+    }
 /*
  outtahere:
 */
-    if (last_modified) free(last_modified);
-    if (expires)       free(expires);
+    if (last_modified)
+        free(last_modified);
+    if (expires)
+        free(expires);
 
 /*
   if (cci_event) MoCCISendEventOutput(LINK_LOADED);
 */
 
-  /* If news: URL, then we need to auto-scroll to the >>> marker if it
-	is here. We use a hacked version of the searching function here
-	which will need to be updated when we rewrite. --SWP */
+    /* If news: URL, then we need to auto-scroll to the >>> marker if it
+       is here. We use a hacked version of the searching function here
+       which will need to be updated when we rewrite. --SWP */
 
-  if (win->current_node &&
-      win->current_node->url &&
-      !strncmp(win->current_node->url,"news:",5)) {
-	mo_search_window(win,">>>",0,1,1);
-  }
+    if (win->current_node && win->current_node->url && !strncmp(win->current_node->url, "news:", 5)) {
+        mo_search_window(win, ">>>", 0, 1, 1);
+    }
 
     return return_stat;
 }
 
-
-static mo_status mo_post_load_window_text (mo_window *win, char *url, 
-                                    char *content_type, char *post_data, 
-                                    char *ref)
+static mo_status mo_post_load_window_text(mo_window *win, char *url, char *content_type, char *post_data, char *ref)
 {
-  char *newtext = NULL, *newtexthead = NULL, *actionID;
-  mo_busy ();
+    char *newtext = NULL, *newtexthead = NULL, *actionID;
+    mo_busy();
 
-  win->target_anchor = mo_url_extract_anchor (url);
+    win->target_anchor = mo_url_extract_anchor(url);
 
-  actionID = strdup(url);       /* make a copy of url for cci's register id */
+    actionID = strdup(url);     /* make a copy of url for cci's register id */
 
-
-  /* If we're just referencing an anchor inside a document,
-     do the right thing. */
-  if (url && *url == '#')
-    {
-      /* Now we make a copy of the current text and make sure we ask
-         for a new mo_node and entry in the history list. */
-      /* IF we're not dealing with an internal reference. */
-      if (strncmp (url, "#hdfref;", 8) &&
-          strncmp (url, "#hdfdtm;", 8))
-        {
-          if (win->current_node)
-            {
-              newtext = strdup (win->current_node->text);
-              newtexthead = newtext;
-            }
-          else
-            {
-              newtext = strdup ("lose");
-              newtexthead = newtext;
+    /* If we're just referencing an anchor inside a document,
+       do the right thing. */
+    if (url && *url == '#') {
+        /* Now we make a copy of the current text and make sure we ask
+           for a new mo_node and entry in the history list. */
+        /* IF we're not dealing with an internal reference. */
+        if (strncmp(url, "#hdfref;", 8) && strncmp(url, "#hdfdtm;", 8)) {
+            if (win->current_node) {
+                newtext = strdup(win->current_node->text);
+                newtexthead = newtext;
+            } else {
+                newtext = strdup("lose");
+                newtexthead = newtext;
             }
         }
-      url = mo_url_canonicalize_keep_anchor 
-        (url, win->current_node ? win->current_node->url : "");
-    }
-  else
-    {
-      /* Get a full address for this URL. */
-      /* Under some circumstances we may not have a current node yet
-         and may wish to just run with it... so check for that. */
-      if (win->current_node && win->current_node->url)
-        {
-          url = mo_url_canonicalize_keep_anchor (url, win->current_node->url);
+        url = mo_url_canonicalize_keep_anchor(url, win->current_node ? win->current_node->url : "");
+    } else {
+        /* Get a full address for this URL. */
+        /* Under some circumstances we may not have a current node yet
+           and may wish to just run with it... so check for that. */
+        if (win->current_node && win->current_node->url) {
+            url = mo_url_canonicalize_keep_anchor(url, win->current_node->url);
         }
 
-      /* Set binary_transfer as per current window. */
-      binary_transfer = win->binary_transfer;
-      mo_set_current_cached_win (win);
+        /* Set binary_transfer as per current window. */
+        binary_transfer = win->binary_transfer;
+        mo_set_current_cached_win(win);
 
-      {
-        char *canon = mo_url_canonicalize (url, "");
-        interrupted = 0;
+        {
+            char *canon = mo_url_canonicalize(url, "");
+            interrupted = 0;
 
-	if (!MoCCIFormToClient(actionID, NULL, content_type, post_data, 0))
-        	newtext = mo_post_pull_er_over (canon, content_type, 
-			post_data, &newtexthead);
-        free (canon);
-      }
+            if (!MoCCIFormToClient(actionID, NULL, content_type, post_data, 0))
+                newtext = mo_post_pull_er_over(canon, content_type, post_data, &newtexthead);
+            free(canon);
+        }
 
-      {
-        /* Check use_this_url_instead from HTAccess.c. */
-        extern char *use_this_url_instead;
-        if (use_this_url_instead)
-          {
-            mo_here_we_are_son (url);
-            url = use_this_url_instead;
-          }
-      }
+        {
+            /* Check use_this_url_instead from HTAccess.c. */
+            extern char *use_this_url_instead;
+            if (use_this_url_instead) {
+                mo_here_we_are_son(url);
+                url = use_this_url_instead;
+            }
+        }
     }
 
 #ifdef HAVE_HDF
-  /* If a target anchor exists, and if it's an HDF reference, then
-     go decode the HDF reference and call mo_do_window_text on the
-     resulting text. */
-  if (win->target_anchor &&
-      strncmp (win->target_anchor, "hdfref;", 7) == 0 &&
-      strlen (win->target_anchor) > 8)
-    {
-      char *text;
-      text = (char *)mo_decode_hdfref (url, win->target_anchor);
-      {
-        /* Check use_this_url_instead from HTAccess.c. */
-        extern char *use_this_url_instead;
-        if (use_this_url_instead)
-          {
-            mo_here_we_are_son (url);
-            url = use_this_url_instead;
-            mo_load_window_text(win, url, ref);
-            return;
-          }
-      }
-      mo_do_window_text (win, url, text, text, 1, ref, win->current_node->last_modified, win->current_node->expires);
+    /* If a target anchor exists, and if it's an HDF reference, then
+       go decode the HDF reference and call mo_do_window_text on the
+       resulting text. */
+    if (win->target_anchor && strncmp(win->target_anchor, "hdfref;", 7) == 0 && strlen(win->target_anchor) > 8) {
+        char *text;
+        text = (char *)mo_decode_hdfref(url, win->target_anchor);
+        {
+            /* Check use_this_url_instead from HTAccess.c. */
+            extern char *use_this_url_instead;
+            if (use_this_url_instead) {
+                mo_here_we_are_son(url);
+                url = use_this_url_instead;
+                mo_load_window_text(win, url, ref);
+                return;
+            }
+        }
+        mo_do_window_text(win, url, text, text, 1, ref, win->current_node->last_modified, win->current_node->expires);
     }
-  /* An hdfdtm reference means that we should blast the referenced
-     HDF data object over the output DTM port to Collage.  Currently
-     this can only be an image; in the future we'll do SDS's, etc. */
-  else if (win->target_anchor &&
-           strncmp (win->target_anchor, "hdfdtm;", 7) == 0 &&
-           strlen (win->target_anchor) > 8)
-    {
+    /* An hdfdtm reference means that we should blast the referenced
+       HDF data object over the output DTM port to Collage.  Currently
+       this can only be an image; in the future we'll do SDS's, etc. */
+    else if (win->target_anchor && strncmp(win->target_anchor, "hdfdtm;", 7) == 0 && strlen(win->target_anchor) > 8) {
 #ifdef HAVE_DTM
-      /* We specifically want to make sure that the anchor is allowed
-         to stay in the URL, so we don't canonicalize to strip it out. */
-      mo_do_hdf_dtm_thang (url, &(win->target_anchor[7]));
+        /* We specifically want to make sure that the anchor is allowed
+           to stay in the URL, so we don't canonicalize to strip it out. */
+        mo_do_hdf_dtm_thang(url, &(win->target_anchor[7]));
 #endif
 
-      if (win->target_anchor)
-        free (win->target_anchor);
-      win->target_anchor = NULL;
+        if (win->target_anchor)
+            free(win->target_anchor);
+        win->target_anchor = NULL;
 
-      mo_gui_done_with_icon ();
-      mo_not_busy ();
+        mo_gui_done_with_icon();
+        mo_not_busy();
     }
-  /* Assuming we have HDF, the only thing mosaic-internal-reference
-     currently can be is pointer to an HDF file. */
-  else if (newtext && strncmp (newtext, "<mosaic-internal-reference", 26) == 0)
-    {
-      char *text;
-      text = mo_decode_internal_reference (url, newtext, win->target_anchor);
-      mo_do_window_text (win, url, text, text, 1, ref, win->current_node->last_modified, win->current_node->expires);
-    }
-  else
+    /* Assuming we have HDF, the only thing mosaic-internal-reference
+       currently can be is pointer to an HDF file. */
+    else if (newtext && strncmp(newtext, "<mosaic-internal-reference", 26) == 0) {
+        char *text;
+        text = mo_decode_internal_reference(url, newtext, win->target_anchor);
+        mo_do_window_text(win, url, text, text, 1, ref, win->current_node->last_modified, win->current_node->expires);
+    } else
 #endif
-  /* Now, if it's a telnet session, there should be no need
-     to do anything else.  Also check for override in text itself. */
-  if (strncmp (url, "telnet:", 7) == 0 || strncmp (url, "tn3270:", 7) == 0 ||
-      strncmp (url, "rlogin:", 7) == 0 ||
-      (newtext && strncmp (newtext, "<mosaic-access-override>", 24) == 0))
-    {
-      /* We don't need this anymore. */
-      free (newtext);
+        /* Now, if it's a telnet session, there should be no need
+           to do anything else.  Also check for override in text itself. */
+        if (strncmp(url, "telnet:", 7) == 0 || strncmp(url, "tn3270:", 7) == 0
+            || strncmp(url, "rlogin:", 7) == 0 || (newtext && strncmp(newtext, "<mosaic-access-override>", 24)
+                                                   == 0)) {
+        /* We don't need this anymore. */
+        free(newtext);
 
-      /* We still want a global history entry but NOT a 
-         window history entry. */
-      mo_here_we_are_son (url);
-      /* ... and we want to redisplay the current window to
-         get the effect of the history entry today, not tomorrow. */
-      mo_redisplay_window (win);
-      /* We're not busy anymore... */
-      mo_gui_done_with_icon ();
-      mo_not_busy ();
-    }
-  else if (newtext)
-    {
-      /* Not a telnet session and not an override, but text present
-         (the "usual" case): */
+        /* We still want a global history entry but NOT a 
+           window history entry. */
+        mo_here_we_are_son(url);
+        /* ... and we want to redisplay the current window to
+           get the effect of the history entry today, not tomorrow. */
+        mo_redisplay_window(win);
+        /* We're not busy anymore... */
+        mo_gui_done_with_icon();
+        mo_not_busy();
+    } else if (newtext) {
+        /* Not a telnet session and not an override, but text present
+           (the "usual" case): */
 
-      /* Set the window text. */
-      mo_do_window_text (win, url, newtext, newtexthead, 1, ref, 0, 0);
-    }
-  else
-    {
-      /* No text at all. */
-      mo_gui_done_with_icon ();
-      mo_not_busy ();
+        /* Set the window text. */
+        mo_do_window_text(win, url, newtext, newtexthead, 1, ref, 0, 0);
+    } else {
+        /* No text at all. */
+        mo_gui_done_with_icon();
+        mo_not_busy();
     }
 /*
  outtahere:
@@ -1252,12 +1100,8 @@ static mo_status mo_post_load_window_text (mo_window *win, char *url,
   if (cci_event) MoCCISendEventOutput(LINK_LOADED);
 */
 
-  return mo_succeed;
+    return mo_succeed;
 }
-
-
-
-
 
 /****************************************************************************
  * name:    mo_duplicate_window_text
@@ -1272,27 +1116,25 @@ static mo_status mo_post_load_window_text (mo_window *win, char *url,
  *   This is how windows are cloned: a new window is created and this
  *   call sets up its contents.
  ****************************************************************************/
-mo_status mo_duplicate_window_text (mo_window *oldw, mo_window *neww)
+mo_status mo_duplicate_window_text(mo_window *oldw, mo_window *neww)
 {
-  /* We can get away with just cloning text here and forgetting
-     about texthead, obviously, since we're making a new copy. */
-  char *newtext;
+    /* We can get away with just cloning text here and forgetting
+       about texthead, obviously, since we're making a new copy. */
+    char *newtext;
 
-  if (!oldw->current_node)
-    return mo_fail;
+    if (!oldw->current_node)
+        return mo_fail;
 
-  newtext = strdup (oldw->current_node->text);
+    newtext = strdup(oldw->current_node->text);
 
-  mo_do_window_text 
-    (neww, strdup (oldw->current_node->url), 
-     newtext, newtext, TRUE, 
-     oldw->current_node->ref ? strdup (oldw->current_node->ref) : NULL,
-     oldw->current_node->last_modified,
-     oldw->current_node->expires);
+    mo_do_window_text
+        (neww, strdup(oldw->current_node->url),
+         newtext, newtext, TRUE,
+         oldw->current_node->ref ? strdup(oldw->current_node->ref) : NULL,
+         oldw->current_node->last_modified, oldw->current_node->expires);
 
-  return mo_succeed;
+    return mo_succeed;
 }
-
 
 /****************************************************************************
  * name:    mo_access_document
@@ -1306,26 +1148,24 @@ mo_status mo_duplicate_window_text (mo_window *oldw, mo_window *neww)
  * remarks: 
  *   This should be the standard call for accessing a document.
  ****************************************************************************/
-mo_status mo_access_document (mo_window *win, char *url)
+mo_status mo_access_document(mo_window *win, char *url)
 {
-  mo_busy ();
+    mo_busy();
 
-  mo_set_current_cached_win (win);
+    mo_set_current_cached_win(win);
 
-  mo_load_window_text (win, url, NULL);
+    mo_load_window_text(win, url, NULL);
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
-
-mo_status mo_post_access_document (mo_window *win, char *url,
-                                   char *content_type, char *post_data)
+mo_status mo_post_access_document(mo_window *win, char *url, char *content_type, char *post_data)
 {
-  mo_busy ();
+    mo_busy();
 
-  mo_set_current_cached_win (win);
+    mo_set_current_cached_win(win);
 
-  mo_post_load_window_text (win, url, content_type, post_data, NULL);
+    mo_post_load_window_text(win, url, content_type, post_data, NULL);
 
-  return mo_succeed;
+    return mo_succeed;
 }

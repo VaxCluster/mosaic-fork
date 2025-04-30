@@ -11,24 +11,23 @@
  *
  */
 
-
 #include <stdio.h>
 
 WriteMesg(s)
 char *s;
 {
-	printf("%s",s);
-	fflush(stdout);
+    printf("%s", s);
+    fflush(stdout);
 }
 
 WarningMesg(s)
 char *s;
 {
-	fprintf(stderr,"%s",s);
+    fprintf(stderr, "%s", s);
 }
 
 ErrMesg(s)
 char *s;
 {
-	fprintf(stderr,"%s",s);
+    fprintf(stderr, "%s", s);
 }

@@ -24,7 +24,6 @@
 **
 ******************************************************************/
 
-
 /*
 #ifdef	RCSLOG
 
@@ -66,89 +65,81 @@
 #include	"dtmint.h"
 #include	"debug.h"
 
-
 static int dtm_char(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
-  DBGFLOW("# dtm_char called.\n");
+    DBGFLOW("# dtm_char called.\n");
 
-  return size;
+    return size;
 }
-
 
 static int dtm_short(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
-  DBGFLOW("# dtm_short called.\n");
+    DBGFLOW("# dtm_short called.\n");
 
-  return ((mode == DTMLOCAL) ? (size / 2) : (size * 2));
+    return ((mode == DTMLOCAL) ? (size / 2) : (size * 2));
 }
-
 
 static int dtm_int(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
 
-  DBGFLOW("# dtm_int called.\n");
+    DBGFLOW("# dtm_int called.\n");
 
-  return ((mode == DTMLOCAL) ? (size / 4) : (size * 4));
+    return ((mode == DTMLOCAL) ? (size / 4) : (size * 4));
 }
-
 
 static int dtm_float(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
 
-  DBGFLOW("# dtm_float called.\n");
+    DBGFLOW("# dtm_float called.\n");
 
-  return ((mode == DTMLOCAL) ? (size / 4) : (size * 4));
+    return ((mode == DTMLOCAL) ? (size / 4) : (size * 4));
 }
-
 
 static int dtm_double(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
 
-  DBGFLOW("# dtm_flt64 called.\n");
+    DBGFLOW("# dtm_flt64 called.\n");
 
-  return ((mode == DTMLOCAL) ? (size / 8) : (size * 8));
+    return ((mode == DTMLOCAL) ? (size / 8) : (size * 8));
 }
-
 
 static int dtm_complex(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
 
-  DBGFLOW("# dtm_complex called.\n");
+    DBGFLOW("# dtm_complex called.\n");
 
-  return ((mode == DTMLOCAL) ? (size / 8) : (size * 8));
+    return ((mode == DTMLOCAL) ? (size / 8) : (size * 8));
 }
-
 
 static int dtm_triplet(mode, buf, size)
-  int	mode, size;
-  VOIDPTR	buf;
+int mode, size;
+VOIDPTR buf;
 {
 
-  DBGFLOW("# dtm_triplet called.\n");
+    DBGFLOW("# dtm_triplet called.\n");
 
-  return  ((mode == DTMLOCAL) ? (size / 16) : (size * 16));
+    return ((mode == DTMLOCAL) ? (size / 16) : (size * 16));
 }
 
-
 /* conversion routine function table */
-int	(*DTMconvertRtns[])() = {
-		dtm_char,
-                dtm_short,
-                dtm_int,
-                dtm_float,
-                dtm_double,
-                dtm_complex,
-		dtm_triplet
-		};
+int (*DTMconvertRtns[])() = {
+    dtm_char,
+    dtm_short,
+    dtm_int,
+    dtm_float,
+    dtm_double,
+    dtm_complex,
+    dtm_triplet
+};

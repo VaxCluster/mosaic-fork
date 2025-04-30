@@ -72,13 +72,13 @@
 #include "dtmint.h"
 #include "debug.h"
 
-static	struct	sockaddr_in	nsaddr ;	/* name server's address */
-static	int	nssockfd = -1 ;			/* name server's socket */
-static	char	nameserver[ MAX132 ] ;		
-				/* 
-					   name server address -
-					   dotted decimal: port number 
-				*/
+static struct sockaddr_in nsaddr;   /* name server's address */
+static int nssockfd = -1;       /* name server's socket */
+static char nameserver[MAX132];
+                /* 
+                   name server address -
+                   dotted decimal: port number 
+                 */
 
 /*
 	Function to initialise the name server's address by
@@ -94,54 +94,54 @@ static	char	nameserver[ MAX132 ] ;
 				e.g. DTM_NAMESERVER=141.142.221.66:9900
 */
 #ifdef DTM_PROTOTYPES
-int dtm_ninit(void )
+int dtm_ninit(void)
 #else
 int dtm_ninit()
 #endif
 {
-	char	*p ;
+    char *p;
 
-	DBGFLOW( "dtm_ninit called\n" );
-	if( (p = getenv( DTM_NAMESERVER )) == NULL ) {
-		DTMerrno = DTMENV ;
-		DTMERR( "dtm_ninit: Env not setup" );
-		return DTMERROR ;
-	}
-	
-	/*	Initialise name server's address, used in send() */
+    DBGFLOW("dtm_ninit called\n");
+    if ((p = getenv(DTM_NAMESERVER)) == NULL) {
+        DTMerrno = DTMENV;
+        DTMERR("dtm_ninit: Env not setup");
+        return DTMERROR;
+    }
 
-	strncpy( nameserver, p, MAX132 ); 
+    /*      Initialise name server's address, used in send() */
 
-	DBGINT( "dtm_ninit: Nameserver is %s\n", nameserver );
+    strncpy(nameserver, p, MAX132);
 
-	nsaddr.sin_family = AF_INET ;
-	{
-		char *portstr;
+    DBGINT("dtm_ninit: Nameserver is %s\n", nameserver);
 
-		portstr  = strchr( p, ':' );
-		if ( portstr == NULL ) {
-			DTMerrno = DTMADDR;
-			return DTMERROR;
-		}
+    nsaddr.sin_family = AF_INET;
+    {
+        char *portstr;
 
-		*portstr++ = '\0';
+        portstr = strchr(p, ':');
+        if (portstr == NULL) {
+            DTMerrno = DTMADDR;
+            return DTMERROR;
+        }
 
-		nsaddr.sin_addr.s_addr = inet_addr( p ) ; 
-		nsaddr.sin_port = (unsigned short)atol( portstr ) ;
+        *portstr++ = '\0';
 
-		DBGMSG1("dtm_ninit: Nethostid = %x\n", ntohl( nsaddr.sin_addr.s_addr) );
-		DBGMSG1("dtm_ninit: Portid = %d\n", ntohs( nsaddr.sin_port) ); 
-	}
+        nsaddr.sin_addr.s_addr = inet_addr(p);
+        nsaddr.sin_port = (unsigned short)atol(portstr);
 
-	/*	Acquire socket to be used for sending to name server  */
+        DBGMSG1("dtm_ninit: Nethostid = %x\n", ntohl(nsaddr.sin_addr.s_addr));
+        DBGMSG1("dtm_ninit: Portid = %d\n", ntohs(nsaddr.sin_port));
+    }
 
-	if( (nssockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP )) == -1 ){
-		DTMerrno = DTMSOCK ;
-		DBGFLOW( "dtm_ninit: Socket call fails" );
-		return DTMERROR;
-	}
+    /*      Acquire socket to be used for sending to name server  */
 
-	return DTM_OK;
+    if ((nssockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
+        DTMerrno = DTMSOCK;
+        DBGFLOW("dtm_ninit: Socket call fails");
+        return DTMERROR;
+    }
+
+    return DTM_OK;
 }
 
 /*
@@ -149,18 +149,19 @@ int dtm_ninit()
 */
 
 #ifdef DTM_PROTOTYPES
-char    *dtm_get_naddr(struct sockaddr_in *addr,int *sockfd )
+char *dtm_get_naddr(struct sockaddr_in *addr, int *sockfd)
 #else
-char    *dtm_get_naddr( addr, sockfd )
-struct	sockaddr_in	*addr ;
-int	*sockfd ;
+char *dtm_get_naddr(addr, sockfd)
+struct sockaddr_in *addr;
+int *sockfd;
 #endif
 {
-	if( nssockfd < 0 )  if ( dtm_ninit() == DTMERROR)
-		return (char *) DTMERROR;
+    if (nssockfd < 0)
+        if (dtm_ninit() == DTMERROR)
+            return (char *)DTMERROR;
 
-	*addr = nsaddr ;
-	*sockfd = nssockfd ;
+    *addr = nsaddr;
+    *sockfd = nssockfd;
 
-	return (nssockfd < 0) ? NULL : nameserver ;
+    return (nssockfd < 0) ? NULL : nameserver;
 }

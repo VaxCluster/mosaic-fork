@@ -132,18 +132,16 @@ extern int srcTrace;
 /* Cached string for home directory. */
 static char *home;
 
-typedef struct entry
-{
-  char *href;
-  int num_pans;
-  int an[MAX_PANS_PER_HREF];
-  struct entry *next;
+typedef struct entry {
+    char *href;
+    int num_pans;
+    int an[MAX_PANS_PER_HREF];
+    struct entry *next;
 } entry;
 
-typedef struct bucket
-{
-  entry *head;
-  int count;
+typedef struct bucket {
+    entry *head;
+    int count;
 } bucket;
 
 /* The largest ID for any pan known so far.
@@ -152,289 +150,271 @@ static int max_pan_id = 0;
 
 static bucket hash_table[HASHSIZE];
 
+static int locate_id(int id, entry ** lptr);
+static void ensure_pan_directory_exists(void);
+static int hash_url(char *url);
+static void dump_bucket_counts(void);
+static entry *new_entry(int buck, char *href);
+static entry *fetch_entry(char *href);
+static void add_an_to_entry(entry * l, int an);
+static void remove_an_from_entry(entry * l, int an);
+static void mo_read_pan_file(char *filename);
+static mo_status mo_init_pan(void);
+static mo_status mo_write_pan(int id, char *title, char *author, char *text);
+static char *smart_append(char *s1, char *s2);
+static char *extract_meat(char *s, int offset);
 
-static int locate_id (int id, entry **lptr);
-static void ensure_pan_directory_exists (void);
-static int hash_url (char *url);
-static void dump_bucket_counts (void);
-static entry *new_entry (int buck, char *href);
-static entry *fetch_entry (char *href);
-static void add_an_to_entry (entry *l, int an);
-static void remove_an_from_entry (entry *l, int an);
-static void mo_read_pan_file (char *filename);
-static mo_status mo_init_pan (void);
-static mo_status mo_write_pan (int id, char *title, char *author, char *text);
-static char *smart_append (char *s1, char *s2);
-static char *extract_meat (char *s, int offset);
-
-
-
-static int hash_url (char *url)
+static int hash_url(char *url)
 {
-  int len, i, val;
+    int len, i, val;
 
-  if (!url)
-    return 0;
-  len = strlen (url);
-  val = 0;
-  for (i = 0; i < 10; i++)
-    val += url[(i * val + 7) % len];
+    if (!url)
+        return 0;
+    len = strlen(url);
+    val = 0;
+    for (i = 0; i < 10; i++)
+        val += url[(i * val + 7) % len];
 
-  return val % HASHSIZE;
+    return val % HASHSIZE;
 }
 
-static void dump_bucket_counts (void)
+static void dump_bucket_counts(void)
 {
-  int i;
+    int i;
 
 #ifndef DISABLE_TRACE
-  if (srcTrace) {
-	for (i = 0; i < HASHSIZE; i++)
-		fprintf (stderr, "Bucket %03d, count %03d\n", i, hash_table[i].count);
-  }
+    if (srcTrace) {
+        for (i = 0; i < HASHSIZE; i++)
+            fprintf(stderr, "Bucket %03d, count %03d\n", i, hash_table[i].count);
+    }
 #endif
 
-  return;
+    return;
 }
 
 /* Presumably href isn't already in the bucket. */
-static entry *new_entry (int buck, char *href)
+static entry *new_entry(int buck, char *href)
 {
-  bucket *bkt = &(hash_table[buck]);
-  entry *l;
+    bucket *bkt = &(hash_table[buck]);
+    entry *l;
 
-  l = (entry *)malloc (sizeof (entry));
-  l->href = strdup (href);
-  l->num_pans = 0;
+    l = (entry *) malloc(sizeof(entry));
+    l->href = strdup(href);
+    l->num_pans = 0;
 /*  bzero ((void *)(l->an), MAX_PANS_PER_HREF * 4);*/
-  memset((void *)(l->an), 0, MAX_PANS_PER_HREF * 4);
-  l->next = NULL;
-  
-  if (bkt->head == NULL)
-    bkt->head = l;
-  else
-    {
-      l->next = bkt->head;
-      bkt->head = l;
+    memset((void *)(l->an), 0, MAX_PANS_PER_HREF * 4);
+    l->next = NULL;
+
+    if (bkt->head == NULL)
+        bkt->head = l;
+    else {
+        l->next = bkt->head;
+        bkt->head = l;
     }
 
-  bkt->count += 1;
+    bkt->count += 1;
 
-  return l;
+    return l;
 }
 
 /* If an entry already exists for an href, then return the entry.
    Else, return NULL. */
-static entry *fetch_entry (char *href)
+static entry *fetch_entry(char *href)
 {
-  int hash = hash_url (href);
-  entry *l;
+    int hash = hash_url(href);
+    entry *l;
 
-  if (hash_table[hash].count)
-    for (l = hash_table[hash].head; l != NULL; l = l->next)
-      {
-        if (!strcmp (l->href, href))
-          return l;
-      }
-  
-  return NULL;
+    if (hash_table[hash].count)
+        for (l = hash_table[hash].head; l != NULL; l = l->next) {
+            if (!strcmp(l->href, href))
+                return l;
+        }
+
+    return NULL;
 }
 
 /* Given an entry and an annotation id, do the right thing
    to the entry. */
-static void add_an_to_entry (entry *l, int an)
+static void add_an_to_entry(entry *l, int an)
 {
-  if (l->num_pans == MAX_PANS_PER_HREF)
-    return;
-  
-  l->an[l->num_pans] = an;
+    if (l->num_pans == MAX_PANS_PER_HREF)
+        return;
 
-  l->num_pans++;
+    l->an[l->num_pans] = an;
+
+    l->num_pans++;
 }
 
 /* Given an entry and an annotation id, remove the annotation
    from the entry. */
-static void remove_an_from_entry (entry *l, int an)
+static void remove_an_from_entry(entry *l, int an)
 {
-  int i, place;
-  for (i = 0; i < l->num_pans; i++)
-    {
-      if (l->an[i] == an)
-        {
-          place = i;
-          goto ok;
+    int i, place;
+    for (i = 0; i < l->num_pans; i++) {
+        if (l->an[i] == an) {
+            place = i;
+            goto ok;
         }
     }
 
-  /* Couldn't find an in the list of annoations. */
-  return;
-  
- ok:
-  /* Found an in the list of annotations. */
-  l->an[place] = 0;
-  /* If place is 3 and num_pans is 6,
-     then i goes from 4 to 5; 3 gets 4's value and then 4 gets 5's. */
-  for (i = place + 1; i < l->num_pans; i++)
-    l->an[i-1] = l->an[i];
-  l->num_pans--;
+    /* Couldn't find an in the list of annoations. */
+    return;
 
-  /* Don't have to remove an empty entry, since an empty entry won't
-     be written out upon exit. */
+  ok:
+    /* Found an in the list of annotations. */
+    l->an[place] = 0;
+    /* If place is 3 and num_pans is 6,
+       then i goes from 4 to 5; 3 gets 4's value and then 4 gets 5's. */
+    for (i = place + 1; i < l->num_pans; i++)
+        l->an[i - 1] = l->an[i];
+    l->num_pans--;
 
-  return;
+    /* Don't have to remove an empty entry, since an empty entry won't
+       be written out upon exit. */
+
+    return;
 }
 
 /* For a given ID, look through the hash table, find the corresponding
    entry, and return both it and the position of the id in it. */
-int locate_id (int id, entry **lptr)
+int locate_id(int id, entry **lptr)
 {
-  entry *l;
-  int i, j;
+    entry *l;
+    int i, j;
 
-  for (i = 0; i < HASHSIZE; i++)
-    {
-      if (hash_table[i].count)
-        for (l = hash_table[i].head; l != NULL; l = l->next)
-          {
-            for (j = 0; j < l->num_pans; j++)
-              {
-                if (l->an[j] == id)
-                  {
-                    *lptr = l;
-                    return j;
-                  }
-              }
-          }
+    for (i = 0; i < HASHSIZE; i++) {
+        if (hash_table[i].count)
+            for (l = hash_table[i].head; l != NULL; l = l->next) {
+                for (j = 0; j < l->num_pans; j++) {
+                    if (l->an[j] == id) {
+                        *lptr = l;
+                        return j;
+                    }
+                }
+            }
     }
 
-  *lptr = NULL;
-  return -1;
+    *lptr = NULL;
+    return -1;
 }
 
 /* ------------------------------------------------------------------------ */
 
-static void mo_read_pan_file (char *filename)
+static void mo_read_pan_file(char *filename)
 {
-  FILE *fp;
-  char line[MO_LINE_LENGTH];
-  char *status;
-  entry *l;
-  
-  fp = fopen (filename, "r");
-  if (!fp)
-    goto screwed_no_file;
-  
-  status = fgets (line, MO_LINE_LENGTH, fp);
-  if (!status || !(*line))
-    goto screwed_with_file;
-  
-  /* See if it's our format. */
-  if (strncmp (line, NCSA_PAN_LOG_FORMAT_COOKIE_ONE,
-               strlen (NCSA_PAN_LOG_FORMAT_COOKIE_ONE)))
-    goto screwed_with_file;
-  
-  /* Go fetch the name on the next line. */
-  status = fgets (line, MO_LINE_LENGTH, fp);
-  if (!status || !(*line))
-    goto screwed_with_file;
-  
-  /* Start grabbing documents and lists of annotations. */
-  while (1)
-    {
-      char *url;
-      char *p;
-      
-      status = fgets (line, MO_LINE_LENGTH, fp);
-      if (!status || !(*line))
-        goto done;
-      
-      url = strtok (line, " ");
-      if (!url)
+    FILE *fp;
+    char line[MO_LINE_LENGTH];
+    char *status;
+    entry *l;
+
+    fp = fopen(filename, "r");
+    if (!fp)
+        goto screwed_no_file;
+
+    status = fgets(line, MO_LINE_LENGTH, fp);
+    if (!status || !(*line))
         goto screwed_with_file;
-      url = strdup (url);
-      /* We don't use the last-accessed date... yet. */
-      /* lastdate = strtok (NULL, "\n"); blah blah blah... */
 
-      l = new_entry (hash_url (url), url);
+    /* See if it's our format. */
+    if (strncmp(line, NCSA_PAN_LOG_FORMAT_COOKIE_ONE, strlen(NCSA_PAN_LOG_FORMAT_COOKIE_ONE)))
+        goto screwed_with_file;
 
-      free (url);
+    /* Go fetch the name on the next line. */
+    status = fgets(line, MO_LINE_LENGTH, fp);
+    if (!status || !(*line))
+        goto screwed_with_file;
 
-      while (p = strtok (NULL, " "))
-        {
-          int a = atoi (p);
-          if (a)
-            {
-              add_an_to_entry (l, a);
-              if (a > max_pan_id)
-                max_pan_id = a;
+    /* Start grabbing documents and lists of annotations. */
+    while (1) {
+        char *url;
+        char *p;
+
+        status = fgets(line, MO_LINE_LENGTH, fp);
+        if (!status || !(*line))
+            goto done;
+
+        url = strtok(line, " ");
+        if (!url)
+            goto screwed_with_file;
+        url = strdup(url);
+        /* We don't use the last-accessed date... yet. */
+        /* lastdate = strtok (NULL, "\n"); blah blah blah... */
+
+        l = new_entry(hash_url(url), url);
+
+        free(url);
+
+        while (p = strtok(NULL, " ")) {
+            int a = atoi(p);
+            if (a) {
+                add_an_to_entry(l, a);
+                if (a > max_pan_id)
+                    max_pan_id = a;
             }
         }
-    }      
+    }
 
- done:
-  fclose (fp);
-  return;
+  done:
+    fclose(fp);
+    return;
 
- screwed_with_file:
-  fclose (fp);
-  return;
+  screwed_with_file:
+    fclose(fp);
+    return;
 
- screwed_no_file:
-  return;
+  screwed_no_file:
+    return;
 }
 
 static char *cached_global_pan_fname = NULL;
 
-static mo_status mo_init_pan (void)
+static mo_status mo_init_pan(void)
 {
-  int i;
+    int i;
 
-  /* Initialize the pan structs. */
-  for (i = 0; i < HASHSIZE; i++)
-    {
-      hash_table[i].count = 0;
-      hash_table[i].head = 0;
+    /* Initialize the pan structs. */
+    for (i = 0; i < HASHSIZE; i++) {
+        hash_table[i].count = 0;
+        hash_table[i].head = 0;
     }
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
 /* --------------------- ensure_pan_directory_exists ---------------------- */
 
-void ensure_pan_directory_exists (void)
+void ensure_pan_directory_exists(void)
 {
-  char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
-  char filename[500];
-  struct stat buf;
-  int r;
+    char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
+    char filename[500];
+    struct stat buf;
+    int r;
 
-  sprintf (filename, "%s/%s", home, default_directory);
+    sprintf(filename, "%s/%s", home, default_directory);
 
-  r = stat (filename, &buf); 
-  if (r == -1)
-    {
+    r = stat(filename, &buf);
+    if (r == -1) {
 #ifdef NeXT
-      mkdir (filename);
+        mkdir(filename);
 #else
-      mkdir (filename, S_IRUSR | S_IWUSR | S_IXUSR);
+        mkdir(filename, S_IRUSR | S_IWUSR | S_IXUSR);
 #endif
     }
-  
-  return;
+
+    return;
 }
 
 /* ------------------ Interface For Personal Annotations ------------------ */
 
-mo_status mo_is_editable_pan (char *text)
+mo_status mo_is_editable_pan(char *text)
 {
-  if (!text)
-    return mo_fail;
+    if (!text)
+        return mo_fail;
 
-  if (!strncmp (text, NCSA_ANNOTATION_FORMAT_ONE,
-                strlen (NCSA_ANNOTATION_FORMAT_ONE)))
-    return mo_succeed;
-  else
-    return mo_fail;
+    if (!strncmp(text, NCSA_ANNOTATION_FORMAT_ONE, strlen(NCSA_ANNOTATION_FORMAT_ONE)))
+        return mo_succeed;
+    else
+        return mo_fail;
 }
 
 /* First, call mo_init_pan() to set up internal hash table.
@@ -442,206 +422,197 @@ mo_status mo_is_editable_pan (char *text)
    Then, snarf a value for the log file.
    Then, read the log file and load up the hash table
      by calling mo_read_pan_file. */
-mo_status mo_setup_pan_list (void)
+mo_status mo_setup_pan_list(void)
 {
-  char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
-  char *default_filename = PAN_LOG_FILENAME;
-  char *filename;
+    char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
+    char *default_filename = PAN_LOG_FILENAME;
+    char *filename;
 
-  mo_init_pan ();
+    mo_init_pan();
 
-  home = getenv ("HOME");
+    home = getenv("HOME");
 
-  /* This shouldn't happen. */
-  if (!home)
-    home = "/tmp";
-  
-  filename = (char *)malloc 
-    ((strlen (home) + strlen (default_directory) + 
-      strlen (default_filename) + 8) * sizeof (char));
-  sprintf (filename, "%s/%s/%s", home, default_directory, default_filename);
-  cached_global_pan_fname = filename;
+    /* This shouldn't happen. */
+    if (!home)
+        home = "/tmp";
 
-  mo_read_pan_file (filename);
+    filename = (char *)malloc((strlen(home) + strlen(default_directory) + strlen(default_filename) + 8) * sizeof(char));
+    sprintf(filename, "%s/%s/%s", home, default_directory, default_filename);
+    cached_global_pan_fname = filename;
 
-  return mo_succeed;
+    mo_read_pan_file(filename);
+
+    return mo_succeed;
 }
 
 /* Write out the log file. */
-mo_status mo_write_pan_list (void)
+mo_status mo_write_pan_list(void)
 {
-  FILE *fp;
-  int i;
-  entry *l;
+    FILE *fp;
+    int i;
+    entry *l;
 
-  ensure_pan_directory_exists ();
+    ensure_pan_directory_exists();
 
-  fp = fopen (cached_global_pan_fname, "w");
-  if (!fp)
-    return mo_fail;
+    fp = fopen(cached_global_pan_fname, "w");
+    if (!fp)
+        return mo_fail;
 
-  fprintf (fp, "%s\n%s\n", NCSA_PAN_LOG_FORMAT_COOKIE_ONE, "Personal");
-  
-  for (i = 0; i < HASHSIZE; i++)
-    for (l = hash_table[i].head; l != NULL; l = l->next)
-      if (l->num_pans)
-        {
-          int j;
-          fprintf (fp, "%s", l->href);
-          for (j = 0; j < l->num_pans; j++)
-            fprintf (fp, " %d", l->an[j]);
-          fprintf (fp, "\n");
-        }
-  
-  fclose (fp);
-  
-  return mo_succeed;
+    fprintf(fp, "%s\n%s\n", NCSA_PAN_LOG_FORMAT_COOKIE_ONE, "Personal");
+
+    for (i = 0; i < HASHSIZE; i++)
+        for (l = hash_table[i].head; l != NULL; l = l->next)
+            if (l->num_pans) {
+                int j;
+                fprintf(fp, "%s", l->href);
+                for (j = 0; j < l->num_pans; j++)
+                    fprintf(fp, " %d", l->an[j]);
+                fprintf(fp, "\n");
+            }
+
+    fclose(fp);
+
+    return mo_succeed;
 }
 
-static mo_status mo_write_pan (int id, char *title, char *author, char *text)
+static mo_status mo_write_pan(int id, char *title, char *author, char *text)
 {
-  char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
-  char filename[500];
-  FILE *fp;
-  time_t foo = time (NULL);
-  char *ts = ctime (&foo);
-  
-  ts[strlen(ts)-1] = '\0';
+    char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
+    char filename[500];
+    FILE *fp;
+    time_t foo = time(NULL);
+    char *ts = ctime(&foo);
 
-  ensure_pan_directory_exists ();
- 
-  /* Write the new annotation to its appropriate file. */
-  sprintf (filename, "%s/%s/%s%d.html", home, default_directory,
-           PAN_ANNOTATION_PREFIX, id);
+    ts[strlen(ts) - 1] = '\0';
 
-  fp = fopen (filename, "w");
-  if (!fp)
-    return mo_fail;
+    ensure_pan_directory_exists();
 
-  fprintf (fp, "%s\n", NCSA_ANNOTATION_FORMAT_ONE);
-  fprintf (fp, "<title>%s</title>\n", title);
-  fprintf (fp, "<h1>%s</h1>\n", title);
-  fprintf (fp, "<address>%s</address>\n", author);
-  foo = time (NULL);
-  fprintf (fp, "<address>%s</address>\n", ts);
-  fprintf (fp, "______________________________________\n");
-  fprintf (fp, "<pre>\n");
-  fprintf (fp, "%s", text);
+    /* Write the new annotation to its appropriate file. */
+    sprintf(filename, "%s/%s/%s%d.html", home, default_directory, PAN_ANNOTATION_PREFIX, id);
 
-  fclose (fp);
+    fp = fopen(filename, "w");
+    if (!fp)
+        return mo_fail;
 
-  return mo_succeed;
+    fprintf(fp, "%s\n", NCSA_ANNOTATION_FORMAT_ONE);
+    fprintf(fp, "<title>%s</title>\n", title);
+    fprintf(fp, "<h1>%s</h1>\n", title);
+    fprintf(fp, "<address>%s</address>\n", author);
+    foo = time(NULL);
+    fprintf(fp, "<address>%s</address>\n", ts);
+    fprintf(fp, "______________________________________\n");
+    fprintf(fp, "<pre>\n");
+    fprintf(fp, "%s", text);
+
+    fclose(fp);
+
+    return mo_succeed;
 }
 
 /* We're making a new annotation to a url.  Pass in the title,
    author, and text of the annotation. */
-mo_status mo_new_pan (char *url, char *title, char *author, char *text)
+mo_status mo_new_pan(char *url, char *title, char *author, char *text)
 {
-  entry *l = fetch_entry (url);
-  int id = ++max_pan_id;
+    entry *l = fetch_entry(url);
+    int id = ++max_pan_id;
 
-  if (!title || !*title)
-    title = strdup ("Annotation with no title");
-  if (!author || !*author)
-    author = strdup ("No author name");
+    if (!title || !*title)
+        title = strdup("Annotation with no title");
+    if (!author || !*author)
+        author = strdup("No author name");
 
-  /* Create a new entry if we have to. */
-  if (!l)
-    l = new_entry (hash_url (url), url);
+    /* Create a new entry if we have to. */
+    if (!l)
+        l = new_entry(hash_url(url), url);
 
-  /* Register the new annotation id with the entry. */
-  add_an_to_entry (l, id);
+    /* Register the new annotation id with the entry. */
+    add_an_to_entry(l, id);
 
-  mo_write_pan (id, title, author, text);
+    mo_write_pan(id, title, author, text);
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
 /* We're just outright deleting an annotation. */
-mo_status mo_delete_pan (int id)
+mo_status mo_delete_pan(int id)
 {
-  entry *l;
-  int place;
-  char filename[500]/*, *cmd*/;
-  char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
+    entry *l;
+    int place;
+    char filename[500] /*, *cmd */ ;
+    char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
 
-  place = locate_id (id, &l);
+    place = locate_id(id, &l);
 
-  if (!l)
-    /* Weird -- no URL associated with the edited annotation. */
-    return mo_fail;
-  remove_an_from_entry (l, id);
+    if (!l)
+        /* Weird -- no URL associated with the edited annotation. */
+        return mo_fail;
+    remove_an_from_entry(l, id);
 
-  /* Remove the annotation itself. */
-  sprintf (filename, "%s/%s/%s%d.html", home, default_directory,
-           PAN_ANNOTATION_PREFIX, id);
+    /* Remove the annotation itself. */
+    sprintf(filename, "%s/%s/%s%d.html", home, default_directory, PAN_ANNOTATION_PREFIX, id);
 /*
   cmd = (char *)malloc ((strlen (filename) + 32) * sizeof (char));
   sprintf (cmd, "/bin/rm -f %s &", filename);
   system (cmd);
   free (cmd);
 */
-  unlink(filename); 
+    unlink(filename);
 
 #ifdef HAVE_AUDIO_ANNOTATIONS
 #if defined(__sgi)
-  /* Remove a possible audio annotation. */
-  sprintf (filename, "%s/%s/%s%d.aiff", home, default_directory,
-           PAN_ANNOTATION_PREFIX, id);
+    /* Remove a possible audio annotation. */
+    sprintf(filename, "%s/%s/%s%d.aiff", home, default_directory, PAN_ANNOTATION_PREFIX, id);
 /*
   cmd = (char *)malloc ((strlen (filename) + 32) * sizeof (char));
   sprintf (cmd, "/bin/rm -f %s &", filename);
   system (cmd);
   free (cmd);
 */
-  unlink(filename); 
- 
-#else /* sun or HP, probably */
-  /* Remove a possible audio annotation. */
-  sprintf (filename, "%s/%s/%s%d.au", home, default_directory,
-           PAN_ANNOTATION_PREFIX, id);
-/*
-  cmd = (char *)malloc ((strlen (filename) + 32) * sizeof (char));
-  sprintf (cmd, "/bin/rm -f %s &", filename);
-  system (cmd);
-  free (cmd);
-*/
-  unlink(filename); 
-#endif
-#endif /* HAVE_AUDIO_ANNOTATIONS */
+    unlink(filename);
 
-  return mo_succeed;
+#else                           /* sun or HP, probably */
+    /* Remove a possible audio annotation. */
+    sprintf(filename, "%s/%s/%s%d.au", home, default_directory, PAN_ANNOTATION_PREFIX, id);
+/*
+  cmd = (char *)malloc ((strlen (filename) + 32) * sizeof (char));
+  sprintf (cmd, "/bin/rm -f %s &", filename);
+  system (cmd);
+  free (cmd);
+*/
+    unlink(filename);
+#endif
+#endif                          /* HAVE_AUDIO_ANNOTATIONS */
+
+    return mo_succeed;
 }
 
 /* We're modifying an existing pan.  Pass in the id,
    the title, author, and text.
    Check for null text -- NOT AT THE MOMENT */
-mo_status mo_modify_pan (int id, char *title, char *author, 
-                         char *text)
+mo_status mo_modify_pan(int id, char *title, char *author, char *text)
 {
-  if (!title || !*title)
-    title = strdup ("Annotation with no title");
-  if (!author || !*author)
-    author = strdup ("No author name");
+    if (!title || !*title)
+        title = strdup("Annotation with no title");
+    if (!author || !*author)
+        author = strdup("No author name");
 
-  mo_write_pan (id, title, author, text);
-  return mo_succeed;
+    mo_write_pan(id, title, author, text);
+    return mo_succeed;
 }
 
 /* s1 is the existing string (or NULL for a new string)
    s2 is the string to append
    (s1 is assumed free'able, s2 not) */
-static char *smart_append (char *s1, char *s2)
+static char *smart_append(char *s1, char *s2)
 {
-  if (!s1)
-    return strdup (s2);
-  else
-    {
-      char *foo = malloc (strlen (s1) + strlen (s2) + 8);
-      strcpy (foo, s1);
-      strcat (foo, s2);
-      free (s1);
-      return foo;
+    if (!s1)
+        return strdup(s2);
+    else {
+        char *foo = malloc(strlen(s1) + strlen(s2) + 8);
+        strcpy(foo, s1);
+        strcat(foo, s2);
+        free(s1);
+        return foo;
     }
 }
 
@@ -651,263 +622,239 @@ static char *smart_append (char *s1, char *s2)
    Return the resulting string.
    Example: 
      extract_meat ("<foo>barblegh</foo>", 5) returns "barblegh". */
-static char *extract_meat (char *s, int offset)
+static char *extract_meat(char *s, int offset)
 {
-  char *foo = s + offset;
-  char *bar = strdup (foo);
-  char *ptr = bar;
+    char *foo = s + offset;
+    char *bar = strdup(foo);
+    char *ptr = bar;
 
-  while (*bar != '\0' && *bar != '<')
-    bar++;
+    while (*bar != '\0' && *bar != '<')
+        bar++;
 
-  if (*bar == '<')
-    *bar = '\0';
-  
-  return ptr;
+    if (*bar == '<')
+        *bar = '\0';
+
+    return ptr;
 }
 
-char *mo_fetch_personal_annotations (char *url)
+char *mo_fetch_personal_annotations(char *url)
 {
-  entry *l = fetch_entry (url);
-  char *msg = NULL;
-  char line[MO_LINE_LENGTH];
-  char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
-  int i, count = 0;
-  
-  if (!l || !l->num_pans)
-    {
-      return NULL;
+    entry *l = fetch_entry(url);
+    char *msg = NULL;
+    char line[MO_LINE_LENGTH];
+    char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
+    int i, count = 0;
+
+    if (!l || !l->num_pans) {
+        return NULL;
     }
 
-  /* OK, now we've got the entry.  Basically, we step through
-     and append all anotations for the given url together
+    /* OK, now we've got the entry.  Basically, we step through
+       and append all anotations for the given url together
      */
-  sprintf (line, "Private-Annotation: %d\r\n", l->num_pans);
-  msg = smart_append (msg, line);
+    sprintf(line, "Private-Annotation: %d\r\n", l->num_pans);
+    msg = smart_append(msg, line);
 
-  for (i = 0; i < l->num_pans; i++)
-    {
-      /* What's the annotation called? */
-      char filename[500];
-      FILE *fp;
+    for (i = 0; i < l->num_pans; i++) {
+        /* What's the annotation called? */
+        char filename[500];
+        FILE *fp;
 
-      /* Do we have to assume we're opening a file with
-         suffix .html??? */
-      sprintf (filename, "%s/%s/%s%d.html", home, default_directory,
-               PAN_ANNOTATION_PREFIX, l->an[i]);
+        /* Do we have to assume we're opening a file with
+           suffix .html??? */
+        sprintf(filename, "%s/%s/%s%d.html", home, default_directory, PAN_ANNOTATION_PREFIX, l->an[i]);
 
-      /* This whole routine assumes there are no NULLs in the file. */
-      fp = fopen (filename, "r");
-      if (fp)
-	{
-	  char* an_anno = NULL;
-	  while (fgets (line, MO_LINE_LENGTH, fp)) {
-	    an_anno = smart_append (an_anno, line);
-	  }
-	  sprintf (line, "Content-Length: %d\r\n", strlen(an_anno));
-	  msg = smart_append (msg, line);
-	  msg = smart_append (msg, an_anno);
-	  if (an_anno)
-	    free(an_anno);
-	}
-          
-      fclose (fp);
+        /* This whole routine assumes there are no NULLs in the file. */
+        fp = fopen(filename, "r");
+        if (fp) {
+            char *an_anno = NULL;
+            while (fgets(line, MO_LINE_LENGTH, fp)) {
+                an_anno = smart_append(an_anno, line);
+            }
+            sprintf(line, "Content-Length: %d\r\n", strlen(an_anno));
+            msg = smart_append(msg, line);
+            msg = smart_append(msg, an_anno);
+            if (an_anno)
+                free(an_anno);
+        }
+
+        fclose(fp);
     }
 
-  return msg;
+    return msg;
 }
 
 /* For the given url, fetch an HTML-format hyperlink table
    to be appended to the document text. */
-char *mo_fetch_pan_links (char *url, int on_top)
+char *mo_fetch_pan_links(char *url, int on_top)
 {
-  entry *l = fetch_entry (url);
-  char *msg = NULL;
-  char line[MO_LINE_LENGTH];
-  char *status;
-  char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
-  int i, count = 0;
-  
-  if (!l)
-    {
-      return NULL;
+    entry *l = fetch_entry(url);
+    char *msg = NULL;
+    char line[MO_LINE_LENGTH];
+    char *status;
+    char *default_directory = get_pref_string(ePRIVATE_ANNOTATION_DIRECTORY);
+    int i, count = 0;
+
+    if (!l) {
+        return NULL;
     }
-  if (!l->num_pans)
-    {
-      return NULL;
+    if (!l->num_pans) {
+        return NULL;
     }
 
-  /* OK, now we've got the entry.  Basically, we step through
-     the available annotations and manufacture links:
+    /* OK, now we've got the entry.  Basically, we step through
+       the available annotations and manufacture links:
 
-     <h2>Personal Annotations</h2>
-     <ul>
-     <li> Title, Date
-     <li> Title, Date
-     </ul>
+       <h2>Personal Annotations</h2>
+       <ul>
+       <li> Title, Date
+       <li> Title, Date
+       </ul>
      */
 
-  msg = smart_append (msg, "<h2>Personal Annotations</h2>\n<ul>\n");
-  
-  for (i = 0; i < l->num_pans; i++)
-    {
-      /* What's the annotation called? */
-      char filename[500];
-      FILE *fp;
+    msg = smart_append(msg, "<h2>Personal Annotations</h2>\n<ul>\n");
 
-      /* Do we have to assume we're opening a file with
-         suffix .html??? */
-      sprintf (filename, "%s/%s/%s%d.html", home, default_directory,
-               PAN_ANNOTATION_PREFIX, l->an[i]);
+    for (i = 0; i < l->num_pans; i++) {
+        /* What's the annotation called? */
+        char filename[500];
+        FILE *fp;
 
-      fp = fopen (filename, "r");
-      if (fp)
-        {
-          status = fgets (line, MO_LINE_LENGTH, fp);
-          if (status && *line)
-            {
-              /* See if it's our format. */
-              if (!strncmp (line, NCSA_ANNOTATION_FORMAT_ONE, 
-                            strlen (NCSA_ANNOTATION_FORMAT_ONE)))
-                {
-                  char chunk[500];
-                  
-                  count++;
-                  
-                  /* Second line is the title. */
-                  status = fgets (line, MO_LINE_LENGTH, fp);
-                  
-                  sprintf (chunk, "<li> <a href=\"file://%s%s\">%s</a>  ", 
-                           "localhost", filename, extract_meat (line, 7));
-                  msg = smart_append (msg, chunk);
+        /* Do we have to assume we're opening a file with
+           suffix .html??? */
+        sprintf(filename, "%s/%s/%s%d.html", home, default_directory, PAN_ANNOTATION_PREFIX, l->an[i]);
 
-                  /* Third line is skipped. */
-                  status = fgets (line, MO_LINE_LENGTH, fp);
+        fp = fopen(filename, "r");
+        if (fp) {
+            status = fgets(line, MO_LINE_LENGTH, fp);
+            if (status && *line) {
+                /* See if it's our format. */
+                if (!strncmp(line, NCSA_ANNOTATION_FORMAT_ONE, strlen(NCSA_ANNOTATION_FORMAT_ONE))) {
+                    char chunk[500];
 
-                  /* Fourth line is the author; skipped. */
-                  status = fgets (line, MO_LINE_LENGTH, fp);
+                    count++;
 
-                  /* Fifth line is the date. */
-                  status = fgets (line, MO_LINE_LENGTH, fp);
-                  sprintf (chunk, "(%s)\n", extract_meat (line, 9));
-                  msg = smart_append (msg, chunk);
+                    /* Second line is the title. */
+                    status = fgets(line, MO_LINE_LENGTH, fp);
 
-                  /* That's it. */
+                    sprintf(chunk,
+                            "<li> <a href=\"file://%s%s\">%s</a>  ", "localhost", filename, extract_meat(line, 7));
+                    msg = smart_append(msg, chunk);
+
+                    /* Third line is skipped. */
+                    status = fgets(line, MO_LINE_LENGTH, fp);
+
+                    /* Fourth line is the author; skipped. */
+                    status = fgets(line, MO_LINE_LENGTH, fp);
+
+                    /* Fifth line is the date. */
+                    status = fgets(line, MO_LINE_LENGTH, fp);
+                    sprintf(chunk, "(%s)\n", extract_meat(line, 9));
+                    msg = smart_append(msg, chunk);
+
+                    /* That's it. */
                 }
             }
-          
-          fclose (fp);
+
+            fclose(fp);
         }
     }
 
-  /* If we made it all this way and it turns out we don't actually
-     have anything yet, then punt. */
-  if (!count)
-    {
-      free (msg);
-      return NULL;
+    /* If we made it all this way and it turns out we don't actually
+       have anything yet, then punt. */
+    if (!count) {
+        free(msg);
+        return NULL;
     }
 
-  msg = smart_append (msg, "</ul>\n");
+    msg = smart_append(msg, "</ul>\n");
 
-  return msg;
+    return msg;
 }
 
-mo_status mo_grok_pan_pieces (char *url, char *t,
-                              char **title, char **author, char **text,
-                              int *id, char **fn)
+mo_status mo_grok_pan_pieces(char *url, char *t, char **title, char **author, char **text, int *id, char **fn)
 {
-  char line[MO_LINE_LENGTH];
-  char *status;
+    char line[MO_LINE_LENGTH];
+    char *status;
 /*  char *default_directory = Rdata.private_annotation_directory;*/
-  FILE *fp;
-  char *filename;
+    FILE *fp;
+    char *filename;
 
-  /* We're now including the hostname in the URL.  Jump past it. */
-  filename = strstr (url, "//");
-  if (!filename)
-    return mo_fail;
-  filename = strstr (filename + 2, "/");
-  if (!filename)
-    return mo_fail;
+    /* We're now including the hostname in the URL.  Jump past it. */
+    filename = strstr(url, "//");
+    if (!filename)
+        return mo_fail;
+    filename = strstr(filename + 2, "/");
+    if (!filename)
+        return mo_fail;
 
-  *fn = filename;
-  
-  fp = fopen (filename, "r");
-  if (fp)
-    {
-      status = fgets (line, MO_LINE_LENGTH, fp);
-      if (status && *line)
-        {
-          /* See if it's our format. */
-          if (!strncmp (line, NCSA_ANNOTATION_FORMAT_ONE, 
-                        strlen (NCSA_ANNOTATION_FORMAT_ONE)))
-            {
-              /*char chunk[500];*/
-              
-              /* Second line is the title. */
-              status = fgets (line, MO_LINE_LENGTH, fp);
-              *title = extract_meat (line, 7);
-              
-              /* Third line is skipped. */
-              status = fgets (line, MO_LINE_LENGTH, fp);
-              
-              /* Fourth line is the author. */
-              status = fgets (line, MO_LINE_LENGTH, fp);
-              *author = extract_meat (line, 9);
-              
-              /* Fifth line is the date. */
-              status = fgets (line, MO_LINE_LENGTH, fp);
-              
-              /* Sixth line is separator. */
-              status = fgets (line, MO_LINE_LENGTH, fp);
-              /* Sixth line is pre. */
-              status = fgets (line, MO_LINE_LENGTH, fp);
-              
-              /* Remaining lines are the text. */
-              *text = NULL;
-              
-              while (1)
-                {
-                  status = fgets (line, MO_LINE_LENGTH, fp);
-                  if (status && *line)
-                    *text = smart_append (*text, line);
-                  else
-                    goto got_it;
+    *fn = filename;
+
+    fp = fopen(filename, "r");
+    if (fp) {
+        status = fgets(line, MO_LINE_LENGTH, fp);
+        if (status && *line) {
+            /* See if it's our format. */
+            if (!strncmp(line, NCSA_ANNOTATION_FORMAT_ONE, strlen(NCSA_ANNOTATION_FORMAT_ONE))) {
+                /*char chunk[500]; */
+
+                /* Second line is the title. */
+                status = fgets(line, MO_LINE_LENGTH, fp);
+                *title = extract_meat(line, 7);
+
+                /* Third line is skipped. */
+                status = fgets(line, MO_LINE_LENGTH, fp);
+
+                /* Fourth line is the author. */
+                status = fgets(line, MO_LINE_LENGTH, fp);
+                *author = extract_meat(line, 9);
+
+                /* Fifth line is the date. */
+                status = fgets(line, MO_LINE_LENGTH, fp);
+
+                /* Sixth line is separator. */
+                status = fgets(line, MO_LINE_LENGTH, fp);
+                /* Sixth line is pre. */
+                status = fgets(line, MO_LINE_LENGTH, fp);
+
+                /* Remaining lines are the text. */
+                *text = NULL;
+
+                while (1) {
+                    status = fgets(line, MO_LINE_LENGTH, fp);
+                    if (status && *line)
+                        *text = smart_append(*text, line);
+                    else
+                        goto got_it;
                 }
-              
-            got_it:
-              /* That's it. */
-              ;
+
+              got_it:
+                /* That's it. */
+                ;
             }
         }
-      
-      fclose (fp);
-    }
-  else
-    {
-      return mo_fail;
+
+        fclose(fp);
+    } else {
+        return mo_fail;
     }
 
-  {
-    char *start = strstr (filename, "PAN-") + 4;
-    char *foo = strdup (start);
-    char *keepit = foo;
-    while (*foo != '\0' && *foo != '.')
-      foo++;
-    if (*foo == '.')
-      *foo = '\0';
-    *id = atoi (keepit);
-    free (keepit);
-  }
-  
-  return mo_succeed;
+    {
+        char *start = strstr(filename, "PAN-") + 4;
+        char *foo = strdup(start);
+        char *keepit = foo;
+        while (*foo != '\0' && *foo != '.')
+            foo++;
+        if (*foo == '.')
+            *foo = '\0';
+        *id = atoi(keepit);
+        free(keepit);
+    }
+
+    return mo_succeed;
 }
 
 /* Return the ID of the next pan to be issued. */
-int mo_next_pan_id (void)
+int mo_next_pan_id(void)
 {
-  return max_pan_id + 1;
+    return max_pan_id + 1;
 }
-
-

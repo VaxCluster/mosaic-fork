@@ -56,211 +56,183 @@
 
 #include "mosaic.h"
 
-static char *yap_msg =
-  "Type your message in the editing area below and then press\n\
+static char *yap_msg = "Type your message in the editing area below and then press\n\
 the Send button at the bottom of the window.  Your message\n\
 will be mailed to NCSA Mosaic technical support.\n\n\
 Thanks in advance for your comments and feedback.";
 
 /* ----------------------- mo_post_whine_window ------------------------ */
 
-static XmxCallback (whine_win_cb)
+static XmxCallback(whine_win_cb)
 {
-  mo_window *win = mo_fetch_window_by_id (XmxExtractUniqid ((int)client_data));
-  char *msg, subj[1024];
+    mo_window *win = mo_fetch_window_by_id(XmxExtractUniqid((int)client_data));
+    char *msg, subj[1024];
 
-  switch (XmxExtractToken ((int)client_data))
-    {
+    switch (XmxExtractToken((int)client_data)) {
     case 0:
-      XtUnmanageChild (win->whine_win);
+        XtUnmanageChild(win->whine_win);
 
-      msg = XmxTextGetString (win->whine_text);
-      if (!msg)
-        return;
-      if (msg[0] == '\0')
-        return;
+        msg = XmxTextGetString(win->whine_text);
+        if (!msg)
+            return;
+        if (msg[0] == '\0')
+            return;
 
-      sprintf (subj, "User Feedback -- NCSA Mosaic %s on %s.",
-               MO_VERSION_STRING, MO_MACHINE_TYPE);
-      
-      mo_send_mail_message (msg, MO_DEVELOPER_ADDRESS, subj, "text/plain",
-                            NULL);
+        sprintf(subj, "User Feedback -- NCSA Mosaic %s on %s.", MO_VERSION_STRING, MO_MACHINE_TYPE);
 
-      free (msg);
+        mo_send_mail_message(msg, MO_DEVELOPER_ADDRESS, subj, "text/plain", NULL);
 
-      break;
+        free(msg);
+
+        break;
     case 1:
-      XtUnmanageChild (win->whine_win);
-      /* Do nothing. */
-      break;
+        XtUnmanageChild(win->whine_win);
+        /* Do nothing. */
+        break;
     case 2:
-      mo_open_another_window
-        (win, 
-         mo_assemble_help_url ("help-on-whining.html"),
-         NULL, NULL);
-      break;
+        mo_open_another_window(win, mo_assemble_help_url("help-on-whining.html"), NULL, NULL);
+        break;
     }
 
-  return;
+    return;
 }
 
-mo_status mo_post_whine_win (mo_window *win)
+mo_status mo_post_whine_win(mo_window *win)
 {
-  if (!win->whine_win)
-    {
-      Widget dialog_frame;
-      Widget dialog_sep, buttons_form;
-      Widget whine_form, yap_label;
-      
-      /* Create it for the first time. */
-      XmxSetUniqid (win->id);
-      win->whine_win = XmxMakeFormDialog 
-        (win->base, "NCSA Mosaic: Mail Tech Support");
-      dialog_frame = XmxMakeFrame (win->whine_win, XmxShadowOut);
+    if (!win->whine_win) {
+        Widget dialog_frame;
+        Widget dialog_sep, buttons_form;
+        Widget whine_form, yap_label;
 
-      /* Constraints for base. */
-      XmxSetConstraints 
-        (dialog_frame, XmATTACH_FORM, XmATTACH_FORM, 
-         XmATTACH_FORM, XmATTACH_FORM, NULL, NULL, NULL, NULL);
-      
-      /* Main form. */
-      whine_form = XmxMakeForm (dialog_frame);
-      
-      yap_label = XmxMakeLabel (whine_form, yap_msg);
+        /* Create it for the first time. */
+        XmxSetUniqid(win->id);
+        win->whine_win = XmxMakeFormDialog(win->base, "NCSA Mosaic: Mail Tech Support");
+        dialog_frame = XmxMakeFrame(win->whine_win, XmxShadowOut);
 
-      XmxSetArg (XmNscrolledWindowMarginWidth, 10);
-      XmxSetArg (XmNscrolledWindowMarginHeight, 10);
-      XmxSetArg (XmNcursorPositionVisible, True);
-      XmxSetArg (XmNeditable, True);
-      XmxSetArg (XmNeditMode, XmMULTI_LINE_EDIT);
-      XmxSetArg (XmNrows, 15);
-      XmxSetArg (XmNcolumns, 80);
-      /* XmxSetArg (XmNwordWrap, True); */
-      /* XmxSetArg (XmNscrollHorizontal, False); */
-      win->whine_text = XmxMakeScrolledText (whine_form);
-      
-      dialog_sep = XmxMakeHorizontalSeparator (whine_form);
-      
-      buttons_form = XmxMakeFormAndThreeButtonsSqueezed
-        (whine_form, whine_win_cb, "Send", "Dismiss", "Help...", 0, 1, 2);
+        /* Constraints for base. */
+        XmxSetConstraints
+            (dialog_frame, XmATTACH_FORM, XmATTACH_FORM, XmATTACH_FORM, XmATTACH_FORM, NULL, NULL, NULL, NULL);
 
-      /* Constraints for whine_form. */
-      XmxSetOffsets (yap_label, 8, 0, 0, 0);
-      XmxSetConstraints
-        (yap_label, XmATTACH_FORM, XmATTACH_NONE, XmATTACH_FORM, XmATTACH_FORM,
-         NULL, NULL, NULL, NULL);
+        /* Main form. */
+        whine_form = XmxMakeForm(dialog_frame);
 
-      XmxSetOffsets (XtParent (win->whine_text), 3, 0, 3, 3);
-      XmxSetConstraints
-        (XtParent (win->whine_text), XmATTACH_WIDGET, XmATTACH_WIDGET, 
-         XmATTACH_FORM, XmATTACH_FORM,
-         yap_label, dialog_sep, NULL, NULL);
+        yap_label = XmxMakeLabel(whine_form, yap_msg);
 
-      XmxSetArg (XmNtopOffset, 10);
-      XmxSetConstraints 
-        (dialog_sep, XmATTACH_NONE, XmATTACH_WIDGET, XmATTACH_FORM, 
-         XmATTACH_FORM,
-         NULL, buttons_form, NULL, NULL);
-      XmxSetConstraints 
-        (buttons_form, XmATTACH_NONE, XmATTACH_FORM, XmATTACH_FORM, XmATTACH_FORM,
-         NULL, NULL, NULL, NULL);
-      XmxTextSetString (win->whine_text, "");
+        XmxSetArg(XmNscrolledWindowMarginWidth, 10);
+        XmxSetArg(XmNscrolledWindowMarginHeight, 10);
+        XmxSetArg(XmNcursorPositionVisible, True);
+        XmxSetArg(XmNeditable, True);
+        XmxSetArg(XmNeditMode, XmMULTI_LINE_EDIT);
+        XmxSetArg(XmNrows, 15);
+        XmxSetArg(XmNcolumns, 80);
+        /* XmxSetArg (XmNwordWrap, True); */
+        /* XmxSetArg (XmNscrollHorizontal, False); */
+        win->whine_text = XmxMakeScrolledText(whine_form);
+
+        dialog_sep = XmxMakeHorizontalSeparator(whine_form);
+
+        buttons_form = XmxMakeFormAndThreeButtonsSqueezed
+            (whine_form, whine_win_cb, "Send", "Dismiss", "Help...", 0, 1, 2);
+
+        /* Constraints for whine_form. */
+        XmxSetOffsets(yap_label, 8, 0, 0, 0);
+        XmxSetConstraints
+            (yap_label, XmATTACH_FORM, XmATTACH_NONE, XmATTACH_FORM, XmATTACH_FORM, NULL, NULL, NULL, NULL);
+
+        XmxSetOffsets(XtParent(win->whine_text), 3, 0, 3, 3);
+        XmxSetConstraints
+            (XtParent(win->whine_text), XmATTACH_WIDGET, XmATTACH_WIDGET,
+             XmATTACH_FORM, XmATTACH_FORM, yap_label, dialog_sep, NULL, NULL);
+
+        XmxSetArg(XmNtopOffset, 10);
+        XmxSetConstraints
+            (dialog_sep, XmATTACH_NONE, XmATTACH_WIDGET, XmATTACH_FORM, XmATTACH_FORM, NULL, buttons_form, NULL, NULL);
+        XmxSetConstraints
+            (buttons_form, XmATTACH_NONE, XmATTACH_FORM, XmATTACH_FORM, XmATTACH_FORM, NULL, NULL, NULL, NULL);
+        XmxTextSetString(win->whine_text, "");
     }
-  
-  XmxManageRemanage (win->whine_win);
-  
-  return mo_succeed;
+
+    XmxManageRemanage(win->whine_win);
+
+    return mo_succeed;
 }
 
 /* ------------------------------------------------------------------------ */
 
 static FILE *_fp = NULL;
 
-FILE *mo_start_sending_mail_message (char *to, char *subj, 
-                                     char *content_type, char *url)
+FILE *mo_start_sending_mail_message(char *to, char *subj, char *content_type, char *url)
 {
-  char cmd[2048];
-  char *tmp;
+    char cmd[2048];
+    char *tmp;
 
-  if (!to)
-    return NULL;
-  
+    if (!to)
+        return NULL;
+
 #ifdef OLD
-  if (Rdata.mail_filter_command)
-    {
-      sprintf (cmd, "%s | %s -t", Rdata.mail_filter_command, 
-               Rdata.sendmail_command);
-    }
-  else
-    {
-      sprintf (cmd, "%s -t", Rdata.sendmail_command);
+    if (Rdata.mail_filter_command) {
+        sprintf(cmd, "%s | %s -t", Rdata.mail_filter_command, Rdata.sendmail_command);
+    } else {
+        sprintf(cmd, "%s -t", Rdata.sendmail_command);
     }
 #else
-  /* Try listing address on command line. */
-  for (tmp = to; *tmp; tmp++)
-    if (*tmp == ',')
-      *tmp = ' ';
+    /* Try listing address on command line. */
+    for (tmp = to; *tmp; tmp++)
+        if (*tmp == ',')
+            *tmp = ' ';
 
-  if (Rdata.mail_filter_command && content_type &&
-      strcmp (content_type, "application/postscript"))
-    {
-      sprintf (cmd, "%s | %s %s", Rdata.mail_filter_command, 
-               Rdata.sendmail_command, to);
-    }
-  else
-    {
-      sprintf (cmd, "%s %s", Rdata.sendmail_command, to);
+    if (Rdata.mail_filter_command && content_type && strcmp(content_type, "application/postscript")) {
+        sprintf(cmd, "%s | %s %s", Rdata.mail_filter_command, Rdata.sendmail_command, to);
+    } else {
+        sprintf(cmd, "%s %s", Rdata.sendmail_command, to);
     }
 #endif
 
-  if ((_fp = popen (cmd, "w")) == NULL)
-    return NULL;
+    if ((_fp = popen(cmd, "w")) == NULL)
+        return NULL;
 
 #ifdef OLD
-  fprintf (_fp, "To: %s\n", to);
+    fprintf(_fp, "To: %s\n", to);
 #endif
-  fprintf (_fp, "Subject: %s\n", subj);
-  fprintf (_fp, "Content-Type: %s\n", content_type);
-  fprintf (_fp, "Mime-Version: 1.0\n");
-  fprintf (_fp, "X-Mailer: NCSA Mosaic %s on %s\n", 
-           MO_VERSION_STRING, MO_MACHINE_TYPE);
-  if (url)
-    fprintf (_fp, "X-URL: %s\n", url);
+    fprintf(_fp, "Subject: %s\n", subj);
+    fprintf(_fp, "Content-Type: %s\n", content_type);
+    fprintf(_fp, "Mime-Version: 1.0\n");
+    fprintf(_fp, "X-Mailer: NCSA Mosaic %s on %s\n", MO_VERSION_STRING, MO_MACHINE_TYPE);
+    if (url)
+        fprintf(_fp, "X-URL: %s\n", url);
 
-  fprintf (_fp, "\n");
-  
-  /* Stick in BASE tag as appropriate. */
-  if (url && content_type && 
-      strcmp (content_type, "text/x-html") == 0)
-    fprintf (_fp, "<base href=\"%s\">\n", url);
+    fprintf(_fp, "\n");
 
-  return _fp;
+    /* Stick in BASE tag as appropriate. */
+    if (url && content_type && strcmp(content_type, "text/x-html") == 0)
+        fprintf(_fp, "<base href=\"%s\">\n", url);
+
+    return _fp;
 }
 
-mo_status mo_finish_sending_mail_message (void)
+mo_status mo_finish_sending_mail_message(void)
 {
-  if (_fp)
-    pclose (_fp);
+    if (_fp)
+        pclose(_fp);
 
-  _fp = NULL;
+    _fp = NULL;
 
-  return mo_succeed;
+    return mo_succeed;
 }
 
 /* ------------------------------------------------------------------------ */
 
-mo_status mo_send_mail_message (char *text, char *to, char *subj, 
-                                char *content_type, char *url)
+mo_status mo_send_mail_message(char *text, char *to, char *subj, char *content_type, char *url)
 {
-  FILE *fp;
+    FILE *fp;
 
-  fp = mo_start_sending_mail_message (to, subj, content_type, url);
-  if (!fp)
-    return mo_fail;
-  
-  fputs (text, fp);
+    fp = mo_start_sending_mail_message(to, subj, content_type, url);
+    if (!fp)
+        return mo_fail;
 
-  mo_finish_sending_mail_message ();
+    fputs(text, fp);
 
-  return mo_succeed;
+    mo_finish_sending_mail_message();
+
+    return mo_succeed;
 }

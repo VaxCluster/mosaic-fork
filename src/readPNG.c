@@ -78,18 +78,18 @@
 #define GREEN_HINT 0x20, 0xD0, 0x20
 #define BLUE_HINT  0x20, 0x20, 0xD0
 
-static int color_exists(XColor *colrs, int count, unsigned char r, unsigned char g, unsigned char b) {
+static int color_exists(XColor *colrs, int count, unsigned char r, unsigned char g, unsigned char b)
+{
     for (int i = 0; i < count; i++) {
-        if ((colrs[i].red >> 8) == r &&
-            (colrs[i].green >> 8) == g &&
-            (colrs[i].blue >> 8) == b) {
+        if ((colrs[i].red >> 8) == r && (colrs[i].green >> 8) == g && (colrs[i].blue >> 8) == b) {
             return 1;
         }
     }
     return 0;
 }
 
-static void reserve_color(XColor *colrs, int *num_colors, unsigned char r, unsigned char g, unsigned char b) {
+static void reserve_color(XColor *colrs, int *num_colors, unsigned char r, unsigned char g, unsigned char b)
+{
     if (*num_colors < 256 && !color_exists(colrs, *num_colors, r, g, b)) {
         colrs[*num_colors].red = r << 8;
         colrs[*num_colors].green = g << 8;
@@ -100,7 +100,8 @@ static void reserve_color(XColor *colrs, int *num_colors, unsigned char r, unsig
     }
 }
 
-static int closest_color(XColor *colrs, int num_colors, unsigned char r, unsigned char g, unsigned char b) {
+static int closest_color(XColor *colrs, int num_colors, unsigned char r, unsigned char g, unsigned char b)
+{
     int best = 0;
     long best_dist = LONG_MAX;
     for (int i = 0; i < num_colors; i++) {
@@ -116,11 +117,10 @@ static int closest_color(XColor *colrs, int num_colors, unsigned char r, unsigne
     return best;
 }
 
-static int find_or_add_color(XColor *colrs, int *num_colors, unsigned char r, unsigned char g, unsigned char b) {
+static int find_or_add_color(XColor *colrs, int *num_colors, unsigned char r, unsigned char g, unsigned char b)
+{
     for (int i = 0; i < *num_colors; i++) {
-        if ((colrs[i].red >> 8) == r &&
-            (colrs[i].green >> 8) == g &&
-            (colrs[i].blue >> 8) == b) {
+        if ((colrs[i].red >> 8) == r && (colrs[i].green >> 8) == g && (colrs[i].blue >> 8) == b) {
             return i;
         }
     }
@@ -137,7 +137,8 @@ static int find_or_add_color(XColor *colrs, int *num_colors, unsigned char r, un
     return closest_color(colrs, *num_colors, r, g, b);
 }
 
-unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs) {
+unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs)
+{
     png_structp png_ptr;
     png_infop info_ptr;
     png_bytep *row_pointers = NULL;
@@ -151,7 +152,8 @@ unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs) {
         return NULL;
 
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if (!png_ptr) return NULL;
+    if (!png_ptr)
+        return NULL;
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -161,7 +163,8 @@ unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs) {
 
     if (setjmp(png_jmpbuf(png_ptr))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        if (row_pointers) free(row_pointers);
+        if (row_pointers)
+            free(row_pointers);
         return NULL;
     }
 
@@ -186,7 +189,6 @@ unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs) {
         png_set_expand(png_ptr);
 #endif
     }
-
 #ifdef PNG_READ_tRNS_SUPPORTED
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
         png_set_tRNS_to_alpha(png_ptr);
@@ -203,7 +205,8 @@ unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs) {
     channels = png_get_channels(png_ptr, info_ptr);
 
     image_data = (png_bytep) malloc(rowbytes * (*height));
-    if (!image_data) return NULL;
+    if (!image_data)
+        return NULL;
 
     row_pointers = (png_bytep *) malloc(sizeof(png_bytep) * (*height));
     if (!row_pointers) {
@@ -224,7 +227,7 @@ unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs) {
     reserve_color(colrs, &num_colors, BLUE_HINT);
 
     // Output indexed pixmap
-    pixmap = (unsigned char *) malloc((*width) * (*height));
+    pixmap = (unsigned char *)malloc((*width) * (*height));
     if (!pixmap) {
         free(image_data);
         free(row_pointers);
