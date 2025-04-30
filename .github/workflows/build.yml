@@ -27,3 +27,9 @@ jobs:
       - name: Build Mosaic - macOS
         run: |
           make osx
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mosaic-macos
+          path: mosaic-build/mosaic
