@@ -3,3 +3,4 @@
 *.a
 src/Mosaic
 mosaic-build/mosaic
+proxy
