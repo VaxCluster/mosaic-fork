@@ -261,9 +261,12 @@ static XtResource resources[] = {
   { "docsDirectory", "DocsDirectory", XtRString, sizeof (char *),
       offset (docs_directory), XtRString, NULL },
 
+  /**
+   * Original location is /usr/local/lib/mosaic/documents.menu
+   */
   { "documentsMenuSpecfile", "DocumentsMenuSpecfile", XtRString, sizeof (char *),
       offset (documents_menu_specfile), XtRString, 
-      "/usr/local/lib/mosaic/documents.menu" },
+      "./documents.menu" },
 
   { "reloadReloadsImages", "ReloadReloadsImages", XtRBoolean, sizeof (Boolean),
       offset (reload_reloads_images), XtRString, "False" },
@@ -475,13 +478,19 @@ static XtResource resources[] = {
   { "useTextButtonBar", "UseTextButtonBar", XtRBoolean, sizeof (Boolean),
       offset (useTextButtonBar), XtRString, "True" },
 
+  /**
+   * Original location is /usr/local/lib/mosaic/proxy
+   */
   { "proxySpecfile", "ProxySpecfile", XtRString, sizeof (char *),
-      offset (proxy_specfile), XtRString, 
-      "/usr/local/lib/mosaic/proxy" },
+      offset (proxy_specfile), XtRString,
+      "./proxy" },
 
+  /**
+   * Original location is /usr/local/lib/mosaic/no_proxy
+   */
   { "noproxySpecfile", "NoproxySpecfile", XtRString, sizeof (char *),
       offset (noproxy_specfile), XtRString, 
-      "/usr/local/lib/mosaic/no_proxy" },
+      "./no_proxy" },
   
   { "useScreenGamma", "UseScreenGamma", XtRBoolean, sizeof (Boolean),
       offset (useScreenGamma), XtRString, "False" },
@@ -854,14 +863,3 @@ static String mono_resources[] = {
 
 #define __MOSAIC_XRESOURCES_H__
 #endif /* __MOSAIC_XRESOURCES_H__ */
-
-
-
-
-
-
-
-
-
-
-
