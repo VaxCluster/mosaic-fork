@@ -376,7 +376,7 @@ PUBLIC int HTLoadHTTP ARGS4 (
 
 	/* addr is always in URL form */
 
-	if (addr) {
+	if (addr && !using_proxy && !using_gateway) {
 		tmp=strdup(addr);
 		startPtr=strchr(tmp,'/');
 		if (startPtr) {
