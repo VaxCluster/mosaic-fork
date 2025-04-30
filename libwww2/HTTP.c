@@ -342,28 +342,24 @@ PUBLIC int HTLoadHTTP ARGS4 (
 	begin_ptr='\0';
       }
 
-      /* if reloading, send no-cache pragma to proxy servers. --swp */
-      /* original patch from Ari L. <luotonen@dxcern.cern.ch> */
-      if (reloading) {
-	sprintf(line, "Pragma: no-cache%c%c", CR, LF);
-	StrAllocCat(command, line);
-      }
+      /* If reloading, send no-cache pragma to proxy servers.
+       * Original patch from Ari L. <luotonen@dxcern.cern.ch>
+       *
+       * Also send it as a Cache-Control header for HTTP/1.1. (from LYNX)
+       */
+      if (reloading)
+	  StrAllocCat(command,
+		      "Pragma: no-cache\r\nCache-Control: no-cache\r\n");
 
-      /*This is just used for "not" sending this header on a proxy request*/
-      if (useKeepAlive) { 
-	sprintf(line, "Connection: keep-alive%c%c", CR, LF);
-	StrAllocCat(command, line);
+      /* This is just used for "not" sending this header on a proxy request */
+      if (useKeepAlive && !do_head) {
+	  StrAllocCat(command, "Connection: Keep-Alive\r\n");
+      } else if (do_head) {
+	  StrAllocCat(command, "Connection: close\r\n");
       }
-
       if (sendAgent) {
-	sprintf(line, "User-Agent: %s%c%c",agent[selectedAgent],CR,LF);
-/*
-	sprintf(line, "User-Agent:  %s/%s  libwww/%s%c%c",
-		HTAppName ? HTAppName : "unknown",
-		HTAppVersion ? HTAppVersion : "0.0",
-		HTLibraryVersion, CR, LF);
-*/
-	StrAllocCat(command, line);
+	  sprintf(line, "User-Agent: %s\r\n", agent[selectedAgent]);
+	  StrAllocCat(command, line);
       }
 
       if (sendReferer) {
@@ -380,7 +376,7 @@ PUBLIC int HTLoadHTTP ARGS4 (
 
 	/* addr is always in URL form */
 
-	if (addr && !using_proxy && !using_gateway) {
+	if (addr) {
 		tmp=strdup(addr);
 		startPtr=strchr(tmp,'/');
 		if (startPtr) {
@@ -1052,17 +1048,3 @@ PUBLIC int HTLoadHTTP ARGS4 (
 */
 
 PUBLIC HTProtocol HTTP = { "http", HTLoadHTTP, 0 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
