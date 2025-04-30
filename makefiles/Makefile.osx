@@ -176,7 +176,7 @@ PURIFY = purify
 QUANTIFY = quantify
 
 default: $(dtmdirs) libwww2 libXmx libhtmlw libnut src
-  mkdir -p mosaic-build
+	mkdir -p mosaic-build
 	cp src/Mosaic mosaic-build/mosaic
 	@echo \*\*\* Welcome to NCSA Mosaic. The Mosaic binary is in mosaic-build/mosaic.
 purifyd: $(dtmdirs) libwww2 libXmx libhtmlw libnut src-purifyd
