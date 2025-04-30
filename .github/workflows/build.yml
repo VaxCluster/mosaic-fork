@@ -1,0 +1,26 @@
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build_macos:
+    runs-on: macos-latest
+    concurrency:
+      group: ${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install libpng openmotif
+
+      - name: Build Mosaic - macOS
+        run: |
+          make osx
