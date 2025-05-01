@@ -14,9 +14,18 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            name: Apple Silicon
+            name: Apple Silicon - Clang
+            compiler: clang
+          - os: macos-latest
+            name: Apple Silicon - GCC
+            compiler: gcc-14
           - os: macos-13
-            name: Intel
+            name: Intel - Clang
+            compiler: clang
+          - os: macos-13
+            name: Intel - GCC
+            compiler: gcc-14
+
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.os }}-${{ github.ref }}
       cancel-in-progress: true
@@ -33,10 +42,10 @@ jobs:
 
       - name: Build Mosaic - macOS
         run: |
-          make osx
+          make osx CC=${{ matrix.compiler }}
 
       - name: Publish artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mosaic-${{ matrix.name }}
+          name: mosaic-${{ matrix.name }}-${{ matrix.compiler }}
           path: mosaic-build/mosaic
