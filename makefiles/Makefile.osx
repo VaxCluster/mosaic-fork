@@ -40,7 +40,7 @@ sysconfigflags = -O3 -std=c89 -pedantic -D_BSD -DMOTIF1_2 -DHAVE_ERRLIST -DUSE_S
 syslibs =
 
 #### X include file locations -- if your platform puts the X include
-xinc = -I/usr/X11/include -I /opt/homebrew/include
+xinc = -I/usr/X11/include -I /opt/homebrew/include -I/usr/local/include
 xlibs = -L/usr/X11/lib -lXm -lXmu -lXt -lXext -lSM -lICE -lXpm -lX11
 
 
