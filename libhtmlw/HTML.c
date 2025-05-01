@@ -656,7 +656,7 @@ int NoBodyColors(Widget w)
     return (1);
 }
 
-int InitBody(Widget w)
+void InitBody(Widget w)
 {
 
     HTMLWidget hw = (HTMLWidget) w;
@@ -689,7 +689,7 @@ int NoBodyImages(Widget w)
     return (1);
 }
 
-hw_do_bg(Widget w, char *bgname)
+void hw_do_bg(Widget w, char *bgname)
 {
 
     ImageInfo *pic_data;
@@ -740,7 +740,7 @@ hw_do_bg(Widget w, char *bgname)
     return;
 }
 
-hw_do_color(Widget w, char *att, char *cname)
+void hw_do_color(Widget w, char *att, char *cname)
 {
     int r, g, b;
     XColor ecol, col;

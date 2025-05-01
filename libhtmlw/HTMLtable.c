@@ -991,7 +991,7 @@ unsigned int x, y;
 
 }                               /* MakeTable() */
 
-TableDisplayField(hw, eptr, field, x, y, width, height)
+void TableDisplayField(hw, eptr, field, x, y, width, height)
 HTMLWidget hw;
 struct ele_rec *eptr;
 TableField *field;

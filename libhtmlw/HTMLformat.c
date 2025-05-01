@@ -2182,7 +2182,7 @@ unsigned int width;
     }
 }
 
-TablePlace(hw, mptr, x, y, width)
+void TablePlace(hw, mptr, x, y, width)
 HTMLWidget hw;
 struct mark_up **mptr;
 int *x, *y;

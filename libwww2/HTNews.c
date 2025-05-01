@@ -973,7 +973,7 @@ int NNTPgetarthdrs(char *art, char **ref, char **grp, char **subj, char **from)
             char ch = *p++ = HTGetCharacter();
             if (ch == (char)EOF) {
                 abort_socket(); /* End of file, close socket */
-                return;         /* End of file on response */
+                return HT_OK;        /* End of file on response */
             }
 
             if ((ch == LF) || (p == &line[LINE_LENGTH])) {
