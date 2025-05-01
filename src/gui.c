@@ -63,6 +63,7 @@
 #include "pixmaps.h"
 #include "libnut/system.h"
 #include "libwww2/HTAABrow.h"
+#include "safe-snprintf.h"
 
 struct Proxy *noproxy_list = NULL, *proxy_list = NULL, *ReadProxies();
 
@@ -625,10 +626,10 @@ char *mo_assemble_help_url(char *file)
 
     if (docs_directory[strlen(docs_directory) - 1] == '/') {
         /* Trailing slash in docs_directory spec. */
-        sprintf(tmp, "%s%s", docs_directory, file);
+        safe_snprintf(tmp, sizeof(tmp), "%s%s", docs_directory, file);
     } else {
         /* No trailing slash. */
-        sprintf(tmp, "%s/%s", docs_directory, file);
+        safe_snprintf(tmp, sizeof(tmp), "%s/%s", docs_directory, file);
     }
 
     return tmp;
@@ -3297,8 +3298,8 @@ static mo_window *mo_make_window(Widget parent, mo_window *parentw)
     Atom WM_DELETE_WINDOW;
     char buf[80];
 
-    sprintf(pre_title, "NCSA X Mosaic %s", MO_VERSION_STRING);
-    sprintf(buf, "%s: ", pre_title);
+    safe_snprintf(pre_title, sizeof(pre_title),"NCSA X Mosaic %s", MO_VERSION_STRING);
+    safe_snprintf(buf, sizeof(buf), "%s: ", pre_title);
     XmxSetArg(XmNtitle, (long)buf);
     XmxSetArg(XmNiconName, (long)"Mosaic");
     XmxSetArg(XmNallowShellResize, False);
@@ -3370,7 +3371,7 @@ static mo_window *mo_open_another_window_internal(mo_window *win)
     XmxSetArg(XmNdefaultPosition, False);
     if (get_pref_boolean(eAUTO_PLACE_WINDOWS)) {
         char geom[20];
-        sprintf(geom, "+%d+%d", x, y);
+        safe_snprintf(geom, sizeof(geom), "+%d+%d", x, y);
         XmxSetArg(XmNgeometry, (long)geom);
     }
     XmxSetArg(XmNwidth, width);
@@ -3714,7 +3715,7 @@ void setup_imagekill(void)
         return;
     }
 
-    sprintf(imageselect_file_pathname, "%s/%s", home, IMAGESELECT_FILENAME);
+    safe_snprintf(imageselect_file_pathname, sizeof(imageselect_file_pathname), "%s/%s", home, IMAGESELECT_FILENAME);
 
     free(home);
 
@@ -3978,7 +3979,7 @@ void mo_do_gui(int argc, char **argv)
         (char *)malloc(sizeof(char) * (strlen(MO_VERSION_STRING) +
                                        strlen(mo_uname.sysname) +
                                        strlen(mo_uname.release) + strlen(mo_uname.machine) + 20));
-    sprintf(HTAppVersion, "%s (X11;%s %s %s)", MO_VERSION_STRING, mo_uname.sysname, mo_uname.release, mo_uname.machine);
+    safe_snprintf(HTAppVersion, sizeof(HTAppVersion),"%s (X11;%s %s %s)", MO_VERSION_STRING, mo_uname.sysname, mo_uname.release, mo_uname.machine);
 
     XSetErrorHandler(mo_error_handler);
 
@@ -4038,7 +4039,7 @@ void mo_do_gui(int argc, char **argv)
             goto splash_goto;
         }
 
-        sprintf(s, "version %s", MO_VERSION_STRING);
+        safe_snprintf(s, sizeof(s), "version %s", MO_VERSION_STRING);
 
         l = strlen(s);
 
@@ -4096,7 +4097,7 @@ void mo_do_gui(int argc, char **argv)
         extras = malloc(sizeof(char *) * 2);
 
         extras[0] = malloc(strlen(get_pref_string(eACCEPT_LANGUAGE_STR)) + 19);
-        sprintf(extras[0], "Accept-Language: %s", get_pref_string(eACCEPT_LANGUAGE_STR));
+        safe_snprintf(extras[0], sizeof(extras[0]), "Accept-Language: %s", get_pref_string(eACCEPT_LANGUAGE_STR));
         extras[1] = NULL;
 
         HT_SetExtraHeaders(extras);
@@ -4152,7 +4153,7 @@ void mo_do_gui(int argc, char **argv)
             home = "/tmp";
 
         personal_extension_map = (char *)malloc(strlen(home) + strlen(get_pref_string(ePERSONAL_EXTENSION_MAP)) + 8);
-        sprintf(personal_extension_map, "%s/%s", home, get_pref_string(ePERSONAL_EXTENSION_MAP));
+        safe_snprintf(personal_extension_map, sizeof(personal_extension_map), "%s/%s", home, get_pref_string(ePERSONAL_EXTENSION_MAP));
     } else
         personal_extension_map = "\0";
 
@@ -4165,7 +4166,7 @@ void mo_do_gui(int argc, char **argv)
             home = "/tmp";
 
         personal_type_map = (char *)malloc(strlen(home) + strlen(get_pref_string(ePERSONAL_TYPE_MAP)) + 8);
-        sprintf(personal_type_map, "%s/%s", home, get_pref_string(ePERSONAL_TYPE_MAP));
+        safe_snprintf(personal_type_map, sizeof(personal_type_map), "%s/%s", home, get_pref_string(ePERSONAL_TYPE_MAP));
     } else
         personal_type_map = "\0";
 
@@ -4220,10 +4221,10 @@ void mo_do_gui(int argc, char **argv)
         if (!default_author_email) {
             if (!pw || !pw->pw_name) {
                 default_author_email = (char *)malloc(strlen("UNKNOWN") + strlen(machine) + 2);
-                sprintf(default_author_email, "UNKNOWN@%s", machine);
+                safe_snprintf(default_author_email, sizeof(default_author_email), "UNKNOWN@%s", machine);
             } else {
                 default_author_email = (char *)malloc(strlen(pw->pw_name) + strlen(machine) + 2);
-                sprintf(default_author_email, "%s@%s", pw->pw_name, machine);
+                safe_snprintf(default_author_email, sizeof(default_author_email), "%s@%s", pw->pw_name, machine);
             }
         }
         set_pref(eDEFAULT_AUTHOR_NAME, (void *)default_author_name);
@@ -4287,7 +4288,7 @@ void mo_do_gui(int argc, char **argv)
             home = "/tmp";
 
         fnam = (char *)malloc(strlen(home) + 32);
-        sprintf(fnam, "%s/.mosaicpid", home);
+        safe_snprintf(fnam, sizeof(fnam), "%s/.mosaicpid", home);
 
         fp = fopen(fnam, "w");
         if (fp) {
