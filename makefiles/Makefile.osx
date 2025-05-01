@@ -11,7 +11,7 @@ prereleaseflags = -DPRERELEASE
 
 RANLIB = ranlib
 
-CC = gcc
+CC ?= gcc
 
 #### Linker Flags -- Primarily for linking static on linux-elf.
 ldflags = -L/opt/homebrew/lib
