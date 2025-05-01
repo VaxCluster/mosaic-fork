@@ -8,10 +8,13 @@ name: Build Mosaic
 
 jobs:
   build_macos:
-    name: Build - macOS
-    runs-on: macos-latest
+    name: Build - macOS (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, macos-13]
     concurrency:
-      group: ${{ github.ref }}
+      group: ${{ github.workflow }}-${{ matrix.os }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout code
@@ -31,5 +34,5 @@ jobs:
       - name: Publish artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mosaic-macos
+          name: mosaic-${{ matrix.os }}
           path: mosaic-build/mosaic
