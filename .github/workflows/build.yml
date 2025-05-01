@@ -12,10 +12,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        - os: macos-latest
-          name: Apple Silicon
-        - os: macos-13
-          name: Intel
+        include:
+          - os: macos-latest
+            name: Apple Silicon
+          - os: macos-13
+            name: Intel
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.os }}-${{ github.ref }}
       cancel-in-progress: true
