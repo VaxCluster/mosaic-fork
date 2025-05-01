@@ -67,7 +67,6 @@
 #include "hotlist.h"
 #include "globalhist.h"
 #include "cciBindings2.h"
-#include "safe-snprintf.h"
 
 #include <signal.h>
 #include <sys/utsname.h>
@@ -106,7 +105,7 @@ MO_SIGHANDLER_RETURNTYPE ProcessExternalDirective(MO_SIGHANDLER_ARGS)
     signal(SIGUSR1, SIG_IGN);
 
     /* Construct filename from our pid. */
-    safe_snprintf(filename, sizeof(filename), "/tmp/Mosaic.%d", getpid());
+    sprintf(filename, "/tmp/Mosaic.%d", getpid());
 
     fp = fopen(filename, "r");
     if (!fp)
