@@ -1144,6 +1144,10 @@ char *str;
         }
     } else if (caseless_equal(str, MT_MAP)) {
         type = M_MAP;
+    } else if (caseless_equal(str, MT_SCRIPT)) {
+        type = M_SCRIPT;
+    } else if (caseless_equal(str, MT_STYLESHEET)) {
+        type = M_STYLESHEET;
     } else {
 #ifndef DISABLE_TRACE
         if (htmlwTrace) {

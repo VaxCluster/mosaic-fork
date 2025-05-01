@@ -82,7 +82,7 @@ PUBLIC char *HTNewsHost;
 PRIVATE int s;                  /* Socket for NewsHost */
 PRIVATE char response_text[LINE_LENGTH + 1];    /* Last response */
 
-                                                                            /* PRIVATE HText *  HT; *//* the new hypertext */
+                                                                                                                                                          /* PRIVATE HText *  HT; *//* the new hypertext */
 PRIVATE HTStructured *target;   /* The output sink */
 PRIVATE HTStructuredClass targetClass;  /* Copy of fn addresses */
 PRIVATE HTParentAnchor *node_anchor;    /* Its anchor */
@@ -513,8 +513,7 @@ PRIVATE void ClearArtList NOARGS {
                 tnext2 = temp2->next;
                 freeart(temp2);
                 temp2 = tnext2;
-            }
-        }
+        }}
         freeart(temp);
         temp = tnext;
     }
@@ -684,8 +683,7 @@ PRIVATE void abort_socket NOARGS {
 */ PUBLIC WWW_CONST char *HTGetNewsHost NOARGS
 {
     return HTNewsHost;
-}
-PUBLIC void HTSetNewsHost ARGS1(WWW_CONST char *, value)
+} PUBLIC void HTSetNewsHost ARGS1(WWW_CONST char *, value)
 {
     StrAllocCopy(HTNewsHost, value);
 }
@@ -973,7 +971,7 @@ int NNTPgetarthdrs(char *art, char **ref, char **grp, char **subj, char **from)
             char ch = *p++ = HTGetCharacter();
             if (ch == (char)EOF) {
                 abort_socket(); /* End of file, close socket */
-                return HT_OK;        /* End of file on response */
+                return HT_OK;   /* End of file on response */
             }
 
             if ((ch == LF) || (p == &line[LINE_LENGTH])) {

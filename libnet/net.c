@@ -2356,9 +2356,9 @@ DTMTYPE type;
 static int DEFUN(NetClientSendMessage, (netPort, header, data, num, type, cb, cbData, failCB, failCBData, doQueue),
 /* Attempt to send. return 0 on can't yet, -1 on error, 1 on success */
                  NetPort *netPort AND char *header AND GenericPtr data AND long num AND DTMTYPE type AND void (*cb)
-                 PARAMS( (GenericPtr data,
-                          caddr_t cbData)) AND caddr_t cbData AND void (*failCB) PARAMS( (GenericPtr data,
-                                                                                          caddr_t failCBData)) AND
+                 PARAMS((GenericPtr data,
+                         caddr_t cbData)) AND caddr_t cbData AND void(*failCB) PARAMS((GenericPtr data,
+                                                                                       caddr_t failCBData)) AND
                  caddr_t failCBData AND int doQueue)
 {                               /* TRUE -> Save and resend; FALSE -> let client resend */
     SQueue *sq;

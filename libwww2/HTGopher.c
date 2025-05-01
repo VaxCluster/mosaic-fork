@@ -35,6 +35,7 @@
 #define GOPHER_HTML		'h'     /* HTML */
 #define GOPHER_WWW		'w'     /* W3 address */
 #define GOPHER_SOUND            's'
+#define GOPHER_INFO		'i'     /* info line */
 
 #define GOPHER_PLUS_IMAGE       ':'
 #define GOPHER_PLUS_MOVIE       ';'
@@ -101,6 +102,67 @@ PRIVATE char from_hex ARGS1(char, c)
         : (c >= 'A') && (c <= 'F') ? c - 'A' + 10 : (c >= 'a') && (c <= 'f') ? c - 'a' + 10 : 0;
 }
 
+/* This function is here to a) handle nonbreaking spaces and b) < > which
+
+   could be used as the basis of an HTML-injection attack. -- ck */
+
+PRIVATE void write_entity_text ARGS1(WWW_CONST char *, text)
+{
+    char *k;
+    k = text;
+    /* not the most efficient implementation but wth */
+    for (;;) {
+        switch (k[0]) {
+        case '\0':
+            return;
+        case ' ':
+            PUTS("&nbsp;");
+            break;
+        case '<':
+            PUTS("&lt;");
+            break;
+        case '>':
+            PUTS("&gt;");
+            break;
+        default:
+            PUTC(k[0]);
+        }
+        k++;
+    }
+}
+
+/* And *this* function is to substitute '"<> with %-escapes to avoid nasty
+   selector attacks, in the same vein. -- ck */
+PRIVATE void write_selector_text ARGS1(WWW_CONST char *, addr)
+{
+    char *k;
+    k = addr;
+    for (;;) {
+        switch (k[0]) {
+        case '\0':
+            return;
+        case '\'':
+            PUTS("%27");
+            break;
+        case '"':
+            PUTS("%22");
+            break;
+        case '<':
+            PUTS("%3c");
+            break;
+        case '>':
+            PUTS("%3e");
+            break;
+        case ' ':
+            PUTS("%20");
+            break;
+        default:
+            PUTC(k[0]);
+        }
+        k++;
+    }
+}
+
 /*	Paste in an Anchor
 **	------------------
 **
@@ -115,8 +177,9 @@ PRIVATE char from_hex ARGS1(char, c)
 PRIVATE void write_anchor ARGS3(WWW_CONST char *, text, WWW_CONST char *, addr, char *, image_text)
 {
     PUTS("<A HREF=\"");
-    PUTS(addr);
+    write_selector_text(addr);
     PUTS("\">");
+    PUTS("<TT>");
 
     /* Throw in an inlined image, if one has been requested. */
     if (image_text) {
@@ -125,7 +188,8 @@ PRIVATE void write_anchor ARGS3(WWW_CONST char *, text, WWW_CONST char *, addr, 
         PUTS("\"> ");
     }
 
-    PUTS(text);
+    write_entity_text(text);
+    PUTS("</TT>");
     PUTS("</A>");
 }
 
@@ -205,7 +269,11 @@ PRIVATE int parse_menu ARGS2(WWW_CONST char *, arg, HTParentAnchor *, anAnchor)
                 }               /* selector ok */
             }                   /* gtype and name ok */
 
-            if (gtype == GOPHER_WWW) {  /* Gopher pointer to W3 */
+            if (gtype == GOPHER_INFO || gtype == GOPHER_ERROR) {
+                PUTS("<TT>");
+                write_entity_text(name);
+                PUTS("</TT><BR>\n");
+            } else if (gtype == GOPHER_WWW) {   /* Gopher pointer to W3 */
                 write_anchor(name, selector, "internal-gopher-text");
             } else if (port) {  /* Other types need port */
                 if (gtype == GOPHER_TELNET) {
@@ -238,6 +306,8 @@ PRIVATE int parse_menu ARGS2(WWW_CONST char *, arg, HTParentAnchor *, anAnchor)
                    be a hyperlink. */
                 if (strcmp(address, "//error.host:1/0") != 0 &&
                     strcmp(address, "//error/0error") != 0 && strcmp(address, "//:/0") != 0 && gtype != GOPHER_ERROR) {
+                    char *x;    /* ck */
+                    char *y;
                     switch (gtype) {
                     case GOPHER_MENU:
                         write_anchor(name, address, "internal-gopher-menu");
@@ -270,6 +340,32 @@ PRIVATE int parse_menu ARGS2(WWW_CONST char *, arg, HTParentAnchor *, anAnchor)
                     case GOPHER_PCBINHEX:
                     case GOPHER_UUENCODED:
                         write_anchor(name, address, "internal-gopher-binary");
+                        break;
+                    case GOPHER_HTML:
+                        y = selector;
+                        if (y[0] == '/')
+                            *y++;   /* mostly for pygopherd */
+                        x = strstr(y, "URL:");
+                        if (x == NULL || x != y) {  /* not a hURL */
+                            x = strstr(selector, "GET ");
+                            if (x == NULL || x != selector) {   /*not a GET */
+                                /* this will need to account for unsafe mechanisms like javascript
+                                   but later, since we can't do anything with them. -- ck */
+                                write_anchor(name, address, "internal-gopher-text");
+                            } else {
+                                /* trailing slash? */
+                                *(x += (strlen(x) > 4) ? 5 : 4);
+                                /* build a URL, bounds check it */
+                                if (strlen(host) + strlen(port) + strlen(x) < 1024) {
+                                    char y[1024];
+                                    sprintf(y, "http://%s/%s", host, x);    /*has port */
+                                    write_anchor(name, y, "internal-gopher-url");
+                                }   /* silently fail if oversize */
+                            }
+                        } else {
+                            *(x += 4);
+                            write_anchor(name, x, "internal-gopher-url");
+                        }
                         break;
                     default:
                         write_anchor(name, address, "internal-gopher-unknown");

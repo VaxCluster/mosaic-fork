@@ -111,9 +111,7 @@ PUBLIC char *HTAA_statusMessage NOARGS {
         /* Others */
         default:return "Access denied -- unable to specify reason (bug)";
 
-    }                           /* switch */
-}
-PRIVATE char *status_name ARGS1(HTAAFailReasonType, reason)
+} /* switch */ } PRIVATE char *status_name ARGS1(HTAAFailReasonType, reason)
 {
     switch (HTAAFailReason) {
 

@@ -233,6 +233,12 @@ PRIVATE void HTAccessInit NOARGS    /* Call me once */
             /* proxy servers have precedence over gateway servers */
             if (proxy) {
                 char *gatewayed;
+                char *y;
+                char *z;
+                y = strrchr(proxy, '/');
+                z = strrchr(proxy, '\0');
+                if (++y != z)   /* ewww but efficient */
+                    strcat(proxy, "/");
 
                 gatewayed = NULL;
                 StrAllocCopy(gatewayed, proxy);

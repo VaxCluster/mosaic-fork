@@ -75,6 +75,7 @@ extern int srcTrace;
 #include "bitmaps/gopher_telnet.xbm"
 #include "bitmaps/gopher_binary.xbm"
 #include "bitmaps/gopher_unknown.xbm"
+#include "bitmaps/gopher_url.xbm"
 
 ImageInfo *scaleImage(ImageInfo * img_data, char *width, char *height);
 
@@ -87,6 +88,7 @@ static ImageInfo *gopher_index = NULL;
 static ImageInfo *gopher_telnet = NULL;
 static ImageInfo *gopher_binary = NULL;
 static ImageInfo *gopher_unknown = NULL;
+static ImageInfo *gopher_url = NULL;
 
 /* for selective image loading */
 #define blank_width 8
@@ -384,6 +386,8 @@ ImageInfo *ImageResolve(Widget w, char *src, int noload, char *wid, char *hei)
             RETURN_IMGINFO_FROM_BITMAP(gopher_binary);
         if (strcmp(src, "internal-gopher-unknown") == 0)
             RETURN_IMGINFO_FROM_BITMAP(gopher_unknown);
+        if (strcmp(src, "internal-gopher-url") == 0)
+            RETURN_IMGINFO_FROM_BITMAP(gopher_url);
     }
 
 #ifdef HAVE_HDF

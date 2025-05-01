@@ -229,6 +229,10 @@ typedef enum
 #endif /* _SCO_DS */
 #endif /* SCO */
 
+#if defined(__darwin__) || defined(__APPLE__)
+#define MO_MACHINE_TYPE "MacOS"
+#endif
+
 #ifndef MO_MACHINE_TYPE
 #define MO_MACHINE_TYPE "Unknown Platform"
 #endif
@@ -676,8 +680,3 @@ typedef enum
 /* ----------------------------- END OF FILE ------------------------------ */
 
 #endif /* not __MOSAIC_H__ */
-
-
-
-
-

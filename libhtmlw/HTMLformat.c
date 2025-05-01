@@ -184,6 +184,8 @@ static int Subscript;
 static XFontStruct *nonScriptFont;
 static int InDocHead;
 static int InUnderlined;
+static int InScript;
+static int InStyleSheet;
 
 /*
  * Turned out we were taking WAY too much time mallocing and freeing
@@ -2850,6 +2852,30 @@ int *x, *y;
             InDocHead = 0;
         }
 
+    if (type == M_SCRIPT) {
+        if (mark->is_end) {
+            InScript = 0;
+            /* just ignore them right now. we can't really
+               use them anyway */
+            Ignore = 0;
+        } else {
+            InScript = 1;
+            Ignore = 1;
+        }
+    }
+
+    if (type == M_STYLESHEET) {
+        if (mark->is_end) {
+            InStyleSheet = 0;
+            /* ignore for now, might have a primitive parser
+               here later for CSS body/text colours, etc. */
+            Ignore = 0;
+        } else {
+            InStyleSheet = 1;
+            Ignore = 1;
+        }
+    }
+
     /*
      * If Ignore is set, we ignore all further elements until we get to the
      * end of the Ignore
@@ -3018,6 +3044,8 @@ int *x, *y;
             /* do nothing */
         } else {
             InDocHead = 0;      /* end <head> section */
+            InScript = 0;
+            InStyleSheet = 0;
             Ignore = 0;
         }
         break;

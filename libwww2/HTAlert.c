@@ -49,12 +49,10 @@ PUBLIC int HTCheckActiveIcon ARGS1(int, twirl)
 PUBLIC void HTClearActiveIcon NOARGS {
     mo_gui_clear_icon();
     return;
-}
-PUBLIC void HTDoneWithIcon NOARGS {
+} PUBLIC void HTDoneWithIcon NOARGS {
     mo_gui_done_with_icon();
     return;
-}
-PUBLIC BOOL HTConfirm ARGS1(WWW_CONST char *, Msg)
+} PUBLIC BOOL HTConfirm ARGS1(WWW_CONST char *, Msg)
 {
     extern int prompt_for_yes_or_no(char *);
 

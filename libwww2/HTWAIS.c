@@ -85,7 +85,7 @@ PRIVATE char line[2048];        /* For building strings to display */
 
 #include "HTFormat.h"
 #include "HTTCP.h"
-                                                                    /* #include "HTWSRC.h"  *//* Need some bits from here */
+                                                                                                                                                  /* #include "HTWSRC.h"  *//* Need some bits from here */
 
 /*		Hypertext object building machinery
 */

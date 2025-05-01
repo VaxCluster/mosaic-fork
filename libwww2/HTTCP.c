@@ -54,7 +54,7 @@ PRIVATE char *hostname = 0;     /* The name of this host */
 /*	PUBLIC VARIABLES
 */
 
-                                                                                      /* PUBLIC SockA HTHostAddress; *//* The internet address of the host */
+                                                                                                                                                                                         /* PUBLIC SockA HTHostAddress; *//* The internet address of the host */
                     /* Valid after call to HTHostName() */
 
 /*	Encode INET status (as in sys/errno.h)			  inet_status()

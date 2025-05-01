@@ -91,7 +91,7 @@ int numBytesToRead;
     return (numRead);
 }
 
-char *GetLine(s)     /****** this routine needs an overhaul.... */
+char *GetLine(s)           /****** this routine needs an overhaul.... */
 MCCIPort s;
 /* This routine returns a line read in from the socket file descriptor. 
  * The location of the string returned is good until the next call.

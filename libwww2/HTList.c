@@ -21,8 +21,7 @@ HTList *HTList_new NOARGS {
      newList->object = NULL;
      newList->next = NULL;
      return newList;
-}
-void HTList_delete ARGS1(HTList *, me)
+} void HTList_delete ARGS1(HTList *, me)
 {
     HTList *current;
     while (current = me) {

@@ -86,7 +86,7 @@ PRIVATE char *HTCacheRoot = "/WWW$SCRATCH/";    /* Where to cache things */
 PRIVATE char *HTCacheRoot = "/tmp/W3_Cache_";   /* Where to cache things */
 #endif
 
-                                                                                                                             /* PRIVATE char *HTSaveRoot  = "$(HOME)/WWW/"; *//* Where to save things */
+                                                                                                                                                                                                                                                                                /* PRIVATE char *HTSaveRoot  = "$(HOME)/WWW/"; *//* Where to save things */
 
 /*	Suffix registration
 */

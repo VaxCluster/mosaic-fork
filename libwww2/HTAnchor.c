@@ -41,8 +41,7 @@ PRIVATE HTParentAnchor *HTParentAnchor_new NOARGS {
     HTParentAnchor *newAnchor = (HTParentAnchor *) calloc(1, sizeof(HTParentAnchor));   /* zero-filled */
      newAnchor->parent = newAnchor;
      return newAnchor;
-}
-PRIVATE HTChildAnchor *HTChildAnchor_new NOARGS {
+} PRIVATE HTChildAnchor *HTChildAnchor_new NOARGS {
     return (HTChildAnchor *) calloc(1, sizeof(HTChildAnchor));  /* zero-filled */
 }
 /*	Case insensitive string comparison

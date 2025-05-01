@@ -40,9 +40,8 @@ PRIVATE BOOL initialized = NO;
 PRIVATE BOOL initialize NOARGS {
     s = -1;                     /* Disconnected */
     return YES;
-}
-PUBLIC int HTSendMailTo ARGS4(WWW_CONST char *, arg,
-                              HTParentAnchor *, anAnchor, HTFormat, format_out, HTStream *, stream)
+} PUBLIC int HTSendMailTo ARGS4(WWW_CONST char *, arg,
+                                HTParentAnchor *, anAnchor, HTFormat, format_out, HTStream *, stream)
 {
     char *mailtoURL;
     char *mailtoSubject;

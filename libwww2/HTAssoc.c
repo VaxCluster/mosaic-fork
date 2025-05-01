@@ -29,8 +29,7 @@ extern int www2Trace;
 
 PUBLIC HTAssocList *HTAssocList_new NOARGS {
     return HTList_new();
-}
-PUBLIC void HTAssocList_delete ARGS1(HTAssocList *, alist)
+} PUBLIC void HTAssocList_delete ARGS1(HTAssocList *, alist)
 {
     if (alist) {
         HTAssocList *cur = alist;
