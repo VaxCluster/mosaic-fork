@@ -54,8 +54,8 @@
 #include "../config.h"
 #ifndef VMS
 #include <sys/time.h>
-struct timeval Tv;
-struct timezone Tz;
+static struct timeval Tv;
+static struct timezone Tz;
 #else
 #include <time.h>
 #endif

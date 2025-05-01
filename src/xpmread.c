@@ -81,8 +81,8 @@
  */
 
 #include <sys/time.h>
-struct timeval Tv;
-struct timezone Tz;
+static struct timeval Tv;
+static struct timezone Tz;
 
 #include "mosaic.h"
 #include "xpmread.h"

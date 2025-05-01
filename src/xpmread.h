@@ -70,5 +70,6 @@ unsigned char *ReadXpm3Pixmap(FILE *fp, char *datafile, int *w, int *h,
                               XColor *colrs, int *bg);
 unsigned char *ProcessXpm3Data(Widget wid, char **xpmdata, int *w,
                                int *h, XColor *colrs, int *bg);
-
+extern int _Tz;
+extern int _Tv;
 #endif

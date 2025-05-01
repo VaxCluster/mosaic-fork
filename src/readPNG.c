@@ -73,14 +73,15 @@
 #include <X11/Xlib.h>
 #include <limits.h>
 
-// RGB hint thresholds
+/* RGB hint thresholds */
 #define RED_HINT   0xD0, 0x20, 0x20
 #define GREEN_HINT 0x20, 0xD0, 0x20
 #define BLUE_HINT  0x20, 0x20, 0xD0
 
 static int color_exists(XColor *colrs, int count, unsigned char r, unsigned char g, unsigned char b)
 {
-    for (int i = 0; i < count; i++) {
+    int i;
+    for (i = 0; i < count; i++) {
         if ((colrs[i].red >> 8) == r && (colrs[i].green >> 8) == g && (colrs[i].blue >> 8) == b) {
             return 1;
         }
@@ -104,7 +105,8 @@ static int closest_color(XColor *colrs, int num_colors, unsigned char r, unsigne
 {
     int best = 0;
     long best_dist = LONG_MAX;
-    for (int i = 0; i < num_colors; i++) {
+    int i;
+    for (i = 0; i < num_colors; i++) {
         long dr = r - (colrs[i].red >> 8);
         long dg = g - (colrs[i].green >> 8);
         long db = b - (colrs[i].blue >> 8);
@@ -119,7 +121,8 @@ static int closest_color(XColor *colrs, int num_colors, unsigned char r, unsigne
 
 static int find_or_add_color(XColor *colrs, int *num_colors, unsigned char r, unsigned char g, unsigned char b)
 {
-    for (int i = 0; i < *num_colors; i++) {
+    int i;
+    for (i = 0; i < *num_colors; i++) {
         if ((colrs[i].red >> 8) == r && (colrs[i].green >> 8) == g && (colrs[i].blue >> 8) == b) {
             return i;
         }
@@ -221,12 +224,12 @@ unsigned char *ReadPNG(FILE *infile, int *width, int *height, XColor *colrs)
     png_read_end(png_ptr, NULL);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
-    // Reserve base colors
+    /* Reserve base colors */
     reserve_color(colrs, &num_colors, RED_HINT);
     reserve_color(colrs, &num_colors, GREEN_HINT);
     reserve_color(colrs, &num_colors, BLUE_HINT);
 
-    // Output indexed pixmap
+    /* Output indexed pixmap */
     pixmap = (unsigned char *)malloc((*width) * (*height));
     if (!pixmap) {
         free(image_data);
