@@ -11,6 +11,7 @@ jobs:
     name: Build - macOS (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -29,7 +30,6 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ github.ref }}
       cancel-in-progress: true
-      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,6 +55,7 @@ jobs:
     name: Build - Linux (${{ matrix.name }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: OL8 - GCC - x86_64
@@ -72,7 +73,6 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.name }}-${{ matrix.compiler }}}-${{ matrix.arch }}-${{ github.ref }}
       cancel-in-progress: true
-      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
