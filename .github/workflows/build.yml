@@ -58,18 +58,30 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: OL8 - GCC - x86_64
+          - name: EL8 - GCC - x86_64
             compiler: gcc
             arch: x86_64
-          - name: OL8 - Clang - x86_64
+          - name: EL8 - Clang - x86_64
             compiler: clang
             arch: x86_64
-          - name: OL8 - GCC - aarch64
+          - name: EL8 - GCC - aarch64
             compiler: gcc
             arch: aarch64
-          - name: OL8 - clang - aarch64
+          - name: EL8 - clang - aarch64
             compiler: clang
             arch: aarch64
+          - name: EL8 - GCC - ppc64le
+            compiler: gcc
+            arch: ppc64le
+          - name: EL8 - clang - ppc64le
+            compiler: clang
+            arch: ppc64le
+          - name: EL8 - GCC - s390x
+            compiler: gcc
+            arch: s390x
+          - name: EL8 - clang - s390x
+            compiler: clang
+            arch: s390x
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.name }}-${{ matrix.compiler }}}-${{ matrix.arch }}-${{ github.ref }}
       cancel-in-progress: true
@@ -90,7 +102,7 @@ jobs:
           --platform linux/${{ matrix.arch }} \
           -v $PWD:/share \
           -e CC=${{ matrix.compiler }} \
-          oraclelinux:8 \
+          almalinux:8 \
           /share/.github/workflows/scripts/build-linux.sh
 
       - name: Publish artifact
