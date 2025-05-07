@@ -91,7 +91,7 @@ jobs:
             arch: s390x
             os: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ matrix.name }}-${{ matrix.compiler }}}-${{ matrix.arch }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ matrix.name }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: Checkout code
@@ -101,6 +101,7 @@ jobs:
           submodules: recursive
 
       - name: Setup QEMU
+        if: matrix.arch != 'x86_64' && matrix.arch != 'aarch64'
         uses: docker/setup-qemu-action@v3
 
       - name: Build Mosaic - Linux
