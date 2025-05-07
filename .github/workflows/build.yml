@@ -53,7 +53,7 @@ jobs:
 
   build_linux:
     name: Build - Linux (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -61,27 +61,35 @@ jobs:
           - name: EL8 - GCC - x86_64
             compiler: gcc
             arch: x86_64
+            os: ubuntu-latest
           - name: EL8 - Clang - x86_64
             compiler: clang
             arch: x86_64
+            os: ubuntu-latest
           - name: EL8 - GCC - aarch64
             compiler: gcc
             arch: aarch64
+            os: ubuntu-24.04-arm
           - name: EL8 - clang - aarch64
             compiler: clang
             arch: aarch64
+            os: ubuntu-24.04-arm
           - name: EL8 - GCC - ppc64le
             compiler: gcc
             arch: ppc64le
+            os: ubuntu-latest
           - name: EL8 - clang - ppc64le
             compiler: clang
             arch: ppc64le
+            os: ubuntu-latest
           - name: EL8 - GCC - s390x
             compiler: gcc
             arch: s390x
+            os: ubuntu-latest
           - name: EL8 - clang - s390x
             compiler: clang
             arch: s390x
+            os: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.name }}-${{ matrix.compiler }}}-${{ matrix.arch }}-${{ github.ref }}
       cancel-in-progress: true
