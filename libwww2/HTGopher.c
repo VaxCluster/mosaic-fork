@@ -9,6 +9,7 @@
 /* Implements:
 */
 #include "HTGopher.h"
+#include "../src/compat.h"
 
 #define GOPHER_PORT 70          /* See protocol spec */
 #define BIG 1024                /* Bug */

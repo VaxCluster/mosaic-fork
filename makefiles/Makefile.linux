@@ -17,7 +17,7 @@ RANLIB = ranlib
 
 #CC = cc
 #### On Sun's, this should be gcc (ANSI required).
-CC = gcc
+CC ?= gcc
 
 #### Linker Flags 
 ldflags =
@@ -40,7 +40,7 @@ knrflag =
 #### For Convex whatever, do -DCONVEX
 #### For SCO ODT 3.0, do -DSCO -DSVR4 -DMOTIF1_2
 #### For Motorola SVR4, do -DSVR4 -DMOTOROLA -DMOTIF1_2
-sysconfigflags = -DMOTIF1_2 -DLINUX
+sysconfigflags = -O3 -std=c89 -pedantic -DMOTIF1_2 -DLINUX -DHAVE_ERRLIST -DUSE_STDARG -D_POSIX_C_SOURCE=2
 
 #### System libraries.
 # syslibs = -lPW -lsun -lmalloc
@@ -135,18 +135,18 @@ static_xlibs = /usr/X11R6/lib/libXpm.a /usr/X11R6/lib/libXm.a /usr/X11R6/lib/lib
 #### For inline PNG support, the following should be defined:
 #### The libraries currently used are PNGLIB 0.81 and ZLIB 0.95
 
-pngdir = /xdev/mosaic/libpng/linux
-pnglibdir = $(pngdir)/lib
+pngdir = /usr
+pnglibdir = $(pngdir)/lib64
 pngincludedir = $(pngdir)/include
-pnglibs = $(pnglibdir)/libpng.a $(pnglibdir)/libz.a /usr/lib/libm.a
+pnglibs = $(pnglibdir)/libpng.so $(pnglibdir)/libz.so $(pnglibdir)/libm.so
 pngflags =  -I$(pngincludedir) -DHAVE_PNG
 
 #### JPEG SUPPORT
 #### For inline JPEG support, the following should be defined:
 #### The library used is Independent JPEG Group (IJG's) 5.0a.
 
-jpegdir = /xdev/mosaic/libjpeg/linux
-jpeglibs = $(jpegdir)/lib/libjpeg.a
+jpegdir = /usr
+jpeglibs = $(jpegdir)/lib64/libjpeg.so
 jpegflags = -I$(jpegdir)/include -DHAVE_JPEG
 
 
@@ -228,7 +228,9 @@ PURIFY = purify
 QUANTIFY = quantify
 
 default: $(dtmdirs) libwww2 libXmx libhtmlw libnut src
-	@echo \*\*\* Welcome to NCSA Mosaic.
+	mkdir -p mosaic-build
+	cp src/Mosaic mosaic-build/mosaic
+	@echo \*\*\* Welcome to NCSA Mosaic. The Mosaic binary is in mosaic-build/mosaic.
 purifyd: $(dtmdirs) libwww2 libXmx libhtmlw libnut src-purifyd
 	@echo \*\*\* Welcome to Purify'd NCSA Mosaic.
 quantifyd: $(dtmdirs) libwww2 libXmx libhtmlw libnut src-quantifyd

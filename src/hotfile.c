@@ -56,6 +56,7 @@
 #include "hotlist.h"
 #include "mo-www.h"
 #include "libhtmlw/HTML.h"
+#include "compat.h"
 
 /* The new file format provides support for nested hotlists of interesting
    documents within the browser.

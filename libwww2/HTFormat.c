@@ -24,6 +24,7 @@ PUBLIC float HTMaxLength = 1e10;    /* No effective limit */
 #include "SGML.h"
 #include "HTML.h"
 #include "HTMLGen.h"
+#include "../src/compat.h"
 
 /* From gui-documents.c. */
 extern int loading_inlined_images;

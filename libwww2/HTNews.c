@@ -29,6 +29,7 @@ char *mo_tmpnam(char *url);
 #include "../src/mosaic.h"
 #include "../src/newsrc.h"
 #include "../src/prefs.h"
+#include "../src/compat.h"
 
 #define NEWS_PORT 119           /* See rfc977 */
 #define APPEND                  /* Use append methods */

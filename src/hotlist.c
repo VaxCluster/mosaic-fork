@@ -62,6 +62,7 @@
 #include <Xm/TextF.h>
 #include <Xm/ToggleBG.h>
 #include <sys/types.h>
+#include "compat.h"
 
 #include "bitmaps/hotlist.xbm"
 #include "../libnut/system.h"

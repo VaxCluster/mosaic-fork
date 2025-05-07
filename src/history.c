@@ -59,6 +59,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include "libhtmlw/HTML.h"
+#include "compat.h"
 
 #define __SRC__
 #include "../libwww2/HTAAUtil.h"

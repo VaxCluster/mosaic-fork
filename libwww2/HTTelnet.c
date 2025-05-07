@@ -30,6 +30,7 @@
 
 #include "HTAccess.h"
 #include "HTAlert.h"
+#include "../src/compat.h"
 
 extern void application_user_feedback(char *);
 

@@ -67,6 +67,7 @@
 #include "annotate.h"
 /* for setting some selections buttons*/
 #include "libhtmlw/HTML.h"
+#include "compat.h"
 
 extern mo_window *current_win;
 extern char *home_document;

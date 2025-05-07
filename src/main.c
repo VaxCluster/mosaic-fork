@@ -71,6 +71,7 @@
 #include <signal.h>
 #include <sys/utsname.h>
 #include <string.h>
+#include "compat.h"
 
 /* swp */
 #define _KCMS_H_

@@ -37,6 +37,7 @@
 #include "HTInit.h"
 #include "HTSort.h"
 #include "../libnut/system.h"
+#include "../src/compat.h"
 
 typedef struct _HTSuffix {
     char *suffix;

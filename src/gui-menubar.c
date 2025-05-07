@@ -71,6 +71,7 @@
 #include "globalhist.h"
 #include "proxy.h"
 #include "libwww2/HTNews.h"
+#include "compat.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

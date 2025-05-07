@@ -36,12 +36,14 @@
 #include "HTML.h"               /* SCW */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "HTList.h"
 #include "HText.h"              /* See bugs above */
 #include "HTAlert.h"
 
 #include "../src/proxy.h"
+#include "../src/compat.h"
 
 #ifndef DISABLE_TRACE
 extern int www2Trace;

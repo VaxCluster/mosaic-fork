@@ -59,6 +59,9 @@
 #include "gui.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include "compat.h"
+#include <string.h>
 
 /*for memcpy*/
 #include <memory.h>

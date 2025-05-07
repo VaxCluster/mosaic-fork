@@ -61,6 +61,7 @@
 #include <Xm/ScrolledW.h>
 #include <Xm/List.h>
 #include <Xm/Label.h>
+#include "compat.h"
 
 #include "libnut/system.h"
 

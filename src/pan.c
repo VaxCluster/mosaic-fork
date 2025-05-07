@@ -58,6 +58,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "libhtmlw/HTML.h"
+#include "compat.h"
 
 /*for memset*/
 #include <memory.h>

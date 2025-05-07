@@ -54,6 +54,7 @@
 #include "../config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifndef VMS
 #include <sys/wait.h>
@@ -87,6 +88,7 @@
 #include <stat.h>
 #include <types.h>
 #include <unixio.h>
+#include "../src/compat.h"
 
 #define $NEW_DESCRIPTOR(name) \
 	struct dsc$descriptor_s name = { \
@@ -97,14 +99,16 @@
 #include "system.h"
 
 /* Use builtin strdup when appropriate -- code duplicated in tcp.h. PGE */
-#if defined(ultrix) || defined(VMS) || defined(NeXT)
-extern char *strdup(char *str);
+#if !defined(HAVE_DECL_STRDUP)
+extern char *strdup(const char *s);
 #endif
 
-#if !(defined(VMS) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__linux__))
-extern int sys_nerr;
+#if defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(__MUSL__)
 extern char *sys_errlist[];
-extern int errno;
+extern int sys_nerr;
+#define HAVE_SYS_ERRLIST 1
+#else
+#define HAVE_SYS_ERRLIST 0
 #endif
 
 #ifndef DISABLE_TRACE

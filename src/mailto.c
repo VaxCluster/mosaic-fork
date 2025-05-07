@@ -57,6 +57,7 @@
 #include "mosaic.h"
 #include "gui.h"
 #include <stdio.h>
+#include "compat.h"
 
 #include "../libnut/url-utils.h"
 #include "libnut/system.h"

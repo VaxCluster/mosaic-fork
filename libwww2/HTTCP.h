@@ -17,6 +17,11 @@
 #define HTParseInet             HTPaInet
 #endif
 
+/** Required for building on Linux/glibc **/
+#include <netdb.h>
+#ifndef h_addr
+#define h_addr h_addr_list[0]
+#endif
 
 /*      Produce a string for an internet address
 **      ---------------------------------------

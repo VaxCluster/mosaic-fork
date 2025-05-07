@@ -59,6 +59,7 @@
 #include "memStuffForPipSqueeks.h"
 #include "cci.h"
 #include "accept.h"
+#include "compat.h"
 
 /* #define DEBUG */
 

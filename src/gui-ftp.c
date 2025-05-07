@@ -60,6 +60,7 @@
 #include "gui-popup.h"
 #include "libhtmlw/HTML.h"
 #include "libnut/system.h"
+#include "compat.h"
 
 #define MAX_BUF_LEN 512         /* Length of all of the buffers used for dialog message output */
 

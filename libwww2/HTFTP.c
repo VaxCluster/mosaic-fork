@@ -56,6 +56,7 @@
 #include "HTChunk.h"
 #include "HTSort.h"
 #include "HText.h"
+#include "../src/compat.h"
 
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 64       /* Arbitrary limit */

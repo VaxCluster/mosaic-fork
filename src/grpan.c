@@ -57,10 +57,8 @@
 #include "grpan-www.h"
 #include "pan.h"
 #include "mo-www.h"
-/*#ifdef __hpux || __sgi*/
-#if defined(__hpux) || defined(__sgi) || defined(linux) || defined(__APPLE__)
+#include "compat.h"
 #include <time.h>
-#endif
 
 static char *EscapeStuff(char *title);
 

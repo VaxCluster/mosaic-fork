@@ -73,6 +73,7 @@
 #include "libhtmlw/HTML.h"
 #include "libnut/system.h"
 #include "libnut/str-tools.h"
+#include "compat.h"
 
 #ifndef DISABLE_TRACE
 extern int srcTrace;

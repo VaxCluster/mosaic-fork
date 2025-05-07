@@ -22,6 +22,7 @@
 #include "HTML.h"
 #include "HTInit.h"
 #include "HTAABrow.h"
+#include "../src/compat.h"
 
 int useKeepAlive = 1;
 extern int securityType;

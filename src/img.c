@@ -60,6 +60,7 @@
 #include "picread.h"
 #include "libhtmlw/HTML.h"
 #include "cci.h"
+#include "compat.h"
 extern int cci_event;
 
 #ifndef DISABLE_TRACE

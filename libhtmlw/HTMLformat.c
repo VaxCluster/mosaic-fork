@@ -52,6 +52,7 @@
  * mosaic-x@ncsa.uiuc.edu.                                                  *
  ****************************************************************************/
 #include "../config.h"
+#include "../src/compat.h"
 #ifndef VMS
 #include <sys/time.h>
 struct timeval Tv;

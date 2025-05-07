@@ -65,6 +65,7 @@
 #include <Xm/TextF.h>
 #include "bitmaps/annotate.xbm"
 #include "libnut/system.h"
+#include "compat.h"
 
 typedef enum {
     mo_new_annotation = 0, mo_edit_annotation

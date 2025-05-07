@@ -63,6 +63,7 @@
 #include "cciServer.h"
 #include "list.h"
 #include "memStuffForPipSqueeks.h"
+#include "compat.h"
 
 #include "HTFormat.h"
 

@@ -55,6 +55,7 @@
 #include "mosaic.h"
 #include "gui-ftp.h"
 #include "mo-www.h"
+#include "compat.h"
 
 #ifndef GUI_POPUP_H
 #define GUI_POPUP_H

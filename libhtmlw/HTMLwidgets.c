@@ -52,6 +52,7 @@
  * mosaic-x@ncsa.uiuc.edu.                                                  *
  ****************************************************************************/
 #include "../config.h"
+#include "../src/compat.h"
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>

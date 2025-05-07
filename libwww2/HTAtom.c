@@ -19,6 +19,7 @@
 #include <stdio.h>              /* joe@athena, TBL 921019 */
 #include "HTUtils.h"
 #include "tcp.h"
+#include "../src/compat.h"
 
 #ifndef DISABLE_TRACE
 extern int www2Trace;

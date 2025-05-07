@@ -62,6 +62,7 @@
 #include "libhtmlw/HTML.h"
 #include "cci.h"
 #include "cciBindings.h"
+#include "compat.h"
 
  /*SWP*/ extern char pre_title[80];
 extern int cci_event;

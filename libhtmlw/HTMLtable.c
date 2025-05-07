@@ -5,6 +5,7 @@
 #include "HTMLP.h"
 #include "HTML.h"
 #include "list.h"
+#include "../src/compat.h"
 #ifdef VAXC
 #include <ctype.h>
 #endif                          /* VAXC, need for isspace, GEC */

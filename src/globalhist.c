@@ -58,6 +58,7 @@
 #include "libhtmlw/HTML.h"
 #include <time.h>
 #include "../libnut/system.h"
+#include "compat.h"
 
 /*for memset*/
 #include <memory.h>

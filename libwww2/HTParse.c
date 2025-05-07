@@ -5,6 +5,7 @@
 #include "HTUtils.h"
 #include "HTParse.h"
 #include "tcp.h"
+#include "../src/compat.h"
 
 #define HEX_ESCAPE '%'
 

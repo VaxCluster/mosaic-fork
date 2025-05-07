@@ -17,6 +17,7 @@
 #include "HTFile.h"
 #include "tcp.h"
 #include "../libnut/str-tools.h"
+#include "../src/compat.h"
 #if defined(KRB4) || defined(KRB5)  /* ADC, 6/28/95 */
 #define HAVE_KERBEROS
 #endif

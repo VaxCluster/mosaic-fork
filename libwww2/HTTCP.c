@@ -17,6 +17,7 @@
 #include "HTParse.h"
 #include "HTAlert.h"
 #include "HTAccess.h"
+#include "HTTCP.h"
 #include "tcp.h"                /* Defines SHORT_NAMES if necessary */
 #ifdef SHORT_NAMES
 #define HTInetStatus		HTInStat
@@ -71,9 +72,16 @@ PRIVATE char *hostname = 0;     /* The name of this host */
 extern int errno;
 #endif                          /* errno */
 
-#if !defined(__APPLE__)
+#include <string.h>
+#include <errno.h>
+#include "../src/compat.h"
+
+#if defined(__GLIBC__) && !defined(__UCLIBC__) && !defined(__MUSL__)
 extern char *sys_errlist[];
 extern int sys_nerr;
+#define HAVE_SYS_ERRLIST 1
+#else
+#define HAVE_SYS_ERRLIST 0
 #endif
 
 /*	Report Internet Error
@@ -88,9 +96,14 @@ char *where;
 {
 #ifndef DISABLE_TRACE
     if (www2Trace) {
+#if HAVE_SYS_ERRLIST
+        const char *msg = (errno < sys_nerr) ? sys_errlist[errno] : "Unknown error";
+#else
+        const char *msg = strerror(errno);
+#endif
         fprintf(stderr,
                 "TCP: Error %d in `errno' after call to %s() failed.\n\t%s\n",
-                errno, where, errno < sys_nerr ? sys_errlist[errno] : "Unknown error");
+                errno, where, msg);
     }
 #endif
 

@@ -64,6 +64,7 @@
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include "gifread.h"
+#include "compat.h"
 
 /*
 #define TIMING 1

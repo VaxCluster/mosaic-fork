@@ -57,6 +57,7 @@
 #include "pixmaps.h"
 #include "xpmread.h"
 #include "xpm.h"
+#include "compat.h"
 
 /*for memcpy*/
 #include <memory.h>

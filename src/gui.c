@@ -78,6 +78,7 @@ Widget mo_fill_toolbar(mo_window * win, Widget top, int w, int h);
 #include <ctype.h>
 #include <sys/utsname.h>
 #include <pwd.h>
+#include "compat.h"
 
 #define __SRC__
 #include "../libwww2/HTAAUtil.h"

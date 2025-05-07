@@ -53,6 +53,8 @@
  ****************************************************************************/
 #include "../config.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include "../src/compat.h"
 #include "HTMLP.h"
 #ifdef MOTIF
 #include <Xm/DrawingA.h>

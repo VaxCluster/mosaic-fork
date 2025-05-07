@@ -86,6 +86,7 @@ static struct timezone Tz;
 
 #include "mosaic.h"
 #include "xpmread.h"
+#include "compat.h"
 
 #include <X11/Xos.h>
 #include "xpm.h"

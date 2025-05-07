@@ -18,6 +18,7 @@
 #include "HText.h"
 #include "tcp.h"
 #include "HTCompressed.h"
+#include "../src/compat.h"
 
 extern char *currentURL;
 

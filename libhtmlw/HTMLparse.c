@@ -68,6 +68,7 @@ static struct timezone Tz;
 #endif
 #include "HTML.h"
 #include "HTMLamp.h"
+#include "../src/compat.h"
 
 extern void FreeObjList();
 extern struct mark_up *AddObj();

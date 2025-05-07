@@ -65,6 +65,7 @@
 
 #include <stdio.h>
 #include "inkstore.h"
+#include "../src/compat.h"
 
 #ifndef VMS
 #include <sys/types.h>

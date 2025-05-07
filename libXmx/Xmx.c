@@ -53,6 +53,7 @@
  ****************************************************************************/
 #include "../config.h"
 #include "XmxP.h"
+#include "../src/compat.h"
 
 #if defined(ultrix) || defined(VMS) || defined(NeXT)
 extern char *strdup();
