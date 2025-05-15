@@ -743,7 +743,7 @@ void newsrc_backup()
     }
 
     while (fgets(b, MAX_BUF, new))
-        fprintf(old, b);
+        fprintf(b, old);
 
     fclose(old);
     fclose(new);
@@ -839,7 +839,7 @@ int newsrc_flush()
         seq[0] = 0;
         newsrc_writeseq(n, seq, MAX_BUF);
         sprintf(b, "%s%c %s\n", n->name, (n->attribs & naSUBSCRIBED) ? ':' : '!', seq);
-        fprintf(new, b);
+        fputs(b, new);
         n->attribs &= ~(naUPDATE);
         n = nextgroup(n);
     }
