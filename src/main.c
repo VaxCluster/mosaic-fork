@@ -72,6 +72,9 @@
 #include <sys/utsname.h>
 #include <string.h>
 #include "compat.h"
+#ifdef __LINUX__
+#include <malloc.h>
+#endif
 
 /* swp */
 #define _KCMS_H_
@@ -224,6 +227,13 @@ main(int argc, char **argv, char **envp)
 
     /* Since we're doing lots of TCP, just ignore SIGPIPE altogether. */
     signal(SIGPIPE, SIG_IGN);
+
+#ifdef M_CHECK_ACTION
+  /* some code here has the habit of freeing pointers twice. The glibc
+     catches this and causes the program to abort. In order to make the
+     code somehow work, we turn aborting the program off. */
+  mallopt(M_CHECK_ACTION,5);
+#endif
 
     InitChildProcessor();
     MoCCIPreInitialize();
